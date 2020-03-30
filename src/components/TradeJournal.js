@@ -1,20 +1,27 @@
 import React, { Component, Fragment } from 'react';
 import { DATA_SERVER_URL } from "./config";
 import { mean } from './util.math';
+import moment from 'moment';
 
-class Trades extends Component {
+class TradeJournal extends Component {
   constructor(props) {
     super(props);
     this.state = {
       trades:   undefined,
       comments: undefined,
     };
+    this.bind();
+  }
+
+  bind() {
     this.refresh = this.refresh.bind(this);
     this.commentChangeHandler = this.commentChangeHandler.bind(this);
     this.postComment = this.postComment.bind(this);
+    this.deleteEmpty = this.deleteEmpty.bind(this);
   }
 
   componentDidMount() {
+    document.title = 'Journal';
     this.refresh();
   }
 
@@ -29,7 +36,7 @@ class Trades extends Component {
 
       // update state
       this.setState({
-        trades:   trades.reverse(), // sort by newest trades first
+        trades:   trades,
         comments: comments,
       })
     });
@@ -52,11 +59,10 @@ class Trades extends Component {
     if (comment !== '') {
 
       // add comment
-      console.log(`posting ${comment} to ${trade_id}`);//todo delete me
       fetch(`${DATA_SERVER_URL}/comments/add`, {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ comment }),
+        body:    JSON.stringify({ comment }),
       })
       .then(result => result.json())
       .then(result => {
@@ -70,9 +76,9 @@ class Trades extends Component {
           // update trade
           trade.comments.push(comment_id);
           fetch(`${DATA_SERVER_URL}/trades/update/${trade_id}`, {
-            method: 'PUT',
+            method:  'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(trade),
+            body:    JSON.stringify(trade),
           })
           .then(this.refresh);
         });
@@ -80,62 +86,77 @@ class Trades extends Component {
     }
   }
 
+  deleteEmpty() {
+    fetch(`${DATA_SERVER_URL}/trades/delete/empty`, {
+      method: 'DELETE',
+    })
+    .then(this.refresh);
+  }
+
   render() {
     const { trades, comments } = this.state;
-    if (!trades) {
-      return <span>Loading...</span>;
-    } else {
-      return (
-        <div>
-          <h1>Trade history</h1>
-          <table id="trade-history">
-            <tbody>
-            {
-              trades.map(trade =>
-                <Fragment key={trade['_id']}>
-                  <tr key={`${trade['_id']}-header`} className="trade-history-header">
-                    <td>Position</td>
-                    <td>Entry</td>
-                    <td>Stop</td>
-                    <td>Profit</td>
-                    <td>Risk</td>
-                    <td>Quantity</td>
-                  </tr>
-                  <tr key={trade['_id']} className="trade-history-header-entry">
-                    <td>{trade.position}</td>
-                    <td>{mean(trade.entry)}</td>
-                    <td>{trade.stop}</td>
-                    <td>{mean(trade.profit)}</td>
-                    <td>{trade.risk}</td>
-                    <td>{trade.quantity}</td>
-                  </tr>
-                  {
-                    trade.comments.map((comment, i) =>
-                      <tr key={`${trade['_id']}${i}`}>
-                        <td colSpan={6} className="trade-history-comment">
-                          {comment.comment}
-                        </td>
-                      </tr>
-                    )
-                  }
-                  <tr key={`${trade['_id']}-add-comment`}>
-                    <td colSpan={6} className="trade-history-add-comment">
-                      <form onSubmit={e => this.postComment(e, trade['_id'])}>
-                        <textarea onChange={e => this.commentChangeHandler(e, trade['_id'])}
-                                  rows={4} value={comments[trade['_id']]}></textarea>
-                        <input type="submit" value="Add comment"/>
-                      </form>
-                    </td>
-                  </tr>
-                </Fragment>
-              )
-            }
-            </tbody>
-          </table>
+    return !trades ? <span>Loading...</span> : (
+      <div>
+        <div id="quick-access">
+          <button id="delete-empty" type="button" onClick={this.deleteEmpty}>
+            Delete empty
+          </button>
         </div>
-      );
-    }
+        <h1>Trade Journal</h1>
+        <table id="trade-history">
+          <tbody>
+          {
+            trades.map(trade =>
+              <Fragment key={trade['_id']}>
+                <tr key={`${trade['_id']}-header`} className="trade-history-header">
+                  <td>Position</td>
+                  <td>Entry</td>
+                  <td>Stop</td>
+                  <td>Profit</td>
+                  <td>Risk</td>
+                  <td>Quantity</td>
+                </tr>
+                <tr key={trade['_id']} className="trade-history-header-entry">
+                  <td>{trade.position}</td>
+                  <td>{mean(trade.entry)}</td>
+                  <td>{trade.stop}</td>
+                  <td>{mean(trade.profit)}</td>
+                  <td>{trade.risk}</td>
+                  <td>{trade.quantity}</td>
+                </tr>
+                {
+                  trade.comments.map((comment, i) =>
+                    <tr key={`${trade['_id']}${i}`}>
+                      <td colSpan={6} className="trade-history-comment">
+                        <p className="created-at">
+                          {
+                            moment(new Date(comment.createdAt))
+                            .format('MMMM Do YYYY, h:mm a')
+                          }
+                        </p>
+                        <p className="comment">{comment.comment}</p>
+                      </td>
+                    </tr>
+                  )
+                }
+                <tr key={`${trade['_id']}-add-comment`}>
+                  <td colSpan={6} className="trade-history-add-comment">
+                    <form onSubmit={e => this.postComment(e, trade['_id'])}>
+                        <textarea onChange={e => this.commentChangeHandler(e, trade['_id'])}
+                                  rows={4} value={comments[trade['_id']]}/>
+                      <input type="submit" value="Add comment"/>
+                    </form>
+                  </td>
+                </tr>
+              </Fragment>
+            )
+          }
+          </tbody>
+        </table>
+      </div>
+    );
+
   }
 }
 
-export default Trades;
+export default TradeJournal;

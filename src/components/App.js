@@ -1,20 +1,16 @@
 import React, { Component } from 'react';
 import './App.css';
-import CanvasJSReact from './canvasjs.react';
-import beepDown from './beep_down.mp3';
-import beepUp from './beep_up.mp3';
+import beepDown from '../assets/beep_down.mp3';
+import beepUp from '../assets/beep_up.mp3';
+import { DATA_SERVER_URL } from "./config";
+import CanvasJSReact from '../canvasjs.react';
 
-// CanvasJS setup
-const { CanvasJSChart, CanvasJS } = CanvasJSReact;
-CanvasJS.addCultureInfo("be", {
-  decimalSeparator:    ",",
-  digitGroupSeparator: ".",
-});
+const { CanvasJSChart } = CanvasJSReact;
 
 function BitcoinDominance(props) {
   return (
     <div id="bitcoin-dominance">
-      <h3>Bitcoin Dominance</h3>
+      {/* <h3>Bitcoin Dominance</h3> */}
       <span id="bitcoin-dominance">
         {props.bitcoinDominance}
       </span>
@@ -25,7 +21,7 @@ function BitcoinDominance(props) {
 function CryptoFearAndGreed(props) {
   return (
     <div id="crypto-fear-and-greed">
-      <h3>Crypto Fear and Greed Index</h3>
+      {/* <h3>Crypto Fear and Greed Index</h3> */}
       <span id="crypto-fear-and-greed">
         {props.data.value_classification} ({props.data.value})
       </span>
@@ -37,7 +33,7 @@ function BitmexOpenInterest(props) {
   if (props.data['TOTAL']) {
     return (
       <div id="bitmex-open-interest">
-        <h3>BitMEX Open Interest</h3>
+        {/* <h3>BitMEX Open Interest</h3> */}
         <span id="bitmex-total-open-interest">
           {props.data['TOTAL'].toLocaleString()}
         </span>
@@ -150,7 +146,7 @@ function VolumeFlowChart(props) {
 function BitmexVolumeFlow(props) {
   return (
     <div id="bitmex-volume-flow">
-      <h3>BitMEX Volume Flow</h3>
+      {/* <h3>BitMEX Volume Flow</h3> */}
       <div id="volume-flow">
         <span id="bitmex-price">{props.price}</span>
         <span id="buy-flow">{props.buyFlow.toLocaleString()}</span>
@@ -186,7 +182,9 @@ class Bitmex extends Component {
 
   _alarm(audioId, flow) {
     const beep = document.getElementById(audioId);
-    if (flow >= this.props.alarmThreshold) {
+    const { price } = this.state;
+    const { alarmScalar } = this.props;
+    if (price > 0 && flow >= price * alarmScalar) {
       beep.play();
     } else {
       beep.pause();
@@ -198,31 +196,34 @@ class Bitmex extends Component {
 
       // Fetch data
       Promise.all([
-        fetch("http://localhost:3001/data/price.txt")
-        .then(response => response.text()),
-        fetch("http://localhost:3001/data/buy-flow.txt")
-        .then(response => response.text()),
-        fetch("http://localhost:3001/data/sell-flow.txt")
-        .then(response => response.text()),
-        fetch("http://localhost:3001/data/price-history.json")
+        fetch(`${DATA_SERVER_URL}/data/price.txt`)
+        .then(response => response.text())
+        .catch(() => this.state.price),
+        fetch(`${DATA_SERVER_URL}/data/buy-flow.txt`)
+        .then(response => response.text())
+        .catch(() => this.state.buyFlow),
+        fetch(`${DATA_SERVER_URL}/data/sell-flow.txt`)
+        .then(response => response.text())
+        .catch(() => this.state.sellFlow),
+        fetch(`${DATA_SERVER_URL}/data/price-history.json`)
         .then(response => response.json())
         .catch(() => this.state.priceHistory),
-        fetch("http://localhost:3001/data/buy-flow-history.json")
+        fetch(`${DATA_SERVER_URL}/data/buy-flow-history.json`)
         .then(response => response.json())
         .catch(() => this.state.buyFlowHistory),
-        fetch("http://localhost:3001/data/sell-flow-history.json")
+        fetch(`${DATA_SERVER_URL}/data/sell-flow-history.json`)
         .then(response => response.json())
         .catch(() => this.state.sellFlowHistory),
-        fetch("http://localhost:3001/data/recent-trades.json")
+        fetch(`${DATA_SERVER_URL}/data/recent-trades.json`)
         .then(response => response.json())
         .catch(() => this.state.recentTrades),
-        fetch("http://localhost:3001/data/open-interest.json")
+        fetch(`${DATA_SERVER_URL}/data/open-interest.json`)
         .then(response => response.json())
         .catch(() => this.state.openInterest),
-        fetch("http://localhost:3001/data/fear-and-greed.json")
+        fetch(`${DATA_SERVER_URL}/data/fear-and-greed.json`)
         .then(response => response.json())
         .catch(() => this.state.fearAndGreed),
-        fetch("http://localhost:3001/data/bitcoin-dominance.txt")
+        fetch(`${DATA_SERVER_URL}/data/bitcoin-dominance.txt`)
         .then(response => response.text()),
       ])
       .then(responses => {
@@ -259,16 +260,9 @@ class Bitmex extends Component {
 
         // Update state
         this.setState({
-          price:            price,
-          buyFlow:          buyFlow,
-          sellFlow:         sellFlow,
-          priceHistory:     priceHistory,
-          buyFlowHistory:   buyFlowHistory,
-          sellFlowHistory:  sellFlowHistory,
-          recentTrades:     recentTrades,
-          openInterest:     openInterest,
-          fearAndGreed:     fearAndGreed,
-          bitcoinDominance: bitcoinDominance,
+          price, buyFlow, sellFlow, priceHistory, buyFlowHistory,
+          sellFlowHistory, recentTrades, openInterest, fearAndGreed,
+          bitcoinDominance,
         });
       });
 
@@ -281,7 +275,7 @@ class Bitmex extends Component {
 
   render() {
     return (
-      <div id="bitmex-data">
+      <span id="bitmex-data">
         <BitcoinDominance bitcoinDominance={this.state.bitcoinDominance}/>
         <CryptoFearAndGreed data={this.state.fearAndGreed}/>
         <BitmexOpenInterest data={this.state.openInterest}/>
@@ -294,7 +288,7 @@ class Bitmex extends Component {
           sellFlowHistory={this.state.sellFlowHistory}
         />
         <BitmexRecentTrades data={this.state.recentTrades}/>
-      </div>
+      </span>
     );
   }
 }
@@ -313,9 +307,9 @@ function App() {
           <Bitmex
             openInterestRefreshRate="10000"
             refreshRate="1000"
-            recentTradesCount="50"
+            recentTradesCount="100"
             historyLength="180"
-            alarmThreshold="1000000"
+            alarmScalar="100"
           />
         </div>
       </div>

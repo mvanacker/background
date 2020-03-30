@@ -86,11 +86,34 @@ export function stdNormalInverseCDF(p) {
   return retVal;
 }
 
-export function round_to(n, to = 1) {
-  const foo = 10 ** to;
+export function round_to(n, to = 1, base = 10) {
+  const foo = base ** to;
   return Math.round((n + Number.EPSILON) * foo) / foo;
 }
 
-export function mean(list) {
-  return list.reduce((a, b) => a + b, 0) / list.length;
+export function sum(array) {
+  return array.reduce((a, b) => a + b, 0);
+}
+
+export function mean(array) {
+  return sum(array) / array.length;
+}
+
+// https://www.w3resource.com/javascript-exercises/javascript-math-exercise-10.php
+export function lcm(x, y) {
+  if ((typeof x !== 'number') || (typeof y !== 'number'))
+    return false;
+  return (!x || !y) ? 0 : Math.abs((x * y) / gcd(x, y));
+}
+
+// https://www.w3resource.com/javascript-exercises/javascript-math-exercise-10.php
+export function gcd(x, y) {
+  x = Math.abs(x);
+  y = Math.abs(y);
+  while(y) {
+    const t = y;
+    y = x % y;
+    x = t;
+  }
+  return x;
 }

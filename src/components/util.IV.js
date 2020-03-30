@@ -1,3 +1,5 @@
+import { parseISOString } from './util.date';
+
 const monthMap = {
   'JAN': 0, 'FEB': 1, 'MAR': 2, 'APR': 3, 'MAY': 4, 'JUN': 5, 'JUL': 6,
   'AUG': 7, 'SEP': 8, 'OCT': 9, 'NOV': 10, 'DEC': 11,
@@ -21,12 +23,6 @@ export function parseFilename(filename) {
     type:   type,
   };
   return result;
-}
-
-// RobG https://stackoverflow.com/questions/27012854/change-iso-date-string-to-date-object-javascript
-function parseISOString(s) {
-  const b = s.split(/\D+/);
-  return new Date(Date.UTC(b[0], --b[1], b[2], b[3], b[4], b[5], b[6]));
 }
 
 function isNotEmpty(s) {

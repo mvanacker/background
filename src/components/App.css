@@ -1,5 +1,7 @@
 body {
   background-color: black;
+  color: white;
+  padding: 15px;
 }
 
 div#app {
@@ -20,10 +22,16 @@ div.column {
   display: flex;
   flex-direction: column;
   padding: 0 25px;
-  border-width: 0 1px;
-  border-style: solid;
-  border-color: #333;
-  width: 400px;
+  /*border-width: 0 1px;*/
+  /*border-style: solid;*/
+  /*border-color: #333;*/
+  width: 100vw;
+}
+
+/*** General ***/
+
+.bold {
+  font-weight: bold;
 }
 
 /*** Bitcoin Dominance ***/
@@ -44,18 +52,18 @@ span#crypto-fear-and-greed {
 
 /*** BitMEX Open Interest ***/
 
-span#bitmex-total-open-interest:before {
+/* span#bitmex-total-open-interest:before {
   content: "$";
-}
+} */
 
 span#bitmex-total-open-interest {
   font-size: 2em;
   font-weight: bold;
 }
 
-td.open-interest:before {
+/* td.open-interest:before {
   content: "$";
-}
+} */
 
 td.bitmex-open-interest {
   text-align: right;
@@ -63,13 +71,13 @@ td.bitmex-open-interest {
 
 /*** BitMEX Volume Flow ***/
 
-span#bitmex-price:before, span#buy-flow:before, span#sell-flow:before {
+/* span#bitmex-price:before, span#buy-flow:before, span#sell-flow:before {
   content: "$";
-}
+} */
 
-span#buy-flow:after, span#sell-flow:after {
+/* span#buy-flow:after, span#sell-flow:after {
   content: "/s";
-}
+} */
 
 span#bitmex-price {
   font-size: 2.5em;
@@ -90,11 +98,6 @@ div#volume-flow {
   /*border: 1px solid white;*/
 }
 
-/*span#buy-flow:before, span#sell-flow:before {*/
-/*  font-weight: bold;*/
-/*  font-size: 2.5em;*/
-/*}*/
-
 span#buy-flow, span#sell-flow {
   font-weight: bold;
   font-size: 2.5em;
@@ -109,7 +112,7 @@ span#sell-flow {
 }
 
 div#volume-flow-chart {
-  /*padding: 15px;*/
+  margin: 25px 0;
 }
 
 /*** BitMEX Recent Trades ***/
@@ -117,6 +120,7 @@ div#volume-flow-chart {
 table#recent-trades {
   padding: 10px;
   /*border: 1px solid white;*/
+  margin: auto;
 }
 
 tr.buy {
@@ -151,10 +155,126 @@ tr.huge-size {
   font-weight: bolder;
 }
 
-td.price:before {
+/* td.price:before {
   content: "$";
-}
+} */
 
 td.price {
   text-align: left;
 }
+
+/*** Trade (deprecating) ***/
+
+input, textarea, button {
+  padding: 4px 10px;
+  background-color: black;
+  color: white;
+  border: 1px solid white;
+}
+
+input[type=submit] {
+  padding: 6px 10px;
+}
+
+button#order {
+  margin-top: 20px;
+  padding: 8px 16px;
+  font-size: 1.1em;
+}
+
+table#order td, table#results td {
+  vertical-align: top;
+  min-width: 120px;
+  padding: 3px 5px;
+}
+
+table#order table td {
+  min-width: 0;
+}
+
+a.proxy-button:link {
+  text-decoration: none;
+}
+
+a.proxy-button:hover {
+  text-decoration: none;
+  color: #0aa;
+}
+
+div#quick-access {
+  position: fixed;
+  right: 15px;
+  top: 15px;
+}
+
+div#quick-access button {
+  margin: 0 4px;
+}
+
+/*** Trade ***/
+
+input[type=number]] {
+  width: 55px;
+}
+
+.left-column {
+  float: left;
+  width: 25%;
+  margin-top: 6px;
+}
+
+.right-column {
+  float: left;
+  width: 75%;
+  margin-top: 6px;
+}
+
+.one-third-right-column {
+  float: left;
+  width: 25%;
+  margin-top: 6px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/*** Trade Journal ***/
+
+table#trade-history {
+  width: 100%;
+}
+
+table#trade-history td {
+  padding: 5px 7px;
+}
+
+table#trade-history td.trade-history-comment {
+  padding: 10px;
+  /*padding: 5px 7px 5px 28px;*/
+  /*text-indent: -15px;*/
+  /*font-style: italic;*/
+}
+
+table#trade-history td.trade-history-comment p.created-at {
+  text-align: right;
+  margin: auto;
+  font-style: italic;
+  font-size: 0.75em;
+}
+
+table#trade-history td.trade-history-comment p.comment {
+  margin: 0;
+  /*font-style: italic;*/
+}
+
+table#trade-history td.trade-history-add-comment textarea {
+  /*width: 97%;*/
+  min-width: 97%;
+  max-width: fit-content;
+  margin: 15px 0;
+}
+
+

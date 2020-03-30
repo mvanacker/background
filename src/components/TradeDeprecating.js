@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { DATA_SERVER_URL, REFRESH_RATE } from './config';
 import { instanceOf } from "prop-types";
-import { withCookies, Cookies } from "react-cookie";
-import { round_to, mean, lcm } from './util.math';
+import { Cookies, withCookies } from "react-cookie";
+import { lcm, mean, round_to } from './util.math';
 import { dump_params } from "./util.web";
 
 const EntryPlacement = {
@@ -24,10 +24,10 @@ class TradeDeprecating extends Component {
       exchange:   'Deribit',
       api:        'https://www.deribit.com/api/v2',
       // api:        'https://test.deribit.com/api/v2',
-      instrument: 'BTC-PERPEsTUAL',
+      instrument: 'BTC-PERPETUAL',
 
       // polled value
-      available_funds: undefined,
+      equity: undefined,
 
       // authentication
       deribit_key:      cookies.get('deribit_key') || undefined,
@@ -40,7 +40,8 @@ class TradeDeprecating extends Component {
       entry_mean:      parseFloat(cookies.get('entry_mean')) || 0,
       entry_distance:  parseFloat(cookies.get('entry_distance')) || 10,
       entry_amount:    parseInt(cookies.get('entry_amount')) || 11,
-      include_stop:    cookies.get('include_stop') || false,
+      include_stop:    true,
+      // include_stop:    cookies.get('include_stop') || true,
       stop:            parseFloat(cookies.get('stop')) || 0,
       include_profit:  cookies.get('include_profit') || false,
       profit:          cookies.get('profit') || [0],
@@ -289,7 +290,7 @@ class TradeDeprecating extends Component {
         const [account_summary] = result;
 
         this.setState({
-          available_funds: account_summary['available_funds'],
+          equity: account_summary['equity'],
         })
       });
     }, REFRESH_RATE);
@@ -306,7 +307,7 @@ class TradeDeprecating extends Component {
   is_input_valid() {
     const {
       entry_placement, entry_mean, entry_half_distance, entry, include_stop,
-      stop, include_profit, profit, available_funds, risk, position, contract
+      stop, include_profit, profit, equity, risk, position, contract
     } = this.state;
 
     const min_profit = Math.min(...profit);
@@ -325,7 +326,7 @@ class TradeDeprecating extends Component {
         return false;
     }
 
-    return entry.length && available_funds && risk && position && contract
+    return entry.length && equity && risk && position && contract
            && (!include_stop || stop)
            && (!include_profit || profit.length)
            && ((position === 'long'
@@ -338,7 +339,7 @@ class TradeDeprecating extends Component {
 
   compute() {
     if (this.is_input_valid()) {
-      let { entry_placement, entry_mean, entry_amount, entry, stop, profit, available_funds, risk, contract } = this.state;
+      let { entry_placement, entry_mean, entry_amount, entry, stop, profit, equity, risk, contract } = this.state;
       if (entry_placement === EntryPlacement.MANUAL) {
         entry_mean = mean(this.state.entry);
         entry_amount = entry.length;
@@ -346,11 +347,11 @@ class TradeDeprecating extends Component {
       const profit_mean = mean(this.state.profit);
       const ds = Math.abs(contract === 'linear' ? stop - entry_mean : 1 / entry_mean - 1 / stop);
       const dp = Math.abs(contract === 'linear' ? profit_mean - entry_mean : 1 / entry_mean - 1 / profit_mean);
-      const quantity = round_to(available_funds * risk / ds, -1, 10 * lcm(entry_amount, profit.length));
+      const quantity = round_to(equity * risk / ds, -1, 10 * lcm(entry_amount, profit.length));
       const max_loss = round_to(quantity * ds, 8);
-      const rel_max_loss = max_loss / available_funds;
+      const rel_max_loss = max_loss / equity;
       const max_profit = round_to(quantity * dp, 8);
-      const rel_max_profit = max_profit / available_funds;
+      const rel_max_profit = max_profit / equity;
       const risk_reward = `1 : ${round_to(max_profit / max_loss, 2)}`;
       return { entry_mean, profit_mean, quantity, max_loss, rel_max_loss, max_profit, rel_max_profit, risk_reward };
     }
@@ -407,11 +408,12 @@ class TradeDeprecating extends Component {
           const entry_quantity = Math.round(quantity / entry.length);
           for (let i = 0; i < entry.length; i++) {
             entry_calls.push(this.deribit_call(entry_method, {
-              amount:          entry_quantity,
-              instrument_name: instrument,
-              price:           entry[i],
-              post_only:       true,
-              label:           `${label}-entry-${i}`
+              amount:           entry_quantity,
+              instrument_name:  instrument,
+              price:            entry[i],
+              post_only:        true,
+              reject_post_only: true,
+              label:            `${label}-entry-${i}`
             }, true));
           }
         }
@@ -421,11 +423,12 @@ class TradeDeprecating extends Component {
           for (let i = 0; i < entry_amount; i++) {
             const price = entry_mean - entry_half_distance + i * entry_distance;
             entry_calls.push(this.deribit_call(entry_method, {
-              amount:          entry_quantity,
-              instrument_name: instrument,
-              price:           price,
-              post_only:       true,
-              label:           `${label}-entry-${i}`
+              amount:           entry_quantity,
+              instrument_name:  instrument,
+              price:            price,
+              post_only:        true,
+              // reject_post_only: true,
+              label:            `${label}-entry-${i}`
             }, true));
           }
         }
@@ -452,17 +455,18 @@ class TradeDeprecating extends Component {
       if (include_profit) {
         for (let i = 0; i < profit.length; i++) {
           profit_calls.push(this.deribit_call(exit_method, {
-            amount:          profit_quantity,
-            instrument_name: instrument,
-            price:           profit[i],
-            post_only:       true,
-            label:           `${label}-profit-${i}`
+            amount:           profit_quantity,
+            instrument_name:  instrument,
+            price:            profit[i],
+            post_only:        true,
+            // reject_post_only: true,
+            label:            `${label}-profit-${i}`
           }, true));
         }
       }
 
       Promise.all([...entry_calls, ...stop_calls, ...profit_calls])
-      .then(results => results.forEach(console.table));
+      .then(results => results.log(console.table));
     });
   }
 
@@ -494,7 +498,7 @@ class TradeDeprecating extends Component {
         </div>
       );
     } else {
-      if (!this.state.available_funds) {
+      if (!this.state.equity) {
         return (<span>Loading...</span>);
       } else {
         const {
@@ -521,12 +525,12 @@ class TradeDeprecating extends Component {
                 {/*</tr>*/}
                 <tr>
                   <td>Available</td>
-                  <td>{this.state.available_funds}</td>
+                  <td>{this.state.equity}</td>
                 </tr>
                 <tr>
                   <td>
-                    <input type="checkbox" id="include-stop" checked={include_stop}
-                           onChange={this.includeStopChangeHandler}/>{' '}
+                    {/*<input type="checkbox" id="include-stop" checked={include_stop}*/}
+                    {/*       onChange={this.includeStopChangeHandler}/>{' '}*/}
                     <label htmlFor="stop">Stop</label>
                   </td>
                   <td>

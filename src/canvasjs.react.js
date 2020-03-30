@@ -45,4 +45,10 @@ var CanvasJSReact = {
   CanvasJS: CanvasJS
 };
 
+// Customized: European separator snippet
+CanvasJS.addCultureInfo("be", {
+  decimalSeparator:    ",",
+  digitGroupSeparator: ".",
+});
+
 export default CanvasJSReact;
