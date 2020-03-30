@@ -1,0 +1,160 @@
+body {
+  background-color: black;
+}
+
+div#app {
+  text-align: center;
+}
+
+div#main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+div.column {
+  display: flex;
+  flex-direction: column;
+  padding: 0 25px;
+  border-width: 0 1px;
+  border-style: solid;
+  border-color: #333;
+  width: 400px;
+}
+
+/*** Bitcoin Dominance ***/
+
+span#bitcoin-dominance:after {
+  content: "%";
+}
+
+span#bitcoin-dominance {
+  font-size: 2em;
+}
+
+/*** Crypto Fear and Greed Index ***/
+
+span#crypto-fear-and-greed {
+  font-size: 2em;
+}
+
+/*** BitMEX Open Interest ***/
+
+span#bitmex-total-open-interest:before {
+  content: "$";
+}
+
+span#bitmex-total-open-interest {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+td.open-interest:before {
+  content: "$";
+}
+
+td.bitmex-open-interest {
+  text-align: right;
+}
+
+/*** BitMEX Volume Flow ***/
+
+span#bitmex-price:before, span#buy-flow:before, span#sell-flow:before {
+  content: "$";
+}
+
+span#buy-flow:after, span#sell-flow:after {
+  content: "/s";
+}
+
+span#bitmex-price {
+  font-size: 2.5em;
+  font-weight: bold;
+  color: royalblue;
+}
+
+.monospace {
+  font-size: 16px;
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+
+div#volume-flow {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 10px;
+  /*border: 1px solid white;*/
+}
+
+/*span#buy-flow:before, span#sell-flow:before {*/
+/*  font-weight: bold;*/
+/*  font-size: 2.5em;*/
+/*}*/
+
+span#buy-flow, span#sell-flow {
+  font-weight: bold;
+  font-size: 2.5em;
+}
+
+span#buy-flow {
+  color: lime;
+}
+
+span#sell-flow {
+  color: #b33;
+}
+
+div#volume-flow-chart {
+  /*padding: 15px;*/
+}
+
+/*** BitMEX Recent Trades ***/
+
+table#recent-trades {
+  padding: 10px;
+  /*border: 1px solid white;*/
+}
+
+tr.buy {
+  color: lime;
+}
+
+tr.sell {
+  color: #b33;
+}
+
+td.time {
+  text-align: right;
+}
+
+td.side {
+  text-transform: uppercase;
+  text-align: right;
+  width: 50px;
+}
+
+td.size {
+  text-align: center;
+  width: 100px;
+}
+
+tr.big-size {
+  font-weight: bold;
+}
+
+tr.huge-size {
+  font-size: 1.1em;
+  font-weight: bolder;
+}
+
+td.price:before {
+  content: "$";
+}
+
+td.price {
+  text-align: left;
+}
