@@ -1,47 +1,329 @@
 import React, { Component } from 'react';
-import './App.css';
+
+import CanvasJSReact from '../canvasjs.react';
+
 import beepDown from '../assets/beep_down.mp3';
 import beepUp from '../assets/beep_up.mp3';
 import { DATA_SERVER_URL } from "./config";
-import CanvasJSReact from '../canvasjs.react';
 
-const { CanvasJSChart } = CanvasJSReact;
+import { tail } from './util.general';
 
-function BitcoinDominance(props) {
-  return (
-    <div id="bitcoin-dominance">
-      {/* <h3>Bitcoin Dominance</h3> */}
-      <span id="bitcoin-dominance">
-        {props.bitcoinDominance}
-      </span>
-    </div>
-  );
-}
+import Panel from './common/Panel';
+import LabeledRow from './common/LabeledRow';
+import ListBlock from './common/ListBlock';
 
-function CryptoFearAndGreed(props) {
-  return (
-    <div id="crypto-fear-and-greed">
-      {/* <h3>Crypto Fear and Greed Index</h3> */}
-      <span id="crypto-fear-and-greed">
-        {props.data.value_classification} ({props.data.value})
-      </span>
-    </div>
-  );
-}
+export default class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      
+      // static
+      openInterestRefreshRate: 10000,
+      refreshRate:             1000,
+      recentTradesCount:       100,
+      historyLength:           180,
+      openInterestFraction:    1000000,
+      alarmScalar:             100,
+      minimumYScalar:          10,
 
-function BitmexOpenInterest(props) {
-  if (props.data['TOTAL']) {
-    return (
-      <div id="bitmex-open-interest">
-        {/* <h3>BitMEX Open Interest</h3> */}
-        <span id="bitmex-total-open-interest">
-          {props.data['TOTAL'].toLocaleString()}
-        </span>
-      </div>
-    );
-  } else {
-    return (<span>Loading...</span>);
+      // dynamic
+      price:               -1,
+      buyFlow:             -1,
+      sellFlow:            -1,
+      openInterest:        -1,
+      priceHistory:        [],
+      buyFlowHistory:      [],
+      sellFlowHistory:     [],
+      openInterestHistory: [],
+      recentTrades:        [],
+      fearAndGreed:        -1,
+      dominance:           -1,
+    };
   }
+
+  _alarm(audioId, flow) {
+    const beep = document.getElementById(audioId);
+    const { price, alarmScalar } = this.state;
+    try {
+      if (price > 0 && flow >= price * alarmScalar) {
+        beep.play();
+      } else {
+        beep.pause();
+      }
+    } catch(e) {}
+  }
+
+  componentDidMount() {
+
+    const update = () => {
+
+      // Fetch data
+      Promise.all([{
+        link: `${DATA_SERVER_URL}/data/price.txt`,
+        onsuccess: response => response.text(),
+        onfailure: () => this.state.price,
+      }, {
+        link: `${DATA_SERVER_URL}/data/buy-flow.txt`,
+        onsuccess: response => response.text(),
+        onfailure: () => this.state.buyFlow,
+      }, {
+        link: `${DATA_SERVER_URL}/data/sell-flow.txt`,
+        onsuccess: response => response.text(),
+        onfailure: () => this.state.sellFlow,
+      }, {
+        link: `${DATA_SERVER_URL}/data/open-interest.txt`,
+        onsuccess: response => response.text(),
+        onfailure: () => this.state.openInterest,
+      }, {
+        link: `${DATA_SERVER_URL}/data/price-history.json`,
+        onsuccess: response => response.json(),
+        onfailure: () => this.state.priceHistory,
+      }, {
+        link: `${DATA_SERVER_URL}/data/buy-flow-history.json`,
+        onsuccess: response => response.json(),
+        onfailure: () => this.state.buyFlowHistory,
+      }, {
+        link: `${DATA_SERVER_URL}/data/sell-flow-history.json`,
+        onsuccess: response => response.json(),
+        onfailure: () => this.state.sellFlowHistory,
+      }, {
+        link: `${DATA_SERVER_URL}/data/open-interest-history.json`,
+        onsuccess: response => response.json(),
+        onfailure: () => this.state.openInterestHistory,
+      }, {
+        link: `${DATA_SERVER_URL}/data/recent-trades.json`,
+        onsuccess: response => response.json(),
+        onfailure: () => this.state.recentTrades,
+      }, {
+        link: `${DATA_SERVER_URL}/data/fear-and-greed.json`,
+        onsuccess: response => response.json(),
+        onfailure: () => this.state.fearAndGreed,
+      }, {
+        link: `${DATA_SERVER_URL}/data/bitcoin-dominance.txt`,
+        onsuccess: response => response.text(),
+        onfailure: () => this.state.dominance,
+      }].map(item =>
+        fetch(item.link).then(item.onsuccess).catch(item.onfailure)
+      ))
+      .then(responses => {
+
+        // Transform data
+        let [
+          price, buyFlow, sellFlow, openInterest, priceHistory, buyFlowHistory,
+          sellFlowHistory, openInterestHistory, recentTrades, fearAndGreed,
+          dominance
+        ] = responses;
+
+        if (price && !isNaN(price)) {
+          price = Math.trunc(parseFloat(price));
+        } else {
+          price = this.state.price;
+        }
+        if (buyFlow && !isNaN(buyFlow)) {
+          buyFlow = Math.trunc(parseFloat(buyFlow));
+        } else {
+          buyFlow = this.state.buyFlow;
+        }
+        if (sellFlow && !isNaN(sellFlow)) {
+          sellFlow = Math.trunc(parseFloat(sellFlow));
+        } else {
+          sellFlow = this.state.sellFlow;
+        }
+        if (openInterest && !isNaN(openInterest)) {
+          openInterest = Math.trunc(parseFloat(openInterest));
+        } else {
+          openInterest = this.state.openInterest;
+        }
+        if (priceHistory && priceHistory.length && priceHistory.length > 1) {
+          priceHistory = priceHistory.map(entry => {
+            return { x: entry.time, y: entry.price }
+          });
+        } else {
+          priceHistory = this.state.priceHistory;
+        }
+        if (buyFlowHistory && buyFlowHistory.length && buyFlowHistory.length > 1) {
+          buyFlowHistory = buyFlowHistory.map(entry => {
+            return { x: entry.time, y: 1 + entry.buyFlow }
+          });
+        }
+        if (sellFlowHistory && sellFlowHistory.length && sellFlowHistory.length > 1) {
+          sellFlowHistory = sellFlowHistory.map(entry => {
+            return { x: entry.time, y: 1 + entry.sellFlow }
+          });
+        } else {
+          sellFlowHistory = this.state.sellFlowHistory;
+        }
+        if (openInterestHistory && openInterestHistory.length && openInterestHistory.length > 1) {
+          openInterestHistory = openInterestHistory.map(entry => {
+            return {
+              x: entry.time,
+              y: isNaN(entry.openInterest) ? undefined : entry.openInterest / this.state.openInterestFraction
+            }
+          });
+        } else {
+          openInterestHistory = this.state.openInterestHistory;
+        }
+        if (recentTrades && recentTrades.length && recentTrades.length > 0) {
+          recentTrades = recentTrades.slice(0, this.state.recentTradesCount);
+          recentTrades.forEach(trade => trade.size = parseInt(trade.size));
+        } else {
+          recentTrades = this.state.recentTrades;
+        }
+        if (fearAndGreed && fearAndGreed.data) {
+          fearAndGreed = fearAndGreed.data[0];
+        } else {
+          fearAndGreed = this.state.fearAndGreed;
+        }
+        if (dominance) {
+          dominance = Math.round(parseFloat(dominance) * 100) / 100;
+        } else {
+          dominance = this.state.dominance;
+        }
+
+        // Play or pause alarms
+        this._alarm('beep-up', buyFlow);
+        this._alarm('beep-down', sellFlow);
+
+        // Set page title
+        document.title = price;
+
+        // Update state
+        this.setState({
+          price, buyFlow, sellFlow, openInterest, priceHistory, buyFlowHistory,
+          sellFlowHistory, openInterestHistory, recentTrades, fearAndGreed,
+          dominance,
+        });
+      });
+
+    };
+    update();
+    this.priceInterval = setInterval(update, this.state.refreshRate);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.priceInterval);
+  }
+
+  render() {
+    return <div id="app">
+      <audio loop id="beep-up">
+        <source src={beepUp} type="audio/mpeg"/>
+      </audio>
+      <audio loop id="beep-down">
+        <source src={beepDown} type="audio/mpeg"/>
+      </audio>
+      <Overview state={this.state}/>
+      <VolumeFlowChart state={this.state}/>
+      <BitmexRecentTrades data={this.state.recentTrades}/>
+    </div>;
+  }
+}
+
+function Overview(props) {
+  const { dominance, fearAndGreed } = props.state;
+  return <Panel title="Overview" padding={true}>
+    <ListBlock>
+      <li>
+        <LabeledRow label="Dominance">
+          {dominance}%
+        </LabeledRow>
+      </li>
+      <li>
+        <LabeledRow label="Fear and Greed">
+          {fearAndGreed.value} <small>
+            ({fearAndGreed.value_classification})
+          </small>
+        </LabeledRow>
+      </li>
+    </ListBlock>
+  </Panel>;
+}
+
+function VolumeFlowChart(props) {
+  const { 
+    price, buyFlow, sellFlow, openInterest,
+    priceHistory, buyFlowHistory, sellFlowHistory, openInterestHistory,
+    minimumYScalar,
+  } = props.state;
+  const options = {
+    culture:          "be",
+    animationEnabled: true,
+    theme:            "dark2",
+    backgroundColor:  "transparent",
+    height:           260,
+    axisX:            {
+      valueFormatString: "HH:mm:ss"
+    },
+    axisY:            [{
+      // title:             "volume flow in $/second",
+      logarithmic:       true,
+      includeZero:       true,
+      valueFormatString: "#,###",
+      gridColor:         "#444444",
+      minimum:           1000,
+      // minimum:           minimumYScalar * price,
+    }],
+    axisY2:           [{
+      // title:             "open interest in million $",
+      includeZero:       false,
+      valueFormatString: "#,###",
+      gridColor:         "#ffffff",
+    }, {
+      // title:             "price in $",
+      includeZero:       false,
+      valueFormatString: "#,###",
+      gridColor:         "#ffffff",
+    }],
+    data:             [{
+      lineColor:  "lime",
+      type:       "line",
+      xValueType: "dateTime",
+      dataPoints: buyFlowHistory,
+      markerType: "none",
+    }, {
+      lineColor:  "#b33",
+      type:       "line",
+      xValueType: "dateTime",
+      dataPoints: sellFlowHistory,
+      markerType: "none",
+    }, {
+      lineColor:  "white",
+      type:       "line",
+      xValueType: "dateTime",
+      dataPoints: openInterestHistory,
+      markerType: "none",
+      axisYIndex: 0,
+      axisYType: "secondary",
+    }, {
+      lineColor:  "royalblue",
+      type:       "line",
+      xValueType: "dateTime",
+      dataPoints: priceHistory,
+      markerType: "none",
+      axisYIndex: 1,
+      axisYType: "secondary",
+    }]
+  };
+  
+  return <div className="w3-margin w3-container w3-theme-dark w3-xxlarge">
+    <div className="w3-cell-row">
+      <div className="w3-cell w3-text-white">
+        {openInterest.toLocaleString()}
+      </div>
+    </div>
+    <div className="w3-cell-row w3-section">
+      <div className="w3-cell my-third" style={{'color': 'royalblue'}}>
+        {price.toLocaleString()}
+      </div>
+      <div className="w3-cell my-third w3-text-lime">
+        {buyFlow.toLocaleString()}
+      </div>
+      <div className="w3-cell my-third" style={{'color': '#b33'}}>
+        {sellFlow.toLocaleString()}
+      </div>
+    </div>
+    <CanvasJSReact.CanvasJSChart options={options}/>
+  </div>;
 }
 
 function BitmexRecentTrades(props) {
@@ -62,15 +344,15 @@ function BitmexRecentTrades(props) {
 
   const size_class = size => {
     if (size >= 1000000) {
-      return " huge-size";
+      return " w3-large";
     } else if (size >= 500000) {
-      return " big-size";
+      return " w3-medium";
     }
-    return "";
+    return " w3-medium";
   };
 
-  return (
-    <table id="recent-trades" className="monospace">
+  return <Panel theme="w3-theme-d4">
+    <table className="monospace" style={{'margin': 'auto'}}>
       <tbody>
       {
         props.data.map((trade, i) => {
@@ -81,9 +363,7 @@ function BitmexRecentTrades(props) {
                 {trade.timestamp.split(' ')[1].split('.')[0]}
               </td>
               <td className="side">{trade.side}</td>
-              <td className="size">
-                {squish(trade.size)}
-              </td>
+              <td className="size">{squish(trade.size)}</td>
               <td className="price">{trade.price}</td>
             </tr>
           );
@@ -91,230 +371,5 @@ function BitmexRecentTrades(props) {
       }
       </tbody>
     </table>
-  );
+  </Panel>;
 }
-
-function VolumeFlowChart(props) {
-  const options = {
-    culture:          "be",
-    animationEnabled: true,
-    theme:            "dark2",
-    backgroundColor:  "black",
-    height:           260,
-    axisX:            {
-      // valueFormatString: "HH:mm:ss"
-    },
-    axisY:            [{
-      title:             "volume flow in $/second",
-      logarithmic:       true,
-      includeZero:       true,
-      valueFormatString: "#,###",
-      gridColor:         "#444444",
-      minimum:           1000,
-    }],
-    axisY2:           [{
-      title:             "price in $",
-      includeZero:       false,
-      valueFormatString: "#,###",
-      gridColor:         "#ffffff",
-    }],
-    data:             [{
-      lineColor:  "lime",
-      type:       "line",
-      xValueType: "dateTime",
-      dataPoints: props.buyFlowHistory,
-      markerType: "none",
-    }, {
-      lineColor:  "#bb3333",
-      type:       "line",
-      xValueType: "dateTime",
-      dataPoints: props.sellFlowHistory,
-      markerType: "none",
-    }, {
-      lineColor:  "royalblue",
-      type:       "line",
-      xValueType: "dateTime",
-      dataPoints: props.priceHistory,
-      markerType: "none",
-      axisYType:  "secondary",
-    }]
-  };
-
-  return (<CanvasJSChart options={options}/>);
-}
-
-function BitmexVolumeFlow(props) {
-  return (
-    <div id="bitmex-volume-flow">
-      {/* <h3>BitMEX Volume Flow</h3> */}
-      <div id="volume-flow">
-        <span id="bitmex-price">{props.price}</span>
-        <span id="buy-flow">{props.buyFlow.toLocaleString()}</span>
-        <span id="sell-flow">{props.sellFlow.toLocaleString()}</span>
-      </div>
-      <div id="volume-flow-chart">
-        <VolumeFlowChart
-          priceHistory={props.priceHistory}
-          buyFlowHistory={props.buyFlowHistory}
-          sellFlowHistory={props.sellFlowHistory}
-        />
-      </div>
-    </div>
-  );
-}
-
-class Bitmex extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      price:            -1,
-      buyFlow:          -1,
-      sellFlow:         -1,
-      priceHistory:     [],
-      buyFlowHistory:   [],
-      sellFlowHistory:  [],
-      recentTrades:     [],
-      openInterest:     {},
-      fearAndGreed:     -1,
-      bitcoinDominance: -1,
-    };
-  }
-
-  _alarm(audioId, flow) {
-    const beep = document.getElementById(audioId);
-    const { price } = this.state;
-    const { alarmScalar } = this.props;
-    if (price > 0 && flow >= price * alarmScalar) {
-      beep.play();
-    } else {
-      beep.pause();
-    }
-  }
-
-  componentDidMount() {
-    this.priceInterval = setInterval(() => {
-
-      // Fetch data
-      Promise.all([
-        fetch(`${DATA_SERVER_URL}/data/price.txt`)
-        .then(response => response.text())
-        .catch(() => this.state.price),
-        fetch(`${DATA_SERVER_URL}/data/buy-flow.txt`)
-        .then(response => response.text())
-        .catch(() => this.state.buyFlow),
-        fetch(`${DATA_SERVER_URL}/data/sell-flow.txt`)
-        .then(response => response.text())
-        .catch(() => this.state.sellFlow),
-        fetch(`${DATA_SERVER_URL}/data/price-history.json`)
-        .then(response => response.json())
-        .catch(() => this.state.priceHistory),
-        fetch(`${DATA_SERVER_URL}/data/buy-flow-history.json`)
-        .then(response => response.json())
-        .catch(() => this.state.buyFlowHistory),
-        fetch(`${DATA_SERVER_URL}/data/sell-flow-history.json`)
-        .then(response => response.json())
-        .catch(() => this.state.sellFlowHistory),
-        fetch(`${DATA_SERVER_URL}/data/recent-trades.json`)
-        .then(response => response.json())
-        .catch(() => this.state.recentTrades),
-        fetch(`${DATA_SERVER_URL}/data/open-interest.json`)
-        .then(response => response.json())
-        .catch(() => this.state.openInterest),
-        fetch(`${DATA_SERVER_URL}/data/fear-and-greed.json`)
-        .then(response => response.json())
-        .catch(() => this.state.fearAndGreed),
-        fetch(`${DATA_SERVER_URL}/data/bitcoin-dominance.txt`)
-        .then(response => response.text()),
-      ])
-      .then(responses => {
-
-        // Transform data
-        let [
-          price, buyFlow, sellFlow, priceHistory, buyFlowHistory,
-          sellFlowHistory, recentTrades, openInterest, fearAndGreed,
-          bitcoinDominance
-        ] = responses;
-        price = Math.trunc(parseFloat(price));
-        buyFlow = Math.trunc(parseFloat(buyFlow));
-        sellFlow = Math.trunc(parseFloat(sellFlow));
-        priceHistory = priceHistory.map(entry => {
-          return { x: entry.time, y: entry.price }
-        });
-        buyFlowHistory = buyFlowHistory.map(entry => {
-          return { x: entry.time, y: 1 + entry.buyFlow }
-        });
-        sellFlowHistory = sellFlowHistory.map(entry => {
-          return { x: entry.time, y: 1 + entry.sellFlow }
-        });
-        recentTrades = recentTrades.slice(0, this.props.recentTradesCount);
-        recentTrades.forEach(trade => trade.size = parseInt(trade.size));
-        fearAndGreed = fearAndGreed.data[0];
-        bitcoinDominance = Math.round(parseFloat(bitcoinDominance) * 100) / 100;
-
-        // Play or pause alarms
-        this._alarm('beep-up', buyFlow);
-        this._alarm('beep-down', sellFlow);
-
-        // Set page title
-        window.document.title = price;
-
-        // Update state
-        this.setState({
-          price, buyFlow, sellFlow, priceHistory, buyFlowHistory,
-          sellFlowHistory, recentTrades, openInterest, fearAndGreed,
-          bitcoinDominance,
-        });
-      });
-
-    }, this.props.refreshRate);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.priceInterval);
-  }
-
-  render() {
-    return (
-      <span id="bitmex-data">
-        <BitcoinDominance bitcoinDominance={this.state.bitcoinDominance}/>
-        <CryptoFearAndGreed data={this.state.fearAndGreed}/>
-        <BitmexOpenInterest data={this.state.openInterest}/>
-        <BitmexVolumeFlow
-          price={this.state.price}
-          buyFlow={this.state.buyFlow}
-          sellFlow={this.state.sellFlow}
-          priceHistory={this.state.priceHistory}
-          buyFlowHistory={this.state.buyFlowHistory}
-          sellFlowHistory={this.state.sellFlowHistory}
-        />
-        <BitmexRecentTrades data={this.state.recentTrades}/>
-      </span>
-    );
-  }
-}
-
-function App() {
-  return (
-    <div id="app">
-      <audio loop id="beep-up">
-        <source src={beepUp} type="audio/mpeg"/>
-      </audio>
-      <audio loop id="beep-down">
-        <source src={beepDown} type="audio/mpeg"/>
-      </audio>
-      <div id="main">
-        <div className="column">
-          <Bitmex
-            openInterestRefreshRate="10000"
-            refreshRate="1000"
-            recentTradesCount="100"
-            historyLength="180"
-            alarmScalar="100"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default App;

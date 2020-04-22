@@ -9,38 +9,48 @@ import CanvasJSReact from '../canvasjs.react';
 const { CanvasJSChart } = CanvasJSReact;
 
 function PnlChart(props) {
-  return (
-    <CanvasJSChart options={{
-      culture:          "be",
-      animationEnabled: true,
-      theme:            "dark2",
-      backgroundColor:  "black",
-      height:           260,
-      axisX:            {
-        // valueFormatString: "HH:mm:ss"
-      },
-      axisY:            [{
-        title:             props.title,
-        logarithmic:       false,
-        includeZero:       false,
-        valueFormatString: "#,###",
-        gridColor:         "#444444",
-      }],
-      data:             [{
-        lineColor:  "cyan",
-        type:       "line",
-        dataPoints: props.expiration,
-      }, {
-        lineColor:  "white",
-        type:       "line",
-        dataPoints: props.entry,
-      }, {
-        lineColor:  "lime",
-        type:       "line",
-        dataPoints: props.arbitrary,
-      }]
-    }}/>
-  );
+  const options = {
+    culture:          "be",
+    animationEnabled: true,
+    theme:            "dark2",
+    backgroundColor:  "black",
+    height:           260,
+    axisX:            {
+      // valueFormatString: "HH:mm:ss"
+    },
+    axisY:            [{
+      title:             props.title,
+      logarithmic:       false,
+      includeZero:       false,
+      valueFormatString: "#,###",
+      gridColor:         "#444444",
+    }],
+    data:             [{
+      lineColor:  "cyan",
+      type:       "line",
+      dataPoints: props.expiration,
+    }, {
+      lineColor:  "white",
+      type:       "line",
+      dataPoints: props.entry,
+    }, {
+      lineColor:  "lime",
+      type:       "line",
+      dataPoints: props.arbitrary,
+    }]
+  };
+  if (props.zero) {
+    options.data.unshift({
+      lineColor:  "grey",
+      type:       "line",
+      markerType: "none",
+      dataPoints: [
+        { x: props.start, y: 0 },
+        { x: props.end,   y: 0 },
+      ]
+    });
+  }
+  return <CanvasJSChart options={options}/>;
 }
 
 function compute_total_pnl(positions, start, end, pnl_func, interval = 1) {
@@ -131,11 +141,11 @@ class Analyzer extends Component {
       spot:             cookies.get('spot')             || [],
       
       quantity:         cookies.get('quantity')         || 0.1,
-      price:            cookies.get('price')            || 6350,
+      price:            cookies.get('price')            || 6500,
       strike:           cookies.get('strike')           || 6500,
       volatility:       cookies.get('volatility')       || 1.2,
       days:             cookies.get('days')             || 0,
-      hours:            cookies.get('hours')            || 11,
+      hours:            cookies.get('hours')            || 24,
       type:             cookies.get('type')             || 'call',
       options:          cookies.get('options')          || [],
 
@@ -321,7 +331,9 @@ class Analyzer extends Component {
     });
     options.push(option);
     this.saveOptions(options);
-    this.setState({ options });
+    let { customVolatility } = this.state;
+    customVolatility = options.length === 0 ? volatility : customVolatility;
+    this.setState({ options, customVolatility });
   }
 
   buyOption() { this.addOption(1); }
@@ -507,7 +519,7 @@ class Analyzer extends Component {
         </div> */}
         <div className="row">
           <PnlChart expiration={expiration} entry={entry}
-                    arbitrary={arbitrary}/>
+                    arbitrary={arbitrary} zero={true} start={start} end={end}/>
         </div>
         <div className="row">
           <div className="left-column">Volatility</div>
@@ -525,8 +537,9 @@ class Analyzer extends Component {
         <div className="row">
           <div className="left-column">Hours passed</div>
           <div className="right-column">
-            <input type="range" min="0" max={this.hoursUntilExpiration()}
-                   step="1" id="hours-passed" onChange={this.hoursPassedChanged}
+            <input type="range" min="0" step="1" id="hours-passed"
+                   max={Math.ceil(this.hoursUntilExpiration())}
+                   onChange={this.hoursPassedChanged}
                    value={hoursPassed ? hoursPassed : 0}/>{' '}
             <input cid="hours-passed-text" size={1}
                    onChange={this.hoursPassedChanged}

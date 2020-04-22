@@ -1,3 +1,7 @@
+html, body, div#root {
+  min-height: 100vh;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -10,4 +14,67 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.monospace {
+  font-size: 16px;
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+
+.my-column {
+  width: 180px;
+}
+
+.my-small-input {
+  display: inline-block;
+  width: 70px;
+}
+
+.my-borderless {
+  border-width: 0px;
+}
+
+.my-pointer:hover {
+  cursor: pointer;
+}
+
+.my-italic {
+  font-style: italic;
+}
+
+.my-cell {
+  height: 39px;
+  display: table-cell;
+}
+
+.my-third {
+  width: 33.33%;
+}
+
+.my-fourth {
+  width: 25%;
+}
+
+/* Adapted from https://www.w3schools.com/howto/howto_js_rangeslider.asp */
+/* May need -moz- properties to work in Firefox */
+
+.my-range {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 100%; /* Full-width */
+  height: 30px; /* Specified height */
+  background: white;
+  outline: none; /* Remove outline */
+  opacity: 1; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+}
+
+.my-range::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 30px; /* Set a specific slider handle width */
+  height: 30px; /* Slider handle height */
+  background: black;
+  cursor: pointer; /* Cursor on hover */
 }

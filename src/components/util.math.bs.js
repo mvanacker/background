@@ -1,4 +1,4 @@
-import { stdNormalCDF, stdNormalInverseCDF } from "./util.math";
+import { stdNormalCDF, stdNormalInverseCDF, stdNormalPDF } from "./util.math";
 
 export function compute_d1(price, strike, volatility, time) {
   return (Math.log(price / strike) + volatility ** 2 / 2 * time)
@@ -43,4 +43,33 @@ export function compute_put(price, strike, volatility, time) {
   const d1 = compute_d1(price, strike, volatility, time);
   const d2 = compute_d2(d1, volatility, time);
   return strike * stdNormalCDF(-d2) - price * stdNormalCDF(-d1);
+}
+
+export function compute_vega(price, strike, volatility, time) {
+  const d1 = compute_d1(price, strike, volatility, time);
+  return price * Math.sqrt(time) * stdNormalPDF(d1);
+}
+
+export function compute_iv_call(price, strike, time, premium) {
+  return compute_iv(price, strike, time, premium, compute_call)
+}
+
+export function compute_iv_put(price, strike, time, premium) {
+  return compute_iv(price, strike, time, premium, compute_put)
+}
+
+export function compute_iv(price, strike, time, premium, compute_premium) {
+  let iv = 1;
+  while (true) {
+    const premium_i = compute_premium(price, strike, iv, time);
+    const vega_i = compute_vega(price, strike, iv, time);
+    const iv_i = iv - (premium_i - premium) / vega_i;
+    console.log(iv_i);
+    if (Math.abs(iv_i - iv) < 0.00001 || isNaN(iv_i)) { 
+      iv = iv_i;
+      break;
+    }
+    iv = iv_i;
+  }
+  return iv;
 }

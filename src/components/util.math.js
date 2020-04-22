@@ -69,7 +69,6 @@ export function stdNormalInverseCDF(p) {
   let retVal;
 
   if ((p < 0) || (p > 1)) {
-    alert("NormSInv: Argument out of range.");
     retVal = 0;
   } else if (p < p_low) {
     q = Math.sqrt(-2 * Math.log(p));
@@ -84,6 +83,10 @@ export function stdNormalInverseCDF(p) {
   }
 
   return retVal;
+}
+
+export function stdNormalPDF(x) {
+  return Math.exp(-.5 * x ** 2) / Math.sqrt(2 * Math.PI);
 }
 
 export function round_to(n, to = 1, base = 10) {

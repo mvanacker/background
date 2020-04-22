@@ -1,9 +1,18 @@
 import React, { Component } from 'react';
-import { lcm, mean as mean_, round_to } from './util.math';
+
 import { element, func, instanceOf, object } from "prop-types";
 import { Cookies, withCookies } from "react-cookie";
+
+import { lcm, mean as mean_, round_to } from './util.math';
 import { DATA_SERVER_URL, REFRESH_RATE } from "./config";
 import { dump_params } from "./util.web";
+
+import Panel from './common/Panel';
+import LabeledRow from './common/LabeledRow';
+import Button from './common/Button';
+import Row from './common/Row';
+import Bar from './common/Bar';
+import BarButtonRight from './common/BarButtonRight';
 
 class Deribit extends Component {
   static propTypes = {
@@ -48,6 +57,10 @@ class Deribit extends Component {
     if (key && secret) {
       this.authenticate();
     }
+  }
+
+  componentWillUnmount() {
+    this.logout();
   }
 
   apiCall(method, params, auth = false) {
@@ -149,45 +162,58 @@ class Deribit extends Component {
   }
 
   render() {
+    // if (true) {
     if (!this.state.response) {
       const { key, secret } = this.state;
-      return <form onSubmit={this.authenticate}>
-        <p>
-          <label htmlFor="deribit-key">Key</label>{' '}
-          <input id="deribit-key" value={key ? key : ''}
-                 onChange={this.keyChanged}  autoComplete="username"/>
-        </p>
-        <p>
-          <label htmlFor="deribit-secret">Secret</label>{' '}
-          <input id="deribit-secret" type="password"
-                 value={secret ? secret : ''}
-                 onChange={this.secretChanged} autoComplete="current-password"/>
-        </p>
-        <input type="submit" value="Authenticate"/>
-      </form>;
+      return <Panel>
+        <form onSubmit={this.authenticate}>
+          <ul className="w3-ul w3-block w3-padding-16">
+            <li>
+              <LabeledRow label="Key">
+                <input
+                  id="deribit-key" className="w3-input" value={key ? key : ''}
+                  onChange={this.keyChanged}  autoComplete="username"
+                />
+              </LabeledRow>
+            </li>
+            <li>
+              <LabeledRow label="Secret">
+                <input
+                  id="deribit-secret" type="password" className="w3-input"
+                   value={secret ? secret : ''} onChange={this.secretChanged}
+                   autoComplete="current-password"
+                />
+              </LabeledRow>
+            </li>
+            <Row>
+              <div className="w3-center">
+                <Button type="submit">Authenticate</Button>
+              </div>
+            </Row>
+          </ul>
+        </form>
+      </Panel>;
     } else {
       const { account_summary } = this.state;
       if (!account_summary) {
-        return <span>Loading...</span>;
+        return <Panel title="Loading..."/>;
       } else {
         return <div>
-          <div id="quick-access">
-            <button id="cancel-all" type="button" onClick={this.cancelAll}>
-              Cancel all
-            </button>
-            <button id="logout" type="button" onClick={this.logout}>
+          <Bar>
+            <BarButtonRight type="button" onClick={this.logout}>
               Log out
-            </button>
-          </div>
+            </BarButtonRight>
+            <BarButtonRight type="button" onClick={this.cancelAll}>
+              Cancel all
+            </BarButtonRight>
+          </Bar>
           {
             React.cloneElement(
               React.Children.toArray(this.props.children)[0], {
                 account_summary,
                 apiCall:    this.apiCall,
                 exchange:   'Deribit',
-                instruments: [
-                  'BTC-PERPETUAL', 'BTC-27MAR20', 'BTC-26JUN20', 'BTC-25SEP20'
-                ],
+                instruments: ['BTC-PERPETUAL', 'BTC-26JUN20', 'BTC-25SEP20'],
                 instrument: 'BTC-PERPETUAL',
                 contract:   'inverse',
               }
@@ -309,13 +335,13 @@ class Prices extends Component {
     switch (placement) {
       case Placement.MANUAL:
         input = <div>
-          <button onClick={this.addPrice}>+</button>
+          <button className="w3-button w3-theme-d3 w3-hover-theme" onClick={this.addPrice}>+</button>
           {' '}
-          <button onClick={this.removePrice}>-</button>
+          <button className="w3-button w3-theme-d3 w3-hover-theme" onClick={this.removePrice}>-</button>
           {' '}
           {
             prices.map((price, i) =>
-              <input size="4" value={price} key={i}
+              <input size="4" value={price} key={i} className="w3-input"
                      onChange={e => this.priceChange(e, i)}/>)
           }
         </div>;
@@ -323,24 +349,24 @@ class Prices extends Component {
       case Placement.DISTANCE:
         const { center, spacing, amount } = this.props.state;
         input = <div>
-          <div className="row">
-            <div className="left-column">Center</div>
-            <div className="right-column">
-              <input size="4" value={center} onChange={this.centerChange}/>
-            </div>
-          </div>
-          <div className="row">
-            <div className="left-column">Spacing</div>
-            <div className="right-column">
-              <input size="4" value={spacing} onChange={this.spacingChange}/>
-            </div>
-          </div>
-          <div className="row">
-            <div className="left-column">Amount</div>
-            <div className="right-column">
-              <input size="4" value={amount} onChange={this.amountChange}/>
-            </div>
-          </div>
+          <LabeledRow label="Center">
+            <input
+              className="w3-input" size="4" value={center}
+              onChange={this.centerChange}
+            />
+          </LabeledRow>
+          <LabeledRow label="Spacing">
+            <input
+              className="w3-input" size="4" value={spacing}
+              onChange={this.spacingChange}
+            />
+          </LabeledRow>
+          <LabeledRow label="Amount">
+            <input
+              className="w3-input" size="4" value={amount}
+              onChange={this.amountChange}
+            />
+          </LabeledRow>
         </div>;
         break;
       default:
@@ -349,7 +375,10 @@ class Prices extends Component {
     }
 
     return <div>
-      <select onChange={this.placementChange} value={placement}>
+      <select
+        className="w3-select" onChange={this.placementChange}
+        value={placement}
+      >
         {
           Object.entries(Placement).map(([key, val]) =>
             <option key={key} value={val}>{key}</option>)
@@ -376,8 +405,8 @@ class Trade extends Component {
         placement: parseInt(cookies.get('stop-placement')) || Placement.MANUAL,
         prices:    cookies.get('stop-prices') || [0],
         center:    parseFloat(cookies.get('stop-center')) || 0,
-        spacing:   parseFloat(cookies.get('stop-spacing')) || 10,
-        amount:    parseFloat(cookies.get('stop-amount')) || 11,
+        spacing:   parseFloat(cookies.get('stop-spacing')) || 5,
+        amount:    parseFloat(cookies.get('stop-amount')) || 5,
         mean:      parseFloat(cookies.get('stop-mean')) || 0,
         min:       parseFloat(cookies.get('stop-min')) || 0,
         max:       parseFloat(cookies.get('stop-max')) || 0,
@@ -387,8 +416,8 @@ class Trade extends Component {
         placement: parseInt(cookies.get('entry-placement')) || Placement.DISTANCE,
         prices:    cookies.get('entry-prices') || [0],
         center:    parseFloat(cookies.get('entry-center')) || 0,
-        spacing:   parseFloat(cookies.get('entry-spacing')) || 10,
-        amount:    parseFloat(cookies.get('entry-amount')) || 11,
+        spacing:   parseFloat(cookies.get('entry-spacing')) || 5,
+        amount:    parseFloat(cookies.get('entry-amount')) || 5,
         mean:      parseFloat(cookies.get('entry-mean')) || 0,
         min:       parseFloat(cookies.get('entry-min')) || 0,
         max:       parseFloat(cookies.get('entry-max')) || 0,
@@ -398,15 +427,15 @@ class Trade extends Component {
         placement: parseInt(cookies.get('profit-placement')) || Placement.DISTANCE,
         prices:    cookies.get('profit-prices') || [0],
         center:    parseFloat(cookies.get('profit-center')) || 0,
-        spacing:   parseFloat(cookies.get('profit-spacing')) || 10,
-        amount:    parseFloat(cookies.get('profit-amount')) || 11,
+        spacing:   parseFloat(cookies.get('profit-spacing')) || 5,
+        amount:    parseFloat(cookies.get('profit-amount')) || 5,
         mean:      parseFloat(cookies.get('profit-mean')) || 0,
         min:       parseFloat(cookies.get('profit-min')) || 0,
         max:       parseFloat(cookies.get('profit-max')) || 0,
         enabled:   (cookies.get('profit-enabled') === 'true') !== false,
       },
       risk:       parseFloat(cookies.get('risk')) || 0.02,
-      instrument: cookies.get('instrument') || 'BTC-PERPETUAL',
+      instrument: cookies.get('instrument') || instrument,
     };
 
     const { stop, entry, profit } = this.state;
@@ -458,11 +487,8 @@ class Trade extends Component {
 
     // todo assuming Deribit's rules for rounding quantity
     // todo assuming no TP - if I do place a TP I better have a bit of time
-    return round_to(
-      equity * risk / ds,
-      -1,
-      10 * lcm(entry.prices.length, stop.prices.length)
-    );
+    return round_to(equity * risk / ds, -1,
+                    10 * lcm(entry.prices.length, stop.prices.length));
   }
 
   log() {
@@ -548,61 +574,58 @@ class Trade extends Component {
   render() {
     const { entry, stop, profit, risk, instrument } = this.state;
     const { cookies, account_summary, instruments } = this.props;
-    return (
-      <div>
-        <div className="row">
-          <div className="left-column">Equity</div>
-          <div className="right-column">
-            {account_summary ? account_summary['equity']
-               : 'Warning: account summary undefined.'}
+    return <div>
+      <form className="w3-content w3-theme-dark">
+        <LabeledRow label="Equity">
+          <div className="my-cell w3-cell-middle">
+            {
+              account_summary ? account_summary['equity']
+                : 'Warning: account summary undefined.'
+            }
           </div>
-        </div>
-        <div className="row">
-          <div className="left-column">Instrument</div>
-          <div className="right-column">
-            <select onChange={this.instrumentChanged} value={instrument}>
-              {
-                instruments.map((instrument, i) => 
-                  <option value={instrument} key={i}>{instrument}</option>)
-              }
-            </select>
-          </div>
-        </div>
-        <div className="row">
-          <div className="left-column">Stop</div>
-          <div className="right-column">
-            <Prices state={stop} cookies={cookies} prefix="stop"
-                    callback={stop => this.setState({ stop })}/>
-          </div>
-        </div>
-        <div className="row">
-          <div className="left-column">Entry</div>
-          <div className="right-column">
-            <Prices state={entry} cookies={cookies} prefix="entry"
-                    callback={entry => this.setState({ entry })}/>
-          </div>
-        </div>
-        <div className="row">
-          <div className="left-column">
+        </LabeledRow>
+        <LabeledRow label="Instrument">
+          <select
+            className="w3-select" onChange={this.instrumentChanged}
+            value={instrument}
+          >
+            {
+              instruments.map((instrument, i) => 
+                <option value={instrument} key={i}>{instrument}</option>
+              )
+            }
+          </select>
+        </LabeledRow>
+        <LabeledRow label="Stop" verticalAlign="w3-cell-top">
+          <Prices state={stop} cookies={cookies} prefix="stop"
+                  callback={stop => this.setState({ stop })}/>
+        </LabeledRow>
+        <LabeledRow label="Entry" verticalAlign="w3-cell-top">
+          <Prices state={entry} cookies={cookies} prefix="entry"
+                  callback={entry => this.setState({ entry })}/>
+        </LabeledRow>
+        <LabeledRow label="Profit" verticalAlign="w3-cell-top">
+          <div className="my-cell w3-cell-middle">
             <input type="checkbox" checked={profit.enabled}
-                   onChange={this.toggleProfit} id="enable-profit"/>
-            <label htmlFor="enable-profit">Profit</label>
+                    onChange={this.toggleProfit} id="enable-profit"/> Enabled
           </div>
-          <div className="right-column">
-            <Prices state={profit} cookies={cookies} prefix="profit"
-                    callback={profit => this.setState({ profit })}/>
-          </div>
-        </div>
-        <div className="row">
-          <div className="left-column">Risk</div>
-          <div className="right-column">
-            <input type="number" step="0.001" id="risk"
-                   value={risk} onChange={this.riskChanged}/>
-          </div>
-        </div>
-        <div className="row">
-          <h2>Overview</h2>
-        </div>
+          <Prices state={profit} cookies={cookies} prefix="profit"
+                  callback={profit => this.setState({ profit })}/>
+        </LabeledRow>
+        <LabeledRow label="Risk">
+          <input type="number" step="0.001" id="risk" className="w3-input"
+                  value={risk} onChange={this.riskChanged}/>
+        </LabeledRow>
+        <Row>
+          <OrderButton isLong={this.isLong()} onClick={this.order}/>
+        </Row>
+      </form>
+      <Panel padding={true}>
+        <LabeledRow label="Quantity">
+          {this.computeQuantity().toString()}
+        </LabeledRow>
+      </Panel>
+      <Panel title="Overview" padding={true}>
         <div className="row">
           <div className="left-column"></div>
           <div className="left-column">Stop</div>
@@ -627,31 +650,23 @@ class Trade extends Component {
           <div className="left-column">{entry.max}</div>
           <div className="left-column">{profit.max}</div>
         </div>
-        <div className="row">
-          <h2>Result</h2>
-        </div>
-        <div className="row">
-          <div className="left-column">Quantity</div>
-          <div className="right-column">
-            {this.computeQuantity().toString()}
-          </div>
-        </div>
-        <div className="row">
-          <p>
-            <button id="order" onClick={this.order}>
-              {this.isLong() ? 'LONG' : 'SHORT'}
-            </button>
-          </p>
-        </div>
-      </div>
-    );
+      </Panel>
+    </div>;
   }
 }
 
-function DeribitTrade(props) {
+function OrderButton(props) {
+  const { isLong, onClick } = props;
+  const color = isLong ? 'w3-green' : 'w3-red';
+  const text = isLong ? 'Long' : 'Short';
+  const _class = `w3-button w3-block w3-xlarge w3-section ${color}`;
+  return <button className={_class} onClick={onClick}>
+    {text}
+  </button>;
+}
+
+export default withCookies(function DeribitTrade(props) {
   return <Deribit cookies={props.cookies}>
     <Trade cookies={props.cookies}/>
   </Deribit>;
-}
-
-export default withCookies(DeribitTrade);
+});

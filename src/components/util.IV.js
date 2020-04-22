@@ -1,4 +1,4 @@
-import { parseISOString } from './util.date';
+import { isoStringToDate } from './util.date';
 
 const monthMap = {
   'JAN': 0, 'FEB': 1, 'MAR': 2, 'APR': 3, 'MAY': 4, 'JUN': 5, 'JUL': 6,
@@ -31,7 +31,7 @@ function isNotEmpty(s) {
 
 function parsePoint(line, parse = parseInt) {
   const [timestamp, value] = line.split(',').map(s => s.trim());
-  return { x: parseISOString(timestamp), y: parse(value) };
+  return { x: isoStringToDate(timestamp), y: parse(value) };
 }
 
 export function parsePoints(content, parse = parseInt) {

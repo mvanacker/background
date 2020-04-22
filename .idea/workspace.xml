@@ -621,7 +621,7 @@
         <state relative-caret-position="17">
           <caret line="1" column="7" selection-start-line="1" selection-start-column="7" selection-end-line="1" selection-end-column="7" />
           <folding>
-            <element signature="n#!!block;n#parseISOString#0" />
+            <element signature="n#!!block;n#isoStringToDate#0" />
           </folding>
         </state>
       </provider>

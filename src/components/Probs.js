@@ -128,7 +128,7 @@ class Probs extends Component {
 
       // rendering
       return (
-        <div>
+        <div className="w3-container">
           <h1>Settings</h1>
           <p>
             <input id="auto-price" type="checkbox"

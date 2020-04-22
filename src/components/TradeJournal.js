@@ -95,67 +95,66 @@ class TradeJournal extends Component {
 
   render() {
     const { trades, comments } = this.state;
-    return !trades ? <span>Loading...</span> : (
-      <div>
-        <div id="quick-access">
-          <button id="delete-empty" type="button" onClick={this.deleteEmpty}>
-            Delete empty
-          </button>
-        </div>
-        <h1>Trade Journal</h1>
-        <table id="trade-history">
-          <tbody>
-          {
-            trades.map(trade =>
-              <Fragment key={trade['_id']}>
-                <tr key={`${trade['_id']}-header`} className="trade-history-header">
-                  <td>Position</td>
-                  <td>Entry</td>
-                  <td>Stop</td>
-                  <td>Profit</td>
-                  <td>Risk</td>
-                  <td>Quantity</td>
-                </tr>
-                <tr key={trade['_id']} className="trade-history-header-entry">
-                  <td>{trade.position}</td>
-                  <td>{mean(trade.entry)}</td>
-                  <td>{trade.stop}</td>
-                  <td>{mean(trade.profit)}</td>
-                  <td>{trade.risk}</td>
-                  <td>{trade.quantity}</td>
-                </tr>
-                {
-                  trade.comments.map((comment, i) =>
-                    <tr key={`${trade['_id']}${i}`}>
-                      <td colSpan={6} className="trade-history-comment">
-                        <p className="created-at">
-                          {
-                            moment(new Date(comment.createdAt))
-                            .format('MMMM Do YYYY, h:mm a')
-                          }
-                        </p>
-                        <p className="comment">{comment.comment}</p>
-                      </td>
-                    </tr>
-                  )
-                }
-                <tr key={`${trade['_id']}-add-comment`}>
-                  <td colSpan={6} className="trade-history-add-comment">
-                    <form onSubmit={e => this.postComment(e, trade['_id'])}>
-                        <textarea onChange={e => this.commentChangeHandler(e, trade['_id'])}
-                                  rows={4} value={comments[trade['_id']]}/>
-                      <input type="submit" value="Add comment"/>
-                    </form>
-                  </td>
-                </tr>
-              </Fragment>
-            )
-          }
-          </tbody>
-        </table>
+    return !trades ? <div className="w3-container w3-section">
+        Loading...
+      </div> : <div className="w3-container w3-section">
+      <div id="quick-access">
+        <button id="delete-empty" type="button" onClick={this.deleteEmpty}>
+          Delete empty
+        </button>
       </div>
-    );
-
+      <h1>Trade Journal</h1>
+      <table id="trade-history">
+        <tbody>
+        {
+          trades.map(trade =>
+            <Fragment key={trade['_id']}>
+              <tr key={`${trade['_id']}-header`} className="trade-history-header">
+                <td>Position</td>
+                <td>Entry</td>
+                <td>Stop</td>
+                <td>Profit</td>
+                <td>Risk</td>
+                <td>Quantity</td>
+              </tr>
+              <tr key={trade['_id']} className="trade-history-header-entry">
+                <td>{trade.position}</td>
+                <td>{mean(trade.entry)}</td>
+                <td>{trade.stop}</td>
+                <td>{mean(trade.profit)}</td>
+                <td>{trade.risk}</td>
+                <td>{trade.quantity}</td>
+              </tr>
+              {
+                trade.comments.map((comment, i) =>
+                  <tr key={`${trade['_id']}${i}`}>
+                    <td colSpan={6} className="trade-history-comment">
+                      <p className="created-at">
+                        {
+                          moment(new Date(comment.createdAt))
+                          .format('MMMM Do YYYY, h:mm a')
+                        }
+                      </p>
+                      <p className="comment">{comment.comment}</p>
+                    </td>
+                  </tr>
+                )
+              }
+              <tr key={`${trade['_id']}-add-comment`}>
+                <td colSpan={6} className="trade-history-add-comment">
+                  <form onSubmit={e => this.postComment(e, trade['_id'])}>
+                      <textarea onChange={e => this.commentChangeHandler(e, trade['_id'])}
+                                rows={4} value={comments[trade['_id']]}/>
+                    <input type="submit" value="Add comment"/>
+                  </form>
+                </td>
+              </tr>
+            </Fragment>
+          )
+        }
+        </tbody>
+      </table>
+    </div>;
   }
 }
 
