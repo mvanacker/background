@@ -3,25 +3,22 @@ import React from 'react';
 import CanvasJS from '../../canvasjs.min';
 import CanvasJSReact from '../../canvasjs.react';
 
-import up from '../../assets/up.png';
-import down from '../../assets/down.png'
-
 import Indicator from './Indicator.js';
 
-export default function Stochs(props) {
+export default function Rsi(props) {
   return <Indicator
-    title='Stochs'
-    file='stoch'
-    selectors={{ K: row => row.K, D: row => row.D }}
-    handler={StochChart}
+    title='RSI'
+    file='rsi'
+    selectors={{ rsi: row => row.rsi }}
+    handler={RsiChart}
     relevantSlice={14}
   />;
 }
 
-function StochChart(props) {
-  const { K, D, title, format } = props;
-  if (!(K && D)) { return null; }
-  const crossed_up = K[0].y - D[0].y > 0;
+function RsiChart(props) {
+  const { rsi, title, format } = props;
+  if (!rsi) { return null; }
+  console.log(rsi);
   const options = {
     animationEnabled: true,
     theme:            "dark2",
@@ -42,9 +39,9 @@ function StochChart(props) {
       includeZero:       true,
       valueFormatString: "#.#",
       gridColor:         "transparent",
-      maximum:           1,
+      maximum:           100,
       minimum:           0,
-      interval:          0.2,
+      interval:          20,
       crosshair:         {
         enabled:         true,
         snapToDataPoint: true,
@@ -52,13 +49,13 @@ function StochChart(props) {
         labelFormatter:  e => CanvasJS.formatNumber(e.value, ".##"),
       },
       stripLines:        [{
-        startValue: .3,
-        endValue:   .45,
+        startValue: 30,
+        endValue:   45,
         color:      'red',
         opacity:    .11,
       }, {
-        startValue: .65,
-        endValue:   .8,
+        startValue: 65,
+        endValue:   80,
         color:      'lime',
         opacity:    .08,
       }],
@@ -67,29 +64,12 @@ function StochChart(props) {
       lineColor:     "white",
       type:          "line",
       xValueType:    "dateTime",
-      dataPoints:    D,
+      dataPoints:    rsi,
       markerType:    "none",
       lineThickness: 1.3,
-    }, {
-      lineColor:     "orange",
-      type:          "line",
-      xValueType:    "dateTime",
-      dataPoints:    K,
-      markerType:    "none",
-      lineThickness: 1.8,
     }]
   };
   return <div className="w3-cell my-fourth" style={{'padding': '0 4px'}}>
-    {title} {D[0].y === null ? '' : crossed_up ? <Up/> : <Down/> }
-    <CanvasJSReact.CanvasJSChart options={options}/>
+    {title} <CanvasJSReact.CanvasJSChart options={options}/>
   </div>;
-}
-
-// filters computation app: https://codepen.io/sosuke/pen/Pjoqqp
-
-function Up() {
-  return <img src={up} alt='UP' width='16px' style={{'filter': 'invert(89%) sepia(55%) saturate(1962%) hue-rotate(15deg) brightness(105%) contrast(104%)'}}/>;
-}
-function Down() {
-  return <img src={down} alt='DOWN' width='16px' style={{'filter': 'invert(11%) sepia(81%) saturate(6805%) hue-rotate(2deg) brightness(117%) contrast(116%)'}}/>;
 }

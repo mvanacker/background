@@ -6,8 +6,6 @@ import beepDown from '../assets/beep_down.mp3';
 import beepUp from '../assets/beep_up.mp3';
 import { DATA_SERVER_URL } from "./config";
 
-import { tail } from './util.general';
-
 import Panel from './common/Panel';
 import LabeledRow from './common/LabeledRow';
 import ListBlock from './common/ListBlock';
@@ -24,7 +22,7 @@ export default class App extends Component {
       historyLength:           180,
       openInterestFraction:    1000000,
       alarmScalar:             100,
-      minimumYScalar:          10,
+      // minimumYScalar:          10,
 
       // dynamic
       price:               -1,
@@ -243,7 +241,7 @@ function VolumeFlowChart(props) {
   const { 
     price, buyFlow, sellFlow, openInterest,
     priceHistory, buyFlowHistory, sellFlowHistory, openInterestHistory,
-    minimumYScalar,
+    // minimumYScalar,
   } = props.state;
   const options = {
     culture:          "be",

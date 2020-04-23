@@ -14,8 +14,8 @@ import App from './components/App';
 import Trade from './components/Trade';
 import Options from './components/Options';
 import Puzzle from './components/Puzzle';
-
 import Stochs from './components/puzzle/Stochs';
+import Rsi from './components/puzzle/Rsi';
 
 // Deprecated components
 import IV from './components/IV';
@@ -26,6 +26,9 @@ import Analyzer from './components/Analyzer';
 
 // UI components
 import Navigation from './components/common/Navigation';
+
+// Test component(s)
+import Test from './components/Test.js';
 
 // When a page has a vertical scrollbar, a white band appears at its bottom.
 // To counter this, I place the background color directly on the <html> tag,
@@ -66,6 +69,7 @@ ReactDOM.render(
         <Route path='/options' component={Options}/>
         <Route path='/puzzle' component={Puzzle}/>
         <Route path='/puzzle/stochs' component={Stochs}/>
+        <Route path='/puzzle/rsi' component={Rsi}/>
 
         {/* Deprecated features */}
         <Route path='/iv' component={IV}/>
@@ -73,6 +77,9 @@ ReactDOM.render(
         <Route path='/probs' component={Probs}/>
         <Route path='/trade/journal' component={TradeJournal}/>
         <Route path='/analyzer' component={Analyzer}/>
+
+        {/* Testing */}
+        <Route path='/test' component={Test}/>
       </Router>
     </div>
   </CookiesProvider>,
