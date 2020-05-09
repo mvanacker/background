@@ -1,32 +1,32 @@
 import React from 'react';
 
-import CanvasJS from '../../canvasjs.min';
 import CanvasJSReact from '../../canvasjs.react';
-
-import up from '../../assets/up.png';
-import down from '../../assets/down.png'
+import { Up, Down } from '../common/Icons';
 
 import Indicator from './Indicator.js';
 
 export default function Stochs(props) {
   return <Indicator
     title='Stochs'
-    file='stoch'
-    selectors={{ K: row => row.K, D: row => row.D }}
+    columns={['stoch_K', 'stoch_K_D']}
     handler={StochChart}
-    relevantSlice={14}
+    limit={14}
   />;
 }
 
 function StochChart(props) {
-  const { K, D, title, format } = props;
-  if (!(K && D)) { return null; }
-  const crossed_up = K[0].y - D[0].y > 0;
+  const { stoch_K, stoch_K_D, title, format } = props;
+  if (!stoch_K) { return null; }
+
+  // Crossedness
+  const crossed_up = stoch_K[0].y > stoch_K_D[0].y;
+  const crossed_down = stoch_K[0].y < stoch_K_D[0].y;
+  
   const options = {
     animationEnabled: true,
     theme:            "dark2",
     backgroundColor:  "transparent",
-    height:           115,
+    height:           128,
     toolTip:          {
       enabled: false,
     },
@@ -35,6 +35,7 @@ function StochChart(props) {
       crosshair:         {
         enabled:         true,
         snapToDataPoint: true,
+        color:           "white",
       },
       ...format,
     },
@@ -42,54 +43,51 @@ function StochChart(props) {
       includeZero:       true,
       valueFormatString: "#.#",
       gridColor:         "transparent",
-      maximum:           1,
+      maximum:           100,
       minimum:           0,
-      interval:          0.2,
+      interval:          20,
       crosshair:         {
         enabled:         true,
-        snapToDataPoint: true,
+        // snapToDataPoint: true,
         labelMaxWidth:   40,
-        labelFormatter:  e => CanvasJS.formatNumber(e.value, ".##"),
+        color:           "white",
       },
       stripLines:        [{
-        startValue: .3,
-        endValue:   .45,
+        startValue: 30,
+        endValue:   45,
         color:      'red',
         opacity:    .11,
       }, {
-        startValue: .65,
-        endValue:   .8,
+        startValue: 65,
+        endValue:   80,
         color:      'lime',
         opacity:    .08,
       }],
     }],
     data:             [{
-      lineColor:     "white",
-      type:          "line",
-      xValueType:    "dateTime",
-      dataPoints:    D,
-      markerType:    "none",
-      lineThickness: 1.3,
+      lineColor:         "white",
+      type:              "line",
+      xValueType:        "dateTime",
+      dataPoints:        stoch_K_D,
+      markerType:        "none",
+      lineThickness:     1.3,
     }, {
-      lineColor:     "orange",
-      type:          "line",
-      xValueType:    "dateTime",
-      dataPoints:    K,
-      markerType:    "none",
-      lineThickness: 1.8,
+      lineColor:         "orange",
+      type:              "line",
+      xValueType:        "dateTime",
+      dataPoints:        stoch_K,
+      markerType:        "none",
+      lineThickness:     1.8,
     }]
   };
   return <div className="w3-cell my-fourth" style={{'padding': '0 4px'}}>
-    {title} {D[0].y === null ? '' : crossed_up ? <Up/> : <Down/> }
+    {title} {
+      crossed_up
+        ? <Up title="Crossed up"/>
+        : crossed_down
+          ? <Down title="Crossed down"/>
+          : ''
+    }
     <CanvasJSReact.CanvasJSChart options={options}/>
   </div>;
-}
-
-// filters computation app: https://codepen.io/sosuke/pen/Pjoqqp
-
-function Up() {
-  return <img src={up} alt='UP' width='16px' style={{'filter': 'invert(89%) sepia(55%) saturate(1962%) hue-rotate(15deg) brightness(105%) contrast(104%)'}}/>;
-}
-function Down() {
-  return <img src={down} alt='DOWN' width='16px' style={{'filter': 'invert(11%) sepia(81%) saturate(6805%) hue-rotate(2deg) brightness(117%) contrast(116%)'}}/>;
 }

@@ -273,6 +273,14 @@ function VolumeFlowChart(props) {
       gridColor:         "#ffffff",
     }],
     data:             [{
+      lineColor:  "white",
+      type:       "line",
+      xValueType: "dateTime",
+      dataPoints: openInterestHistory,
+      markerType: "none",
+      axisYIndex: 0,
+      axisYType: "secondary",
+    }, {
       lineColor:  "lime",
       type:       "line",
       xValueType: "dateTime",
@@ -284,14 +292,6 @@ function VolumeFlowChart(props) {
       xValueType: "dateTime",
       dataPoints: sellFlowHistory,
       markerType: "none",
-    }, {
-      lineColor:  "white",
-      type:       "line",
-      xValueType: "dateTime",
-      dataPoints: openInterestHistory,
-      markerType: "none",
-      axisYIndex: 0,
-      axisYType: "secondary",
     }, {
       lineColor:  "royalblue",
       type:       "line",

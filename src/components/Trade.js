@@ -4,9 +4,11 @@ import { element, func, instanceOf, object } from "prop-types";
 import { Cookies, withCookies } from "react-cookie";
 
 import { lcm, mean as mean_, round_to } from './util.math';
-import { DATA_SERVER_URL, REFRESH_RATE } from "./config";
-import { dump_params } from "./util.web";
+import { DATA_SERVER_URL, REFRESH_RATE } from './config';
+import { dump_params } from './util.web';
+import setYearlyCookie from './util.cookie';
 
+import Bitcoin from './common/Bitcoin';
 import Panel from './common/Panel';
 import LabeledRow from './common/LabeledRow';
 import Button from './common/Button';
@@ -87,13 +89,17 @@ class Deribit extends Component {
     return fetch_.then(r => r.json()).then(o => o['result']);
   }
 
+  setCookie(key, value) {
+    setYearlyCookie(this.props.cookies, key, value, '/trade');
+  }
+
   keyChanged(e) {
-    this.props.cookies.set('deribit-key', e.target.value, { path: '/' });
+    this.setCookie('deribit-key', e.target.value);
     this.setState({ key: e.target.value });
   }
 
   secretChanged(e) {
-    this.props.cookies.set('deribit-secret', e.target.value, { path: '/' });
+    this.setCookie('deribit-secret', e.target.value);
     this.setState({ secret: e.target.value });
   }
 
@@ -259,7 +265,7 @@ class Prices extends Component {
   doCallback(newState) {
     const { cookies, prefix } = this.props;
     for (const key in newState) {
-      cookies.set(`${prefix}-${key}`, newState[key], { path: '/trade' });
+      setYearlyCookie(cookies, `${prefix}-${key}`, newState[key], '/trade');
     }
     this.props.callback({
       ...this.props.state,
@@ -270,7 +276,7 @@ class Prices extends Component {
   // Placement.MANUAL methods
 
   manualCalc(prices) {
-    const mean = mean_(prices),
+    const mean = mean_(prices.map(parseFloat)),
       min = Math.min(...prices),
       max = Math.max(...prices);
     return { prices, mean, min, max };
@@ -453,21 +459,25 @@ class Trade extends Component {
     this.order = this.order.bind(this);
   }
 
+  setCookie(key, value) {
+    setYearlyCookie(this.props.cookies, key, value, '/trade');
+  }
+
   toggleProfit(e) {
     const enabled = e.target.checked;
-    this.props.cookies.set('profit-enabled', enabled, { path: '/trade' });
+    this.setCookie('profit-enabled', enabled);
     this.setState({ profit: { ...this.state.profit, enabled } });
   }
 
   riskChanged(e) {
     const risk = parseFloat(e.target.value);
-    this.props.cookies.set('risk', risk, { path: '/trade' });
+    this.setCookie('risk', risk);
     this.setState({ risk });
   }
 
   instrumentChanged(e) {
     const instrument = e.target.value;
-    this.props.cookies.set('instrument', instrument, { path: '/trade' });
+    this.setCookie('instrument', instrument);
     this.setState({ instrument });
   }
 
@@ -579,7 +589,8 @@ class Trade extends Component {
         <LabeledRow label="Equity">
           <div className="my-cell w3-cell-middle">
             {
-              account_summary ? account_summary['equity']
+              account_summary
+                ? <span><Bitcoin/> {account_summary['equity']}</span>
                 : 'Warning: account summary undefined.'
             }
           </div>

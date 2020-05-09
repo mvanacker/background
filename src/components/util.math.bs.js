@@ -27,10 +27,12 @@ export function compute_probs(price, strike, volatility, time) {
   return { prob_itm, prob_touch, prob_profit_put, prob_profit_call };
 }
 
-export function compute_reverse(price, strike, volatility, time, prob) {
+export function compute_reverse(prob, strike, volatility, time) {
   const r = volatility * Math.sqrt(time);
-  const d2 = stdNormalInverseCDF(prob) / Math.sign(strike - price);
-  return price * Math.exp(volatility ** 2 / 2 * time - (d2 + r) * r);
+  const d2 = stdNormalInverseCDF(prob);
+  const price = d2 => strike * Math.exp(volatility ** 2 / 2 * time - (d2 + r) * r);
+  const p1 = price(d2), p2 = price(-d2);
+  return p1 < p2 ? [p1, p2] : [p2, p1];
 }
 
 export function compute_call(price, strike, volatility, time) {

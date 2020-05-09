@@ -13,9 +13,12 @@ import { CookiesProvider } from "react-cookie";
 import App from './components/App';
 import Trade from './components/Trade';
 import Options from './components/Options';
+
 import Puzzle from './components/Puzzle';
+import MovingAverages from './components/puzzle/MovingAverages';
 import Stochs from './components/puzzle/Stochs';
 import Rsi from './components/puzzle/Rsi';
+import Hvp from './components/puzzle/Hvp';
 
 // Deprecated components
 import IV from './components/IV';
@@ -38,22 +41,22 @@ document.body.classList.add('w3-theme-dark');
 
 // Affordance
 const Affordance = {
-  HOME:    0,
-  TRADE:   1,
-  OPTIONS: 2,
-  PUZZLE:  3,
+  HOME:     0,
+  TRADE:    1,
+  OPTIONS:  2,
+  PUZZLE:   3,
 }
 const AffordanceTitles = {
-  HOME:    'Home',
-  TRADE:   'Trade',
-  OPTIONS: 'Options',
-  PUZZLE:  'Puzzle',
+  HOME:     'Home',
+  TRADE:    'Trade',
+  OPTIONS:  'Options',
+  PUZZLE:   'Puzzle',
 };
 const AffordancePaths = {
-  HOME:    '/',
-  TRADE:   '/trade',
-  OPTIONS: '/options',
-  PUZZLE:  '/puzzle',
+  HOME:     '/',
+  TRADE:    '/trade',
+  OPTIONS:  '/options',
+  PUZZLE:   '/puzzle',
 };
 
 // Rendering
@@ -68,8 +71,11 @@ ReactDOM.render(
         <Route exact path='/trade' component={Trade}/>
         <Route path='/options' component={Options}/>
         <Route path='/puzzle' component={Puzzle}/>
+        <Route exact path='/puzzle' component={Stochs}/>
+        <Route path='/puzzle/moving-averages' component={MovingAverages}/>
         <Route path='/puzzle/stochs' component={Stochs}/>
         <Route path='/puzzle/rsi' component={Rsi}/>
+        <Route path='/puzzle/volatility' component={Hvp}/>
 
         {/* Deprecated features */}
         <Route path='/iv' component={IV}/>

@@ -118,11 +118,11 @@ class Probs extends Component {
       let time = (days ? days : 0) / 365 + (hours ? hours : 0) / (24 * 365);
 
       // technical computations
-      let probs, reverse_target_itm, reverse_target_touch, direction;
+      let probs, rev_itm, rev_touch, direction;
       if (time > 0 && target && volatility) {
         probs = compute_probs(price, target, volatility, time);
-        reverse_target_itm = compute_reverse(price, target, volatility, time, probs.prob_itm / 2);
-        reverse_target_touch = compute_reverse(price, target, volatility, time, probs.prob_touch);
+        rev_itm = compute_reverse(probs.prob_itm / 2, target, volatility, time);
+        rev_touch = compute_reverse(probs.prob_touch, target, volatility, time);
         direction = target > price ? 'above' : target < price ? 'below' : 'at';
       }
 
@@ -140,7 +140,9 @@ class Probs extends Component {
             <input id="auto-volatility" type="checkbox"
                    onChange={this.autoVolatilityChangeHandler}
                    checked={auto_volatility}/>{' '}
-            <label htmlFor="auto-volatility">automatically fetch volatility</label>
+            <label htmlFor="auto-volatility">
+              automatically fetch volatility
+            </label>
           </p>
           <h1>Inputs</h1>
           {
@@ -183,10 +185,23 @@ class Probs extends Component {
                 <p><b>{round_to(100 * probs.prob_itm)}% chance to
                   close {direction} {target.toLocaleString()}</b></p>
                 <p>{round_to(100 * probs.prob_itm)}% chance to
-                  touch {Math.round(reverse_target_itm).toLocaleString()}</p>
-                <p><b>{round_to(100 * probs.prob_touch)}% chance to touch {target.toLocaleString()}</b></p>
+                  touch ({
+                    rev_itm
+                    .map(price => Math.round(price).toLocaleString())
+                    .join(', ')
+                  })</p>
+                <p>
+                  <b>
+                    {round_to(100 * probs.prob_touch)}
+                    % chance to touch {target.toLocaleString()}
+                  </b>
+                </p>
                 <p>{round_to(100 * probs.prob_touch)}% chance of
-                  closing {direction} {Math.round(reverse_target_touch)}.</p>
+                  closing {direction} ({
+                    rev_touch
+                    .map(price => Math.round(price))
+                    .join(', ')
+                  }).</p>
               </div>
             )
           }

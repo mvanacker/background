@@ -10,9 +10,9 @@ const Piece = {
   VOLATILITY:      3,
   // PATTERN:         4,
   // VOLUME:          5,
-  PROBABILITIES:   6,
+  // PROBABILITIES:   6,
   // OTHER_SYMBOLS:   7,
-}
+};
 const Titles = {
   // OVERVIEW:        'Overview',
   MOVING_AVERAGES: 'MAs',
@@ -21,9 +21,9 @@ const Titles = {
   VOLATILITY:      'Volatility',
   // PATTERN:         'Pattern',
   // VOLUME:          'Volume',
-  PROBABILITIES:   'Probabilities',
+  // PROBABILITIES:   'Probabilities',
   // OTHER_SYMBOLS:   'Other Symbols',
-}
+};
 const Paths = {
   // OVERVIEW:        '/puzzle/overview',
   MOVING_AVERAGES: '/puzzle/moving-averages',
@@ -32,9 +32,9 @@ const Paths = {
   VOLATILITY:      '/puzzle/volatility',
   // PATTERN:         '/puzzle/pattern',
   // VOLUME:          '/puzzle/volume',
-  PROBABILITIES:   '/puzzle/probabilities',
+  // PROBABILITIES:   '/puzzle/probabilities',
   // OTHER_SYMBOLS:   '/puzzle/other-symbols',
-}
+};
 
 export default function Puzzle() {
   return <Navigation level={2} items={Piece} titles={Titles} paths={Paths}/>;

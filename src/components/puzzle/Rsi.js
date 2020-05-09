@@ -1,29 +1,28 @@
 import React from 'react';
 
-import CanvasJS from '../../canvasjs.min';
 import CanvasJSReact from '../../canvasjs.react';
-
+import { Up, Down } from '../common/Icons';
 import Indicator from './Indicator.js';
 
 export default function Rsi(props) {
   return <Indicator
     title='RSI'
-    file='rsi'
-    selectors={{ rsi: row => row.rsi }}
+    columns={['rsi']}
     handler={RsiChart}
-    relevantSlice={14}
+    limit={14}
   />;
 }
 
 function RsiChart(props) {
   const { rsi, title, format } = props;
+  // const rsi_ema = props['rsi-ema'];
   if (!rsi) { return null; }
-  console.log(rsi);
+  // const crossed_up = rsi[0].y > rsi_ema[0].y;
   const options = {
     animationEnabled: true,
     theme:            "dark2",
     backgroundColor:  "transparent",
-    height:           115,
+    height:           128,
     toolTip:          {
       enabled: false,
     },
@@ -32,6 +31,7 @@ function RsiChart(props) {
       crosshair:         {
         enabled:         true,
         snapToDataPoint: true,
+        color:           "white",
       },
       ...format,
     },
@@ -44,9 +44,9 @@ function RsiChart(props) {
       interval:          20,
       crosshair:         {
         enabled:         true,
-        snapToDataPoint: true,
+        // snapToDataPoint: true,
         labelMaxWidth:   40,
-        labelFormatter:  e => CanvasJS.formatNumber(e.value, ".##"),
+        color:           "white",
       },
       stripLines:        [{
         startValue: 30,
@@ -61,15 +61,24 @@ function RsiChart(props) {
       }],
     }],
     data:             [{
-      lineColor:     "white",
-      type:          "line",
-      xValueType:    "dateTime",
-      dataPoints:    rsi,
-      markerType:    "none",
-      lineThickness: 1.3,
+    //   lineColor:     "white",
+    //   type:          "line",
+    //   xValueType:    "dateTime",
+    //   dataPoints:    rsi_ema,
+    //   markerType:    "none",
+    //   lineThickness: 1.3,
+    // }, {
+      lineColor:         "orange",
+      type:              "line",
+      xValueType:        "dateTime",
+      dataPoints:        rsi,
+      markerType:        "none",
+      lineThickness:     1.3,
     }]
   };
   return <div className="w3-cell my-fourth" style={{'padding': '0 4px'}}>
-    {title} <CanvasJSReact.CanvasJSChart options={options}/>
+    {title}
+    {/* {rsi_ema[0].y === null ? '' : crossed_up ? <Up/> : <Down/> } */}
+    <CanvasJSReact.CanvasJSChart options={options}/>
   </div>;
 }

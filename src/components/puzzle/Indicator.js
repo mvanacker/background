@@ -2,10 +2,9 @@ import React, { Component } from 'react';
 
 import { DATA_SERVER_URL } from '../config';
 import { isoStringToUnix } from '../util.date';
-
 import Panel from '../common/Panel';
 
-const REFRESH_RATE = 10000;
+const REFRESH_RATE = 60000;// milliseconds
 
 export default class Indicator extends Component {
   constructor(props) {
@@ -25,22 +24,22 @@ export default class Indicator extends Component {
     ];
     const hourlyFormat = { valueFormatString: 'HH tt', intervalType: 'hour' };
     const dailyFormat = { valueFormatString: 'DD MMM', intervalType: 'day' };
-    const { relevantSlice } = this.props;
+    const { limit } = this.props;
     this.formats = [[
-      { interval: relevantSlice / 2, ...hourlyFormat },
-      { interval: relevantSlice, ...hourlyFormat },
-      { interval: 3 * relevantSlice / 2, ...hourlyFormat },
-      { interval: 2 * relevantSlice, ...hourlyFormat },
+      { interval: limit / 2, ...hourlyFormat },
+      { interval: limit, ...hourlyFormat },
+      { interval: 3 * limit / 2, ...hourlyFormat },
+      { interval: 2 * limit, ...hourlyFormat },
     ], [
-      { interval: relevantSlice / 7, ...dailyFormat },
-      { interval: 2 * relevantSlice / 7, ...dailyFormat },
-      { interval: 4 * relevantSlice / 7, ...dailyFormat },
-      { interval: 8 * relevantSlice / 7, ...dailyFormat },
+      { interval: 3 * limit, ...hourlyFormat },
+      { interval: 6 * limit, ...hourlyFormat },
+      { interval: 4 * limit / 7, ...dailyFormat },
+      { interval: 8 * limit / 7, ...dailyFormat },
     ], [
-      { interval: 12 * relevantSlice / 7, ...dailyFormat },
-      { interval: 24 * relevantSlice / 7, ...dailyFormat },
-      { interval: relevantSlice * 15, ...dailyFormat },
-      { interval: relevantSlice * 45, ...dailyFormat },
+      { interval: 12 * limit / 7, ...dailyFormat },
+      { interval: 24 * limit / 7, ...dailyFormat },
+      { interval: limit * 15, ...dailyFormat },
+      { interval: limit * 45, ...dailyFormat },
     ]];
     this.termsTitles = ["Short Term", "Medium Term", "Long Term"];
     const initState = {};
@@ -49,63 +48,60 @@ export default class Indicator extends Component {
   }
 
   componentDidMount() {
-    const { title, file, selectors, relevantSlice } = this.props;
+    const { title, columns, limit } = this.props;
     document.title = title;
+
+    // Unparse the columns we need to fetch
+    const _columns = ['timestamp', ...columns].join(',');
 
     // To be set on an interval
     const update = () => {
       Promise.all(this.timeframes.map(tf => {
-        return {
-          link: `${DATA_SERVER_URL}/data/ohlc-${tf}-${file}.json`,
-          onsuccess: response => response.json(),
-          onfailure: () => null,
-        };
-      })
-      .concat(this.timeframes.map(tf => {
-        return {
-          link: `${DATA_SERVER_URL}/data/ohlc-${tf}-${file}-partial.json`,
-          onsuccess: response => response.json(),
-          onfailure: () => null,
-        };
-      }))
-      .map(item => fetch(item.link).then(item.onsuccess).catch(item.onfailure)))
+          const query = `timeframe=${tf}&limit=${limit}&columns=${_columns}`;
+          return `${DATA_SERVER_URL}/candles?${query}`;
+        })
+        .concat(this.timeframes.map(tf => {
+          return `${DATA_SERVER_URL}/partials?timeframe=${tf}`;
+        }))
+        .map(uri => fetch(uri).then(r => r.json()).catch(err => {
+          console.error(err);
+          return null;
+        })))
       .then(responses => {
-    
+     
         // Build state
         const newState = {};
         const m = this.timeframes.length;
-        for (let tf = 0; tf < m; tf++) {
+        for (let i = 0; i < m; i++) {
 
           // Cancel if any this timeframes' HTTP requests failed
-          if (responses[tf] !== null || responses[tf + m] !== null) {
+          if (responses[i] !== null && responses[i + m] !== null) {
 
-            // Transform data
-            const dataPoints = {};
-            const processKD = (tf, row) => {
-              const timestamp = isoStringToUnix(responses[tf][row].timestamp);
-              for (const name in selectors) {
-                dataPoints[name].push({
-                  x: timestamp,
-                  y: selectors[name](responses[tf][row]),
-                });
-              }
+            // Transform data, this is tricky because the first half of the
+            // responses are historical data and the latter half are partials
+            const tf = this.timeframes[i];
+            newState[tf] = {};
+            columns.forEach(column => newState[tf][column] = []);
+
+            // Parse response into dataPoints
+            const extractor = row => {
+              const timestamp = isoStringToUnix(row.timestamp);
+              columns.forEach(column => {
+                newState[tf][column].push({ x: timestamp, y: row[column] });
+              });
             };
-            for (const name in selectors) { dataPoints[name] = []; }
-            processKD(tf + m, 0);
-            const n = responses[tf].length;
-            const first_row = Math.max(n - relevantSlice, 0);
-            for (let row = n - 1; row > first_row; row--) {
-              processKD(tf, row);
-            }
-  
-            // Construct state
-            newState[this.timeframes[tf]] = {};
-            for (const name in selectors) {
-              newState[this.timeframes[tf]][name] = dataPoints[name];
+
+            // Extract XY values row by row, starting with the partial
+            extractor(responses[i + m]);
+            const n = responses[i].length;
+            const first_row = Math.max(n - limit, 0);
+            for (let row_i = n - 1; row_i > first_row; row_i--) {
+              extractor(responses[i][row_i]);
             }
           }
         }
         this.setState(newState);
+        // this.setState(newState, () => console.log(this.state)); //TODO debug
       });
     };
     update();

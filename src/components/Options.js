@@ -11,6 +11,7 @@ import { round_to } from './util.math';
 import { reverseEnum } from './util.enum';
 import { toYears, toDaysHours } from './util.date';
 import { zip } from './util.general';
+import setYearlyCookie from './util.cookie';
 
 import Tabs from './common/Tabs';
 import Panel from './common/Panel';
@@ -142,9 +143,7 @@ export default withCookies(class Options extends Component {
   }
 
   setCookie(key, value) {
-    const nextYear = new Date();
-    nextYear.setFullYear(new Date().getFullYear() + 1);
-    this.props.cookies.set(key, value, { path: '/options', expires: nextYear });
+    setYearlyCookie(this.props.cookies, key, value, '/options');
   }
 
   setCookiePositions(type) {
