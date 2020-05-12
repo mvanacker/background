@@ -10,7 +10,7 @@ export default function Hvp(props) {
   return <Indicator
     title='Historical Volatility Percentile'
     columns={['hvp', 'hvp_ma']}
-    handler={HvpChart}
+    chart={HvpChart}
     limit={LIMIT}
   />;
 }
@@ -37,7 +37,7 @@ function HvpChart(props) {
     dataPointWidth:   1,
     theme:            "dark2",
     backgroundColor:  "transparent",
-    height:           128,
+    height:           180,
     toolTip:          {
       enabled: false,
     },
@@ -75,6 +75,7 @@ function HvpChart(props) {
       markerType:    "none",
     }]
   };
+
   return <div className="w3-cell my-fourth" style={{'padding': '0 4px'}}>
     {title} {
       very_low_vol

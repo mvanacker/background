@@ -7,12 +7,12 @@ export default class Test extends Component {
   }
 
   render() {
-    return <GeneralComponent handler={SubComponent}/>;
+    return <GeneralComponent chart={SubComponent}/>;
   }
 }
 
 function GeneralComponent(props) {
-  return <props.handler prop1='hello' prop2='world'/>
+  return <props.chart prop1='hello' prop2='world'/>
 }
 
 function SubComponent(props) {

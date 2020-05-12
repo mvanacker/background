@@ -208,7 +208,7 @@
       <replace>parseFloat(cookies.get($1))</replace>
       <replace>parseFloat(cookies.get('$1'))</replace>
       <replace>parseFloat(e.target.value)</replace>
-      <replace>`\${DATA_SERVER_URL}$1`</replace>
+      <replace>`\${DATA_URI}$1`</replace>
       <replace>const</replace>
       <replace>profit_mean</replace>
       <replace>equity</replace>

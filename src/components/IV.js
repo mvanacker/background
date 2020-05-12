@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { DATA_SERVER_URL } from "./config";
+import { DATA_URI } from "./config";
 import { parseFilename, parsePoints } from './util.IV';
 import SimpleChart from './SimpleChart';
 
@@ -23,7 +23,7 @@ class IV extends Component {
   }
 
   componentDidMount() {
-    const root = `${DATA_SERVER_URL}/data/iv/`;
+    const root = `${DATA_URI}/data/iv/`;
     const priceFile = 'BTC-PERPETUAL.csv';
 
     // fetch prices

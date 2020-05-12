@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { DATA_SERVER_URL, REFRESH_RATE } from "./config";
+import { DATA_URI, REFRESH_RATE } from "./config";
 import { instanceOf } from "prop-types";
 import { Cookies, withCookies } from "react-cookie";
 import { round_to } from './util.math';
@@ -45,9 +45,9 @@ class Probs extends Component {
     // todo not actually fetch if autofetch is turned off
     this.updateInterval = setInterval(() => {
       Promise.all([
-        fetch(`${DATA_SERVER_URL}/data/price.txt`)
+        fetch(`${DATA_URI}/data/price.txt`)
         .then(response => response.text()),
-        fetch(`${DATA_SERVER_URL}/data/historical-volatility.txt`)
+        fetch(`${DATA_URI}/data/historical-volatility.txt`)
         .then(response => response.text()),
       ])
       .then(result => {

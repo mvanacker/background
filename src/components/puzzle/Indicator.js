@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 
-import { DATA_SERVER_URL } from '../config';
+import { DATA_URI } from '../config';
 import { isoStringToUnix } from '../util.date';
+import { zip } from '../util.general';
 import Panel from '../common/Panel';
 
 const REFRESH_RATE = 60000;// milliseconds
@@ -42,70 +43,174 @@ export default class Indicator extends Component {
       { interval: limit * 45, ...dailyFormat },
     ]];
     this.termsTitles = ["Short Term", "Medium Term", "Long Term"];
-    const initState = {};
-    this.timeframes.forEach(tf => initState[tf] = {});
+
+    const initState = {
+      history:  {},
+      forecast: {},
+    };
+    this.timeframes.forEach(tf => initState.history[tf] = {});
     this.state = initState;
   }
 
   componentDidMount() {
-    const { title, columns, limit } = this.props;
+    const { title, columns, limit, forecast } = this.props;
     document.title = title;
 
     // Unparse the columns we need to fetch
     const _columns = ['timestamp', ...columns].join(',');
 
-    // To be set on an interval
-    const update = () => {
-      Promise.all(this.timeframes.map(tf => {
-          const query = `timeframe=${tf}&limit=${limit}&columns=${_columns}`;
-          return `${DATA_SERVER_URL}/candles?${query}`;
-        })
-        .concat(this.timeframes.map(tf => {
-          return `${DATA_SERVER_URL}/partials?timeframe=${tf}`;
-        }))
-        .map(uri => fetch(uri).then(r => r.json()).catch(err => {
-          console.error(err);
-          return null;
-        })))
-      .then(responses => {
-     
-        // Build state
-        const newState = {};
-        const m = this.timeframes.length;
-        for (let i = 0; i < m; i++) {
+    // Generalized conversion of URI to promise
+    const failure = err => { console.error(err); return null; };
+    const uri2fetch = uri => fetch(uri).then(r => r.json()).catch(failure);
 
-          // Cancel if any this timeframes' HTTP requests failed
-          if (responses[i] !== null && responses[i + m] !== null) {
+    // Generally parse (response) row to dataPoints
+    const extract = (receiver, row) => {
+      const timestamp = isoStringToUnix(row.timestamp);
+      columns.forEach(column => {
+        receiver[column].push({ x: timestamp, y: row[column] });
+      });
+    };
 
-            // Transform data, this is tricky because the first half of the
-            // responses are historical data and the latter half are partials
-            const tf = this.timeframes[i];
-            newState[tf] = {};
-            columns.forEach(column => newState[tf][column] = []);
+    // TODO/note: a more fitting way to update history would be to fetch URI by
+    //            (history, partial)-pairs. However, this would require a bit of
+    //            a rewrite and I'm not sure about the resulting convolutedness.
 
-            // Parse response into dataPoints
-            const extractor = row => {
-              const timestamp = isoStringToUnix(row.timestamp);
-              columns.forEach(column => {
-                newState[tf][column].push({ x: timestamp, y: row[column] });
+    // Update history and forecast
+    const loop = () => {
+      Promise.all([
+        
+        // Fetch and parse historical data (as well as partial data)
+        Promise.all(this.timeframes.map(tf => {
+            const query = `timeframe=${tf}&limit=${limit}&columns=${_columns}`;
+            return `${DATA_URI}/candles?${query}`;
+          })
+          .concat(this.timeframes.map(tf => {
+            return `${DATA_URI}/partials?timeframe=${tf}`;
+          }))
+          .map(uri2fetch))
+        .then(responses => {
+      
+          // Build state (historical part)
+          const history = {};
+          const m = this.timeframes.length;
+          for (let i = 0; i < m; i++) {
+
+            // Cancel if any this timeframes' HTTP requests failed
+            if (responses[i] !== null && responses[i + m] !== null) {
+
+              // Setup data structure
+              const tf = this.timeframes[i];
+              history[tf] = {};
+              columns.forEach(column => history[tf][column] = []);
+
+              // Transform data (this is tricky because the first half of the
+              // responses are historical data and the latter half are partials)
+              // Extract XY values row by row, starting with the partial
+              extract(history[tf], responses[i + m]);
+              const n = responses[i].length;
+              const first_row = Math.max(n - limit, 0);
+              for (let r = n - 1; r > first_row; r--) {
+                extract(history[tf], responses[i][r]);
+              }
+            }
+          }
+          return history;
+        }),
+
+        // Fetch and parse forecast data
+        Promise.all(!forecast ? [] : this.timeframes.map(tf => {
+          return `${DATA_URI}/forecast?timeframe=${tf}&columns=${_columns}`;
+        }).map(uri2fetch))
+        .then(responses => {
+          if (responses.every(r => r.length === 0 || r === null)) {
+            return this.state.forecast;
+          }
+
+          // Build state (forecast part)
+          const forecast = {};
+          for (let i = 0; i < this.timeframes.length; i++) {
+            if (responses[i] !== null) {
+
+              // Separate by level
+              const rows = responses[i];
+              const levels = {};
+              rows.forEach(row => {
+                if (!(row.level in levels)) {
+                  levels[row.level] = [];
+                }
+                levels[row.level].push(row);
               });
-            };
 
-            // Extract XY values row by row, starting with the partial
-            extractor(responses[i + m]);
-            const n = responses[i].length;
-            const first_row = Math.max(n - limit, 0);
-            for (let row_i = n - 1; row_i > first_row; row_i--) {
-              extractor(responses[i][row_i]);
+              // Analogous to how we extract historical data above, except there
+              // are multiple levels (and no partials to deal with, also there
+              // are always a constant amount of forecast candles)
+              const tf = this.timeframes[i];
+              forecast[tf] = {};
+              for (const level in levels) {
+                forecast[tf][level] = {};
+                columns.forEach(column => forecast[tf][level][column] = []);
+                levels[level].forEach(row => extract(forecast[tf][level], row));
+              }
+            }
+          }
+
+          // This step makes me cringe a bit because it implies that in the code
+          // above I could've been more efficient by being less general.
+          // Zip the standard deviation levels together (0, n-1), (1, n-2), ...
+          for (const tf in forecast) {
+            const zipt_tf = {};
+            const len = Object.keys(forecast[tf]).length;
+            const half_len = Math.floor(len / 2);
+            for (let level = 0; level < half_len; level++) {
+              const new_level = half_len - level;// lower level <=> lower index
+              zipt_tf[new_level] = {};
+              for (const column in forecast[tf][level]) {
+                const lower = forecast[tf][level][column];
+                const upper = forecast[tf][len - 1 - level][column];
+                zipt_tf[new_level][column] = zip(lower, upper).map(([l, u]) => {
+                  return { x: l.x, y: [l.y, u.y] };
+                });
+              }
+            }
+            zipt_tf[0] = {};
+            for (const column in forecast[tf][half_len]) {
+              zipt_tf[0][column] = forecast[tf][half_len][column].map(d => {
+                return { x: d.x, y: [d.y, d.y] };
+              });
+            }
+            forecast[tf] = zipt_tf;
+          }
+
+          return forecast;
+        })
+      ])
+      
+      // Bring everything together
+      .then(states => {
+        const [history, forecast] = states;
+
+        // TODO reenable
+        // Prepend the partial values to the forecast
+        for (const tf in forecast) {
+          if (tf in history) {
+            for (const level in forecast[tf]) {
+              for (const column in forecast[tf][level]) {
+                const part = history[tf][column][0];
+                const prep = { x: part.x, y: [part.y, part.y] };
+                forecast[tf][level][column].unshift(prep);
+              }
             }
           }
         }
-        this.setState(newState);
-        // this.setState(newState, () => console.log(this.state)); //TODO debug
+
+        // Finally set the state to render the page
+        this.setState({ history, forecast });
       });
     };
-    update();
-    this.priceInterval = setInterval(update, REFRESH_RATE);
+
+    // Start looping
+    loop();
+    this.priceInterval = setInterval(loop, REFRESH_RATE);
   }
 
   componentWillUnmount() {
@@ -119,8 +224,9 @@ export default class Indicator extends Component {
           <div className="w3-cell-row w3-center">
             {
               term.map((tf, j) =>
-                <this.props.handler key={j}
-                  {...this.state[tf]}
+                <this.props.chart key={j}
+                  {...this.state.history[tf]}
+                  forecast={this.state.forecast[tf]}
                   title={this.titles[i][j]}
                   format={this.formats[i][j]}
                 />)

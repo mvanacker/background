@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { DATA_SERVER_URL } from "./config";
+import { DATA_URI } from "./config";
 import { mean } from './util.math';
 import moment from 'moment';
 
@@ -26,7 +26,7 @@ class TradeJournal extends Component {
   }
 
   refresh() {
-    fetch(`${DATA_SERVER_URL}/trades`)
+    fetch(`${DATA_URI}/trades`)
     .then(r => r.json())
     .then(trades => {
 
@@ -59,7 +59,7 @@ class TradeJournal extends Component {
     if (comment !== '') {
 
       // add comment
-      fetch(`${DATA_SERVER_URL}/comments/add`, {
+      fetch(`${DATA_URI}/comments/add`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ comment }),
@@ -69,13 +69,13 @@ class TradeJournal extends Component {
         const comment_id = result['_id'];
 
         // get trade
-        fetch(`${DATA_SERVER_URL}/trades/${trade_id}`)
+        fetch(`${DATA_URI}/trades/${trade_id}`)
         .then(result => result.json())
         .then(trade => {
 
           // update trade
           trade.comments.push(comment_id);
-          fetch(`${DATA_SERVER_URL}/trades/update/${trade_id}`, {
+          fetch(`${DATA_URI}/trades/update/${trade_id}`, {
             method:  'PUT',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify(trade),
@@ -87,7 +87,7 @@ class TradeJournal extends Component {
   }
 
   deleteEmpty() {
-    fetch(`${DATA_SERVER_URL}/trades/delete/empty`, {
+    fetch(`${DATA_URI}/trades/delete/empty`, {
       method: 'DELETE',
     })
     .then(this.refresh);

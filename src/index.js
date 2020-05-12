@@ -71,7 +71,8 @@ ReactDOM.render(
         <Route exact path='/trade' component={Trade}/>
         <Route path='/options' component={Options}/>
         <Route path='/puzzle' component={Puzzle}/>
-        <Route exact path='/puzzle' component={Stochs}/>
+        <Route exact path='/puzzle' component={MovingAverages}/>
+        {/* <Route exact path='/puzzle' component={Stochs}/> */}
         <Route path='/puzzle/moving-averages' component={MovingAverages}/>
         <Route path='/puzzle/stochs' component={Stochs}/>
         <Route path='/puzzle/rsi' component={Rsi}/>

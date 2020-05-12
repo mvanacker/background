@@ -28,11 +28,12 @@ export function compute_probs(price, strike, volatility, time) {
 }
 
 export function compute_reverse(prob, strike, volatility, time) {
-  const r = volatility * Math.sqrt(time);
-  const d2 = stdNormalInverseCDF(prob);
-  const price = d2 => strike * Math.exp(volatility ** 2 / 2 * time - (d2 + r) * r);
-  const p1 = price(d2), p2 = price(-d2);
-  return p1 < p2 ? [p1, p2] : [p2, p1];
+  const vt = volatility ** 2 / 2 * time;
+  const svt = Math.sqrt(2 * vt);
+  const d = stdNormalInverseCDF(prob) + svt;
+  const p1 = strike * Math.exp(d * svt - vt);
+  const p2 = strike * Math.exp(-(d * svt - vt));
+  return [p1, p2];
 }
 
 export function compute_call(price, strike, volatility, time) {

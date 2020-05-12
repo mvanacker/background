@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { DATA_SERVER_URL, REFRESH_RATE } from './config';
+import { DATA_URI, REFRESH_RATE } from './config';
 import { instanceOf } from "prop-types";
 import { Cookies, withCookies } from "react-cookie";
 import { lcm, mean, round_to } from './util.math';
@@ -376,7 +376,7 @@ class TradeDeprecating extends Component {
       }
     }
 
-    fetch(`${DATA_SERVER_URL}/trades/add`, {
+    fetch(`${DATA_URI}/trades/add`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({

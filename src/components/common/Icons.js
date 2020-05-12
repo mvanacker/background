@@ -15,21 +15,21 @@ const gold = {'filter': 'invert(85%) sepia(36%) saturate(526%) hue-rotate(355deg
 const green = {'filter': 'invert(48%) sepia(41%) saturate(3401%) hue-rotate(87deg) brightness(129%) contrast(117%)'};
 
 export const Up = props =>
-  <img src={up} title={props.title} width='16px' style={lime}/>;
+  <img src={up} title={props.title} alt={props.title} width='16px' style={lime}/>;
 export const Down = props =>
-  <img src={down} title={props.title} width='16px' style={red}/>;
+  <img src={down} title={props.title} alt={props.title} width='16px' style={red}/>;
 
 export const Gold = props =>
-  <img src={cross} title={props.title} width='16px' style={gold}/>;
+  <img src={cross} title={props.title} alt={props.title} width='16px' style={gold}/>;
 export const Death = props =>
-  <img src={cross} title={props.title} width='16px'/>;
+  <img src={cross} title={props.title} alt={props.title} width='16px'/>;
 
 export const SplayUp = props =>
-  <img src={lines} title={props.title} width='16px' style={green}/>;
+  <img src={lines} title={props.title} alt={props.title} width='16px' style={green}/>;
 export const SplayDown = props =>
-  <img src={lines} title={props.title} width='16px' style={red}/>;
+  <img src={lines} title={props.title} alt={props.title} width='16px' style={red}/>;
 
 export const Alert = props =>
-  <img src={alert} title={props.title} width='16px'/>;
+  <img src={alert} title={props.title} alt={props.title} width='16px'/>;
 export const Alarm = props =>
-  <img src={alarm} title={props.title} width='16px'/>;
+  <img src={alarm} title={props.title} alt={props.title} width='16px'/>;

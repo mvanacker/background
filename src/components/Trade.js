@@ -4,7 +4,7 @@ import { element, func, instanceOf, object } from "prop-types";
 import { Cookies, withCookies } from "react-cookie";
 
 import { lcm, mean as mean_, round_to } from './util.math';
-import { DATA_SERVER_URL, REFRESH_RATE } from './config';
+import { DATA_URI, REFRESH_RATE } from './config';
 import { dump_params } from './util.web';
 import setYearlyCookie from './util.cookie';
 
@@ -509,7 +509,7 @@ class Trade extends Component {
       quantity = this.computeQuantity(),
       position = this.isLong() ? 'long' : 'short',
       { exchange, contract } = this.props;
-    return fetch(`${DATA_SERVER_URL}/trades/add`, {
+    return fetch(`${DATA_URI}/trades/add`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({

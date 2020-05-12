@@ -4,7 +4,7 @@ import CanvasJSReact from '../canvasjs.react';
 
 import beepDown from '../assets/beep_down.mp3';
 import beepUp from '../assets/beep_up.mp3';
-import { DATA_SERVER_URL } from "./config";
+import { DATA_URI } from "./config";
 
 import Panel from './common/Panel';
 import LabeledRow from './common/LabeledRow';
@@ -57,47 +57,47 @@ export default class App extends Component {
 
       // Fetch data
       Promise.all([{
-        link: `${DATA_SERVER_URL}/data/price.txt`,
+        link: `${DATA_URI}/data/price.txt`,
         onsuccess: response => response.text(),
         onfailure: () => this.state.price,
       }, {
-        link: `${DATA_SERVER_URL}/data/buy-flow.txt`,
+        link: `${DATA_URI}/data/buy-flow.txt`,
         onsuccess: response => response.text(),
         onfailure: () => this.state.buyFlow,
       }, {
-        link: `${DATA_SERVER_URL}/data/sell-flow.txt`,
+        link: `${DATA_URI}/data/sell-flow.txt`,
         onsuccess: response => response.text(),
         onfailure: () => this.state.sellFlow,
       }, {
-        link: `${DATA_SERVER_URL}/data/open-interest.txt`,
+        link: `${DATA_URI}/data/open-interest.txt`,
         onsuccess: response => response.text(),
         onfailure: () => this.state.openInterest,
       }, {
-        link: `${DATA_SERVER_URL}/data/price-history.json`,
+        link: `${DATA_URI}/data/price-history.json`,
         onsuccess: response => response.json(),
         onfailure: () => this.state.priceHistory,
       }, {
-        link: `${DATA_SERVER_URL}/data/buy-flow-history.json`,
+        link: `${DATA_URI}/data/buy-flow-history.json`,
         onsuccess: response => response.json(),
         onfailure: () => this.state.buyFlowHistory,
       }, {
-        link: `${DATA_SERVER_URL}/data/sell-flow-history.json`,
+        link: `${DATA_URI}/data/sell-flow-history.json`,
         onsuccess: response => response.json(),
         onfailure: () => this.state.sellFlowHistory,
       }, {
-        link: `${DATA_SERVER_URL}/data/open-interest-history.json`,
+        link: `${DATA_URI}/data/open-interest-history.json`,
         onsuccess: response => response.json(),
         onfailure: () => this.state.openInterestHistory,
       }, {
-        link: `${DATA_SERVER_URL}/data/recent-trades.json`,
+        link: `${DATA_URI}/data/recent-trades.json`,
         onsuccess: response => response.json(),
         onfailure: () => this.state.recentTrades,
       }, {
-        link: `${DATA_SERVER_URL}/data/fear-and-greed.json`,
+        link: `${DATA_URI}/data/fear-and-greed.json`,
         onsuccess: response => response.json(),
         onfailure: () => this.state.fearAndGreed,
       }, {
-        link: `${DATA_SERVER_URL}/data/bitcoin-dominance.txt`,
+        link: `${DATA_URI}/data/bitcoin-dominance.txt`,
         onsuccess: response => response.text(),
         onfailure: () => this.state.dominance,
       }].map(item =>

@@ -10,7 +10,7 @@ export default function MovingAverages(props) {
     title='MAs'
     columns={['open', 'high', 'low', 'close', 'ema_21', 'ema_55', 'ema_89',
       'ema_200', 'ema_377', 'sma_10', 'sma_200']}
-    handler={OhlcChart}
+    chart={OhlcChart}
     limit={10}
   />;
 }
@@ -52,7 +52,7 @@ function OhlcChart(props) {
     dataPointWidth:   3,
     theme:            "dark2",
     backgroundColor:  "transparent",
-    height:           128,
+    height:           180,
     // toolTip:          { enabled: false },
     axisX:            {
       lineThickness:     0.5,
