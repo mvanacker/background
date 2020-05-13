@@ -6,6 +6,8 @@ import cross from '../../assets/cross.png';
 import lines from '../../assets/lines.png';
 import alert from '../../assets/alert.png';
 import alarm from '../../assets/alarm.png';
+import doubleLeft from '../../assets/double-left.png';
+import doubleRight from '../../assets/double-right.png';
 
 // filters computation app: https://codepen.io/sosuke/pen/Pjoqqp
 
@@ -13,6 +15,7 @@ const lime = {'filter': 'invert(100%) sepia(78%) saturate(4813%) hue-rotate(18de
 const red = {'filter': 'invert(15%) sepia(96%) saturate(6773%) hue-rotate(6deg) brightness(104%) contrast(120%)'};
 const gold = {'filter': 'invert(85%) sepia(36%) saturate(526%) hue-rotate(355deg) brightness(85%) contrast(97%)'};
 const green = {'filter': 'invert(48%) sepia(41%) saturate(3401%) hue-rotate(87deg) brightness(129%) contrast(117%)'};
+const white = {'filter': 'invert(99%) sepia(4%) saturate(2%) hue-rotate(190deg) brightness(118%) contrast(100%)'};
 
 export const Up = props =>
   <img src={up} title={props.title} alt={props.title} width='16px' style={lime}/>;
@@ -33,3 +36,9 @@ export const Alert = props =>
   <img src={alert} title={props.title} alt={props.title} width='16px'/>;
 export const Alarm = props =>
   <img src={alarm} title={props.title} alt={props.title} width='16px'/>;
+
+export const DoubleLeft = props =>
+  <img src={doubleLeft} title={props.title} alt={props.title} width='32px' style={white}/>
+
+export const DoubleRight = props =>
+  <img src={doubleRight} title={props.title} alt={props.title} width='32px' style={white}/>

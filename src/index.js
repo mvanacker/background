@@ -10,6 +10,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { CookiesProvider } from "react-cookie";
 
 // Components
+import Content from './components/Content';
 import App from './components/App';
 import Trade from './components/Trade';
 import Options from './components/Options';
@@ -44,19 +45,16 @@ const Affordance = {
   HOME:     0,
   TRADE:    1,
   OPTIONS:  2,
-  PUZZLE:   3,
 }
 const AffordanceTitles = {
   HOME:     'Home',
   TRADE:    'Trade',
   OPTIONS:  'Options',
-  PUZZLE:   'Puzzle',
 };
 const AffordancePaths = {
   HOME:     '/',
   TRADE:    '/trade',
   OPTIONS:  '/options',
-  PUZZLE:   '/puzzle',
 };
 
 // Rendering
@@ -64,29 +62,34 @@ ReactDOM.render(
   <CookiesProvider>
     <div className="w3-theme-dark w3-text-white">
       <Router>
-        <Navigation
-          items={Affordance} titles={AffordanceTitles} paths={AffordancePaths}
-        />
-        <Route exact path='/' component={App}/>
-        <Route exact path='/trade' component={Trade}/>
-        <Route path='/options' component={Options}/>
-        <Route path='/puzzle' component={Puzzle}/>
-        <Route exact path='/puzzle' component={MovingAverages}/>
-        {/* <Route exact path='/puzzle' component={Stochs}/> */}
-        <Route path='/puzzle/moving-averages' component={MovingAverages}/>
-        <Route path='/puzzle/stochs' component={Stochs}/>
-        <Route path='/puzzle/rsi' component={Rsi}/>
-        <Route path='/puzzle/volatility' component={Hvp}/>
+        <Content left={<App/>} right={
+          <div>
+            <Navigation
+              items={Affordance}
+              titles={AffordanceTitles}
+              paths={AffordancePaths}
+            />
+            <Route path='/' component={Puzzle}/>
+            <Route exact path='/' component={MovingAverages}/>
+            <Route path='/moving-averages' component={MovingAverages}/>
+            <Route path='/stochs' component={Stochs}/>
+            <Route path='/rsi' component={Rsi}/>
+            <Route path='/volatility' component={Hvp}/>
 
-        {/* Deprecated features */}
-        <Route path='/iv' component={IV}/>
-        <Route path='/giv' component={GIV}/>
-        <Route path='/probs' component={Probs}/>
-        <Route path='/trade/journal' component={TradeJournal}/>
-        <Route path='/analyzer' component={Analyzer}/>
+            <Route path='/trade' component={Trade}/>
+            <Route path='/options' component={Options}/>
 
-        {/* Testing */}
-        <Route path='/test' component={Test}/>
+            {/* Deprecated features */}
+            <Route path='/iv' component={IV}/>
+            <Route path='/giv' component={GIV}/>
+            <Route path='/probs' component={Probs}/>
+            <Route path='/journal' component={TradeJournal}/>
+            <Route path='/analyzer' component={Analyzer}/>
+
+            {/* Testing */}
+            <Route path='/test' component={Test}/>
+          </div>
+        }/>
       </Router>
     </div>
   </CookiesProvider>,

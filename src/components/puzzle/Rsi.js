@@ -4,20 +4,19 @@ import CanvasJSReact from '../../canvasjs.react';
 import { Up, Down } from '../common/Icons';
 import Indicator from './Indicator.js';
 
-const FORECAST = true; // transitionary constant
-
 export default function Rsi(props) {
   return <Indicator
     title='RSI'
     columns={['rsi']}
     chart={RsiChart}
-    limit={14}
-    forecast={FORECAST}
+    limit={150}
+    windowLimit={33}
+    forecast={false}
   />;
 }
 
 function RsiChart(props) {
-  const { rsi, title, format, forecast } = props;
+  const { rsi, title, format } = props;
   // const rsi_ema = props['rsi-ema'];
   if (!rsi) { return null; }
   
@@ -38,7 +37,7 @@ function RsiChart(props) {
         snapToDataPoint: true,
         color:           "white",
       },
-      ...format,
+      // ...format,
     },
     axisY:            [{
       includeZero:       true,
@@ -66,44 +65,6 @@ function RsiChart(props) {
       }],
     }],
     data:             [{
-      //   lineColor:     "white",
-      //   type:          "line",
-      //   xValueType:    "dateTime",
-      //   dataPoints:    rsi_ema,
-      //   markerType:    "none",
-      //   lineThickness: 1.3,
-      // }, {
-      lineColor:         "orange",
-      type:              "rangeArea",
-      xValueType:        "dateTime",
-      dataPoints:        forecast[3].rsi,
-      markerType:        "none",
-      lineThickness:     0,
-      fillOpacity:       0.16,
-    }, {
-      lineColor:         "orange",
-      type:              "rangeArea",
-      xValueType:        "dateTime",
-      dataPoints:        forecast[2].rsi,
-      markerType:        "none",
-      lineThickness:     0,
-      fillOpacity:       0.16,
-    }, {
-      lineColor:         "orange",
-      type:              "rangeArea",
-      xValueType:        "dateTime",
-      dataPoints:        forecast[1].rsi,
-      markerType:        "none",
-      lineThickness:     0,
-      fillOpacity:       0.16,
-    }, {
-      lineColor:         "orange",
-      type:              "rangeArea",
-      xValueType:        "dateTime",
-      dataPoints:        forecast[0].rsi,
-      markerType:        "none",
-      lineThickness:     1.8,
-    }, {
       lineColor:         "orange",
       type:              "line",
       xValueType:        "dateTime",

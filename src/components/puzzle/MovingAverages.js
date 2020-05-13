@@ -11,13 +11,15 @@ export default function MovingAverages(props) {
     columns={['open', 'high', 'low', 'close', 'ema_21', 'ema_55', 'ema_89',
       'ema_200', 'ema_377', 'sma_10', 'sma_200']}
     chart={OhlcChart}
-    limit={10}
+    limit={150}
+    windowLimit={60}
+    forecast={true}
   />;
 }
 
 function OhlcChart(props) {
   const { open, high, low, close, ema_21, ema_55, ema_89, ema_200, ema_377,
-    sma_10, sma_200, title, format } = props;
+    sma_10, sma_200, title, format, forecast } = props;
   if (!open) { return null; }
 
   // Resample candles (a bit of overhead, but clean)
@@ -47,6 +49,8 @@ function OhlcChart(props) {
                   && ema_55[0].y < ema_89[0].y
                   && ema_89[0].y < ema_200[0].y;
 
+  console.log(forecast);
+
   const options = {
     animationEnabled: true,
     dataPointWidth:   3,
@@ -60,7 +64,18 @@ function OhlcChart(props) {
         enabled:         true,
         snapToDataPoint: true,
       },
-      ...format,
+      stripLines:        [{
+        value:        forecast[0].close[0].x,
+        color:        "white",
+        opacity:      0.5,
+        lineDashType: "dash",
+      }, {
+        startValue:   forecast[0].close[0].x,
+        endValue:     forecast[0].close[forecast[0].close.length - 1].x,
+        color:        "white",
+        opacity:      0.07,
+      }],
+      // ...format,
     },
     axisY:            [{
       minimum:           lowest,
@@ -74,7 +89,69 @@ function OhlcChart(props) {
         labelMaxWidth:   40,
       },
     }],
-    data:             [ {
+    data:             [
+
+    // Expected data
+    {
+      type:          "rangeArea",
+      xValueType:    "dateTime",
+      dataPoints:    forecast[0].ema_21,
+      markerType:    "none",
+      lineColor:     "yellow",
+      lineThickness: 2,
+    }, {
+      type:          "rangeArea",
+      xValueType:    "dateTime",
+      dataPoints:    forecast[0].ema_377,
+      markerType:    "none",
+      color:         "purple",
+      lineThickness: 1,
+    }, {
+      type:          "rangeArea",
+      xValueType:    "dateTime",
+      dataPoints:    forecast[0].ema_200,
+      markerType:    "none",
+      color:         "navy",
+      lineThickness: 3,
+    }, {
+      type:          "rangeArea",
+      xValueType:    "dateTime",
+      dataPoints:    forecast[0].sma_200,
+      markerType:    "none",
+      color:         "white",
+      lineThickness: 1,
+    }, {
+      type:          "rangeArea",
+      xValueType:    "dateTime",
+      dataPoints:    forecast[0].ema_89,
+      markerType:    "none",
+      color:         "blue",
+      lineThickness: 1,
+    }, {
+      type:          "rangeArea",
+      xValueType:    "dateTime",
+      dataPoints:    forecast[0].ema_55,
+      markerType:    "none",
+      color:         "green",
+      lineThickness: 3,
+    }, {
+      type:          "rangeArea",
+      xValueType:    "dateTime",
+      dataPoints:    forecast[0].ema_21,
+      markerType:    "none",
+      color:         "yellow",
+      lineThickness: 2,
+    }, {
+      type:          "rangeArea",
+      xValueType:    "dateTime",
+      dataPoints:    forecast[0].sma_10,
+      markerType:    "none",
+      color:         "red",
+      lineThickness: 1,
+    }, 
+    
+    // Historical data
+    {
       type:          "line",
       xValueType:    "dateTime",
       dataPoints:    ema_377,
@@ -142,14 +219,14 @@ function OhlcChart(props) {
         : crossed_down
           ? <Down title="Below 21 EMA"/>
           : ''
-    }
+    }{' '}
     {
       golden_cross
         ? <Gold title="Golden cross"/>
         : death_cross
           ? <Death title="Death cross"/>
           : ''
-    }
+    }{' '}
     {/* {splay_bull ? '🐂' : splay_bear ? '🧸' : ''} */}
     {
       splay_bull

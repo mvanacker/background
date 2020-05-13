@@ -23,38 +23,57 @@ export default class Indicator extends Component {
       ['6h', '12h', '1d', '2d'],
       ['3d', '1w', '1M', '3M'],
     ];
-    const hourlyFormat = { valueFormatString: 'HH tt', intervalType: 'hour' };
-    const dailyFormat = { valueFormatString: 'DD MMM', intervalType: 'day' };
-    const { limit } = this.props;
-    this.formats = [[
-      { interval: limit / 2, ...hourlyFormat },
-      { interval: limit, ...hourlyFormat },
-      { interval: 3 * limit / 2, ...hourlyFormat },
-      { interval: 2 * limit, ...hourlyFormat },
-    ], [
-      { interval: 3 * limit, ...hourlyFormat },
-      { interval: 6 * limit, ...hourlyFormat },
-      { interval: 4 * limit / 7, ...dailyFormat },
-      { interval: 8 * limit / 7, ...dailyFormat },
-    ], [
-      { interval: 12 * limit / 7, ...dailyFormat },
-      { interval: 24 * limit / 7, ...dailyFormat },
-      { interval: limit * 15, ...dailyFormat },
-      { interval: limit * 45, ...dailyFormat },
-    ]];
+    // const hourlyFormat = { valueFormatString: 'HH tt', intervalType: 'hour' };
+    // const dailyFormat = { valueFormatString: 'DD MMM', intervalType: 'day' };
+    // const { limit } = this.props;
+    // this.formats = [[
+    //   { interval: limit / 2, ...hourlyFormat },
+    //   { interval: limit, ...hourlyFormat },
+    //   { interval: 3 * limit / 2, ...hourlyFormat },
+    //   { interval: 2 * limit, ...hourlyFormat },
+    // ], [
+    //   { interval: 3 * limit, ...hourlyFormat },
+    //   { interval: 6 * limit, ...hourlyFormat },
+    //   { interval: 4 * limit / 7, ...dailyFormat },
+    //   { interval: 8 * limit / 7, ...dailyFormat },
+    // ], [
+    //   { interval: 12 * limit / 7, ...dailyFormat },
+    //   { interval: 24 * limit / 7, ...dailyFormat },
+    //   { interval: limit * 15, ...dailyFormat },
+    //   { interval: limit * 45, ...dailyFormat },
+    // ]];
     this.termsTitles = ["Short Term", "Medium Term", "Long Term"];
 
     const initState = {
+      // visible: this.props.visible,
       history:  {},
-      forecast: {},
+      forecast: this.initialForecast(),
     };
     this.timeframes.forEach(tf => initState.history[tf] = {});
     this.state = initState;
   }
 
+  // experimental approach to rerendering when parent changes size
+  // componentWillReceiveProps(visible) {
+  //   this.setState({ visible });
+  // }
+
+  initialForecast() {
+    const forecast = {'0': {}};
+    this.timeframes.forEach(tf => {
+      forecast[tf] = {'0': {}};
+      this.props.columns.forEach(col => forecast[tf][0][col] = []);
+    });
+    return forecast;
+  }
+
   componentDidMount() {
-    const { title, columns, limit, forecast } = this.props;
+    const { title, columns, forecast } = this.props;
+    const { limit, windowLimit } = this.props;
     document.title = title;
+
+    // Adjust limit to window width
+    const rel_limit = Math.min(limit, window.innerWidth / windowLimit);
 
     // Unparse the columns we need to fetch
     const _columns = ['timestamp', ...columns].join(',');
@@ -81,7 +100,7 @@ export default class Indicator extends Component {
         
         // Fetch and parse historical data (as well as partial data)
         Promise.all(this.timeframes.map(tf => {
-            const query = `timeframe=${tf}&limit=${limit}&columns=${_columns}`;
+            const query = `timeframe=${tf}&limit=${rel_limit}&columns=${_columns}`;
             return `${DATA_URI}/candles?${query}`;
           })
           .concat(this.timeframes.map(tf => {
@@ -108,7 +127,7 @@ export default class Indicator extends Component {
               // Extract XY values row by row, starting with the partial
               extract(history[tf], responses[i + m]);
               const n = responses[i].length;
-              const first_row = Math.max(n - limit, 0);
+              const first_row = Math.max(n - rel_limit, 0);
               for (let r = n - 1; r > first_row; r--) {
                 extract(history[tf], responses[i][r]);
               }
@@ -122,9 +141,15 @@ export default class Indicator extends Component {
           return `${DATA_URI}/forecast?timeframe=${tf}&columns=${_columns}`;
         }).map(uri2fetch))
         .then(responses => {
-          if (responses.every(r => r.length === 0 || r === null)) {
+
+          if (responses.length === 0
+              // Fallback in case of (synchronization or http) error
+              || (responses.every(r => r.length === 0 || r === null)
+              && !responses.every(r => r.length === responses[0].length))) {
             return this.state.forecast;
           }
+
+          console.log(responses);
 
           // Build state (forecast part)
           const forecast = {};
@@ -154,8 +179,6 @@ export default class Indicator extends Component {
             }
           }
 
-          // This step makes me cringe a bit because it implies that in the code
-          // above I could've been more efficient by being less general.
           // Zip the standard deviation levels together (0, n-1), (1, n-2), ...
           for (const tf in forecast) {
             const zipt_tf = {};
@@ -189,7 +212,6 @@ export default class Indicator extends Component {
       .then(states => {
         const [history, forecast] = states;
 
-        // TODO reenable
         // Prepend the partial values to the forecast
         for (const tf in forecast) {
           if (tf in history) {
@@ -218,6 +240,8 @@ export default class Indicator extends Component {
   }
 
   render() {
+    const { history, forecast } = this.state;
+    const { forecast: hasForecast } = this.props;
     return <div className="w3-container w3-section">
       {
         this.terms.map((term, i) => <Panel title={this.termsTitles[i]} key={i}>
@@ -225,14 +249,19 @@ export default class Indicator extends Component {
             {
               term.map((tf, j) =>
                 <this.props.chart key={j}
-                  {...this.state.history[tf]}
-                  forecast={this.state.forecast[tf]}
+                  {...history[tf]}
+                  forecast={forecast[tf]}
                   title={this.titles[i][j]}
-                  format={this.formats[i][j]}
+                  // format={this.formats[i][j]}
                 />)
             }
           </div>
         </Panel>)
+      }
+      {
+        !hasForecast ? '' : <div className="w3-center w3-small">
+          Highlighted areas contain forecast values.
+        </div>
       }
     </div>;
   }

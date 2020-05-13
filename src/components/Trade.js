@@ -14,7 +14,7 @@ import LabeledRow from './common/LabeledRow';
 import Button from './common/Button';
 import Row from './common/Row';
 import Bar from './common/Bar';
-import BarButtonRight from './common/BarButtonRight';
+import BarButton from './common/BarButton';
 
 class Deribit extends Component {
   static propTypes = {
@@ -55,6 +55,10 @@ class Deribit extends Component {
   }
 
   componentDidMount() {
+    window.addEventListener('beforeunload', e => {
+      e.preventDefault();
+      this.stop_polling();
+    });
     const { key, secret } = this.state;
     if (key && secret) {
       this.authenticate();
@@ -62,7 +66,7 @@ class Deribit extends Component {
   }
 
   componentWillUnmount() {
-    this.logout();
+    this.stop_polling();
   }
 
   apiCall(method, params, auth = false) {
@@ -171,34 +175,36 @@ class Deribit extends Component {
     // if (true) {
     if (!this.state.response) {
       const { key, secret } = this.state;
-      return <Panel>
-        <form onSubmit={this.authenticate}>
-          <ul className="w3-ul w3-block w3-padding-16">
-            <li>
-              <LabeledRow label="Key">
-                <input
-                  id="deribit-key" className="w3-input" value={key ? key : ''}
-                  onChange={this.keyChanged}  autoComplete="username"
-                />
-              </LabeledRow>
-            </li>
-            <li>
-              <LabeledRow label="Secret">
-                <input
-                  id="deribit-secret" type="password" className="w3-input"
-                   value={secret ? secret : ''} onChange={this.secretChanged}
-                   autoComplete="current-password"
-                />
-              </LabeledRow>
-            </li>
-            <Row>
-              <div className="w3-center">
-                <Button type="submit">Authenticate</Button>
-              </div>
-            </Row>
-          </ul>
-        </form>
-      </Panel>;
+      return <div style={{maxWidth: '750px', margin: 'auto'}}>
+        <Panel padding={true}>
+          <form onSubmit={this.authenticate}>
+            <ul className="w3-ul w3-block w3-padding-16">
+              <li>
+                <LabeledRow label="Key">
+                  <input
+                    id="deribit-key" className="w3-input" value={key ? key : ''}
+                    onChange={this.keyChanged}  autoComplete="username"
+                  />
+                </LabeledRow>
+              </li>
+              <li>
+                <LabeledRow label="Secret">
+                  <input
+                    id="deribit-secret" type="password" className="w3-input"
+                    value={secret ? secret : ''} onChange={this.secretChanged}
+                    autoComplete="current-password"
+                  />
+                </LabeledRow>
+              </li>
+              <Row>
+                <div className="w3-center">
+                  <Button type="submit">Authenticate</Button>
+                </div>
+              </Row>
+            </ul>
+          </form>
+        </Panel>
+      </div>;
     } else {
       const { account_summary } = this.state;
       if (!account_summary) {
@@ -206,12 +212,12 @@ class Deribit extends Component {
       } else {
         return <div>
           <Bar>
-            <BarButtonRight type="button" onClick={this.logout}>
+            <BarButton type="button" onClick={this.logout}>
               Log out
-            </BarButtonRight>
-            <BarButtonRight type="button" onClick={this.cancelAll}>
+            </BarButton>
+            <BarButton type="button" onClick={this.cancelAll}>
               Cancel all
-            </BarButtonRight>
+            </BarButton>
           </Bar>
           {
             React.cloneElement(
@@ -584,84 +590,95 @@ class Trade extends Component {
   render() {
     const { entry, stop, profit, risk, instrument } = this.state;
     const { cookies, account_summary, instruments } = this.props;
-    return <div>
-      <form className="w3-content w3-theme-dark">
-        <LabeledRow label="Equity">
-          <div className="my-cell w3-cell-middle">
-            {
-              account_summary
-                ? <span><Bitcoin/> {account_summary['equity']}</span>
-                : 'Warning: account summary undefined.'
-            }
+    return <div className="w3-section">
+      <div className="w3-cell-row">
+        <div className="w3-cell">
+          <div className="w3-container w3-center w3-theme-l1 w3-padding">
+            Warning: you are kindly adviced to <b>log out</b> after usage!
           </div>
-        </LabeledRow>
-        <LabeledRow label="Instrument">
-          <select
-            className="w3-select" onChange={this.instrumentChanged}
-            value={instrument}
-          >
-            {
-              instruments.map((instrument, i) => 
-                <option value={instrument} key={i}>{instrument}</option>
-              )
-            }
-          </select>
-        </LabeledRow>
-        <LabeledRow label="Stop" verticalAlign="w3-cell-top">
-          <Prices state={stop} cookies={cookies} prefix="stop"
-                  callback={stop => this.setState({ stop })}/>
-        </LabeledRow>
-        <LabeledRow label="Entry" verticalAlign="w3-cell-top">
-          <Prices state={entry} cookies={cookies} prefix="entry"
-                  callback={entry => this.setState({ entry })}/>
-        </LabeledRow>
-        <LabeledRow label="Profit" verticalAlign="w3-cell-top">
-          <div className="my-cell w3-cell-middle">
-            <input type="checkbox" checked={profit.enabled}
-                    onChange={this.toggleProfit} id="enable-profit"/> Enabled
-          </div>
-          <Prices state={profit} cookies={cookies} prefix="profit"
-                  callback={profit => this.setState({ profit })}/>
-        </LabeledRow>
-        <LabeledRow label="Risk">
-          <input type="number" step="0.001" id="risk" className="w3-input"
-                  value={risk} onChange={this.riskChanged}/>
-        </LabeledRow>
-        <Row>
-          <OrderButton isLong={this.isLong()} onClick={this.order}/>
-        </Row>
-      </form>
-      <Panel padding={true}>
-        <LabeledRow label="Quantity">
-          {this.computeQuantity().toString()}
-        </LabeledRow>
-      </Panel>
-      <Panel title="Overview" padding={true}>
-        <div className="row">
-          <div className="left-column"></div>
-          <div className="left-column">Stop</div>
-          <div className="left-column">Entry</div>
-          <div className="left-column">Profit</div>
+          <form className="w3-content w3-section w3-theme-dark">
+            <LabeledRow label="Equity">
+              <div className="my-cell w3-cell-middle">
+                {
+                  account_summary
+                    ? <span><Bitcoin/> {account_summary['equity']}</span>
+                    : 'Warning: account summary undefined.'
+                }
+              </div>
+            </LabeledRow>
+            <LabeledRow label="Instrument">
+              <select
+                className="w3-select" onChange={this.instrumentChanged}
+                value={instrument}
+              >
+                {
+                  instruments.map((instrument, i) => 
+                    <option value={instrument} key={i}>{instrument}</option>
+                  )
+                }
+              </select>
+            </LabeledRow>
+            <LabeledRow label="Stop" verticalAlign="w3-cell-top">
+              <Prices state={stop} cookies={cookies} prefix="stop"
+                      callback={stop => this.setState({ stop })}/>
+            </LabeledRow>
+            <LabeledRow label="Entry" verticalAlign="w3-cell-top">
+              <Prices state={entry} cookies={cookies} prefix="entry"
+                      callback={entry => this.setState({ entry })}/>
+            </LabeledRow>
+            <LabeledRow label="Profit" verticalAlign="w3-cell-top">
+              <div className="my-cell w3-cell-middle">
+                <input type="checkbox" checked={profit.enabled}
+                        onChange={this.toggleProfit} id="enable-profit"/> Enabled
+              </div>
+              <Prices state={profit} cookies={cookies} prefix="profit"
+                      callback={profit => this.setState({ profit })}/>
+            </LabeledRow>
+            <LabeledRow label="Risk">
+              <input type="number" step="0.001" id="risk" className="w3-input"
+                      value={risk} onChange={this.riskChanged}/>
+            </LabeledRow>
+            <Row>
+              <div className="w3-section">
+                <OrderButton isLong={this.isLong()} onClick={this.order}/>
+              </div>
+            </Row>
+          </form>
         </div>
-        <div className="row">
-          <div className="left-column">Lowest</div>
-          <div className="left-column">{stop.min}</div>
-          <div className="left-column">{entry.min}</div>
-          <div className="left-column">{profit.min}</div>
+        <div className="w3-cell">
+          <Panel padding={true}>
+            <LabeledRow label="Quantity">
+              {this.computeQuantity().toString()}
+            </LabeledRow>
+          </Panel>
+          <Panel title="Overview" padding={true}>
+            <div className="row">
+              <div className="left-column"></div>
+              <div className="left-column">Stop</div>
+              <div className="left-column">Entry</div>
+              <div className="left-column">Profit</div>
+            </div>
+            <div className="row">
+              <div className="left-column">Lowest</div>
+              <div className="left-column">{stop.min}</div>
+              <div className="left-column">{entry.min}</div>
+              <div className="left-column">{profit.min}</div>
+            </div>
+            <div className="row">
+              <div className="left-column">Average</div>
+              <div className="left-column">{stop.mean}</div>
+              <div className="left-column">{entry.mean}</div>
+              <div className="left-column">{profit.mean}</div>
+            </div>
+            <div className="row">
+              <div className="left-column">Highest</div>
+              <div className="left-column">{stop.max}</div>
+              <div className="left-column">{entry.max}</div>
+              <div className="left-column">{profit.max}</div>
+            </div>
+          </Panel>
         </div>
-        <div className="row">
-          <div className="left-column">Average</div>
-          <div className="left-column">{stop.mean}</div>
-          <div className="left-column">{entry.mean}</div>
-          <div className="left-column">{profit.mean}</div>
-        </div>
-        <div className="row">
-          <div className="left-column">Highest</div>
-          <div className="left-column">{stop.max}</div>
-          <div className="left-column">{entry.max}</div>
-          <div className="left-column">{profit.max}</div>
-        </div>
-      </Panel>
+      </div>
     </div>;
   }
 }

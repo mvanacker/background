@@ -25,15 +25,15 @@ const Titles = {
   // OTHER_SYMBOLS:   'Other Symbols',
 };
 const Paths = {
-  // OVERVIEW:        '/puzzle/overview',
-  MOVING_AVERAGES: '/puzzle/moving-averages',
-  STOCHS:          '/puzzle/stochs',
-  RSI:             '/puzzle/rsi',
-  VOLATILITY:      '/puzzle/volatility',
-  // PATTERN:         '/puzzle/pattern',
-  // VOLUME:          '/puzzle/volume',
-  // PROBABILITIES:   '/puzzle/probabilities',
-  // OTHER_SYMBOLS:   '/puzzle/other-symbols',
+  // OVERVIEW:        '/overview',
+  MOVING_AVERAGES: '/moving-averages',
+  STOCHS:          '/stochs',
+  RSI:             '/rsi',
+  VOLATILITY:      '/volatility',
+  // PATTERN:         '/pattern',
+  // VOLUME:          '/volume',
+  // PROBABILITIES:   '/probabilities',
+  // OTHER_SYMBOLS:   '/other-symbols',
 };
 
 export default function Puzzle() {

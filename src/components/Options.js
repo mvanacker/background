@@ -363,48 +363,54 @@ export default withCookies(class Options extends Component {
     const FormComponent = FormComponents[_activeForm];
     return <div>
       <Tabs enum={Form} titles={FormTitles} onClick={this.onTabsClick}/>
-      <FormComponent
-        formData={form[formStateName]} formStateName={formStateName}
-        onLong={e => this.FormHandler[_activeForm](e, 1)}
-        onShort={e => this.FormHandler[_activeForm](e, -1)}
-        onFormChange={this.onFormChange}
-      />
-      <p className="w3-small w3-center my-italic w3-hide">
-        This is an analysis tool. No positions are actually taken.
-      </p>
-      <Positions
-        positions={positions.underlying} title="Underlying"
-        posToString={pos => {
-          const hedgeOnly = !pos.hedgeOnly ? '' : <small>(hedge only)</small>;
-          return <span>{pos.quantity}x {pos.price} {hedgeOnly}</span>;
-        }}
-        togglePosition={(e, i) => this.togglePosition(e, 'underlying', i)}
-        removePosition={(e, i) => this.removePosition(e, 'underlying', i)}
-      />
-      <Positions
-        positions={positions.options} title="Options"
-        posToString={pos => {
-          const { quantity, strike, volatility, premium } = pos;
-          const type = OptionTypeTitles[OptionTypeReversed[pos.type]];
-          const vol = toPercent(volatility);
-          const { days, hours } = toDaysHours(pos.time);
-          const time = `${days} days, ${round_to(hours, 1)} hours`
-          const prem = toDollars(premium);
-          return `${quantity}x ${type} ${strike}, ${vol}, ${prem}, ${time}`;
-        }}
-        togglePosition={(e, i) => this.togglePosition(e, 'options', i)}
-        removePosition={(e, i) => this.removePosition(e, 'options', i)}
-      />
-      <PnlChart
-        pnl={this.pnl()} probs={this.probs()} levels={this.levels()}
-        zero={true} currentPrice={this.state.analysis.currentPrice}
-      />
-      <Analysis
-        analysis={analysis} onAnalysisChange={this.onAnalysisChange}
-        minVolatilityChange={-this.leastVolatility()}
-        maxHoursPassed={this.longestHoursLeft()}
-      />
-      <Debug debug={debug} onDebugChange={this.onDebugChange} />
+      <div className="w3-cell-row">
+        <div className="w3-cell">
+          <FormComponent
+            formData={form[formStateName]} formStateName={formStateName}
+            onLong={e => this.FormHandler[_activeForm](e, 1)}
+            onShort={e => this.FormHandler[_activeForm](e, -1)}
+            onFormChange={this.onFormChange}
+          />
+          <p className="w3-small w3-center">
+            This is an analysis tool. Positions are simulated.
+          </p>
+          <Positions
+            positions={positions.underlying} title="Underlying"
+            posToString={pos => {
+              const hedgeOnly = !pos.hedgeOnly ? '' : <small>(hedge only)</small>;
+              return <span>{pos.quantity}x {pos.price} {hedgeOnly}</span>;
+            }}
+            togglePosition={(e, i) => this.togglePosition(e, 'underlying', i)}
+            removePosition={(e, i) => this.removePosition(e, 'underlying', i)}
+          />
+          <Positions
+            positions={positions.options} title="Options"
+            posToString={pos => {
+              const { quantity, strike, volatility, premium } = pos;
+              const type = OptionTypeTitles[OptionTypeReversed[pos.type]];
+              const vol = toPercent(volatility);
+              const { days, hours } = toDaysHours(pos.time);
+              const time = `${days} days, ${round_to(hours, 1)} hours`
+              const prem = toDollars(premium);
+              return `${quantity}x ${type} ${strike}, ${vol}, ${prem}, ${time}`;
+            }}
+            togglePosition={(e, i) => this.togglePosition(e, 'options', i)}
+            removePosition={(e, i) => this.removePosition(e, 'options', i)}
+          />
+        </div>
+        <div className="w3-cell">
+          <PnlChart
+            pnl={this.pnl()} probs={this.probs()} levels={this.levels()}
+            zero={true} currentPrice={this.state.analysis.currentPrice}
+          />
+          <Analysis
+            analysis={analysis} onAnalysisChange={this.onAnalysisChange}
+            minVolatilityChange={-this.leastVolatility()}
+            maxHoursPassed={this.longestHoursLeft()}
+          />
+          <Debug debug={debug} onDebugChange={this.onDebugChange} />
+        </div>
+      </div>
     </div>;
   }
 });

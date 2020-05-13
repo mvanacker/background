@@ -5,15 +5,14 @@ import { Up, Down } from '../common/Icons';
 
 import Indicator from './Indicator.js';
 
-const FORECAST = true; // transitionary constant
-
 export default function Stochs(props) {
   return <Indicator
     title='Stochs'
     columns={['stoch_K', 'stoch_K_D']}
     chart={StochChart}
-    limit={14}
-    forecast={FORECAST}
+    limit={150}
+    windowLimit={33}
+    forecast={true}
   />;
 }
 
@@ -24,18 +23,13 @@ function StochChart(props) {
   // Crossedness
   const crossed_up = stoch_K[0].y > stoch_K_D[0].y;
   const crossed_down = stoch_K[0].y < stoch_K_D[0].y;
-
-  console.log(forecast[0].stoch_K.length);
-  console.log(forecast[0].stoch_K);
   
   const options = {
     animationEnabled: true,
     theme:            "dark2",
     backgroundColor:  "transparent",
     height:           180,
-    toolTip:          {
-      enabled: false,
-    },
+    // toolTip:          { enabled: false, },
     axisX:            {
       lineThickness:     0.5,
       crosshair:         {
@@ -44,13 +38,17 @@ function StochChart(props) {
         color:           "white",
       },
       stripLines:        [{
-        startValue: forecast[0].stoch_K[0].x,
-        endValue:   forecast[0].stoch_K[forecast[0].stoch_K.length - 1].x,
-        color:      "white",
-        opacity:    0.03,
-
+        value:        forecast[0].stoch_K[0].x,
+        color:        "white",
+        opacity:      0.5,
+        lineDashType: "dash",
+      }, {
+        startValue:   forecast[0].stoch_K[0].x,
+        endValue:     forecast[0].stoch_K[forecast[0].stoch_K.length - 1].x,
+        color:        "white",
+        opacity:      0.07,
       }],
-      ...format,
+      // ...format,
     },
     axisY:            [{
       includeZero:       true,
@@ -78,53 +76,53 @@ function StochChart(props) {
       }],
     }],
     data:             [{
-      lineColor:         "white",
-      type:              "rangeArea",
-      xValueType:        "dateTime",
-      dataPoints:        forecast[1].stoch_K_D,
-      markerType:        "none",
-      lineThickness:     0,
-      fillOpacity:       0.16,
-    }, {
-      lineColor:         "white",
-      type:              "rangeArea",
-      xValueType:        "dateTime",
-      dataPoints:        forecast[2].stoch_K_D,
-      markerType:        "none",
-      lineThickness:     0,
-      fillOpacity:       0.16,
-    }, {
-      lineColor:         "white",
-      type:              "rangeArea",
-      xValueType:        "dateTime",
-      dataPoints:        forecast[3].stoch_K_D,
-      markerType:        "none",
-      lineThickness:     0,
-      fillOpacity:       0.16,
-    }, {
-      lineColor:         "orange",
-      type:              "rangeArea",
-      xValueType:        "dateTime",
-      dataPoints:        forecast[3].stoch_K,
-      markerType:        "none",
-      lineThickness:     0,
-      fillOpacity:       0.16,
-    }, {
-      lineColor:         "orange",
-      type:              "rangeArea",
-      xValueType:        "dateTime",
-      dataPoints:        forecast[2].stoch_K,
-      markerType:        "none",
-      lineThickness:     0,
-      fillOpacity:       0.16,
-    }, {
+    //   lineColor:         "white",
+    //   type:              "rangeArea",
+    //   xValueType:        "dateTime",
+    //   dataPoints:        forecast[1].stoch_K_D,
+    //   markerType:        "none",
+    //   lineThickness:     0,
+    //   fillOpacity:       0.16,
+    // }, {
+    //   lineColor:         "white",
+    //   type:              "rangeArea",
+    //   xValueType:        "dateTime",
+    //   dataPoints:        forecast[2].stoch_K_D,
+    //   markerType:        "none",
+    //   lineThickness:     0,
+    //   fillOpacity:       0.16,
+    // }, {
+    //   lineColor:         "white",
+    //   type:              "rangeArea",
+    //   xValueType:        "dateTime",
+    //   dataPoints:        forecast[3].stoch_K_D,
+    //   markerType:        "none",
+    //   lineThickness:     0,
+    //   fillOpacity:       0.16,
+    // }, {
+    //   lineColor:         "orange",
+    //   type:              "rangeArea",
+    //   xValueType:        "dateTime",
+    //   dataPoints:        forecast[3].stoch_K,
+    //   markerType:        "none",
+    //   lineThickness:     0,
+    //   fillOpacity:       0.16,
+    // }, {
+    //   lineColor:         "orange",
+    //   type:              "rangeArea",
+    //   xValueType:        "dateTime",
+    //   dataPoints:        forecast[2].stoch_K,
+    //   markerType:        "none",
+    //   lineThickness:     0,
+    //   fillOpacity:       0.16,
+    // }, {
       lineColor:         "orange",
       type:              "rangeArea",
       xValueType:        "dateTime",
       dataPoints:        forecast[1].stoch_K,
       markerType:        "none",
       lineThickness:     0,
-      fillOpacity:       0.16,
+      fillOpacity:       0.3,
     }, {
       lineColor:         "white",
       type:              "rangeArea",

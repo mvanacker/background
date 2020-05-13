@@ -4,14 +4,13 @@ import CanvasJSReact from '../../canvasjs.react';
 import Indicator from './Indicator.js';
 import { Alert, Alarm } from '../common/Icons';
 
-const LIMIT = 50;
-
 export default function Hvp(props) {
   return <Indicator
     title='Historical Volatility Percentile'
     columns={['hvp', 'hvp_ma']}
     chart={HvpChart}
-    limit={LIMIT}
+    limit={150}
+    windowLimit={33}
   />;
 }
 
@@ -27,27 +26,24 @@ function HvpChart(props) {
   });
 
   // Low volatility warnings, but only for timeframes with enough data
-  const last = Math.min(LIMIT - 1, hvp.length - 1);
-  const enough_data = hvp[last].y !== null;
+  const enough_data = hvp[hvp.length - 1].y !== null;
   const low_vol = enough_data && hvp[0].y < 20;
   const very_low_vol = enough_data && hvp[0].y < 10;
 
   const options = {
     animationEnabled: true,
-    dataPointWidth:   1,
+    dataPointWidth:   4,
     theme:            "dark2",
     backgroundColor:  "transparent",
     height:           180,
-    toolTip:          {
-      enabled: false,
-    },
+    // toolTip:          { enabled: false, },
     axisX:            {
       lineThickness:     0.5,
       crosshair:         {
         enabled:         true,
         snapToDataPoint: true,
       },
-      ...format,
+      // ...format,
     },
     axisY:            [{
       includeZero:       true,

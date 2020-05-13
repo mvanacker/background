@@ -9,6 +9,7 @@ import { DATA_URI } from "./config";
 import Panel from './common/Panel';
 import LabeledRow from './common/LabeledRow';
 import ListBlock from './common/ListBlock';
+import { DoubleLeft, DoubleRight } from './common/Icons';
 
 export default class App extends Component {
   constructor(props) {
@@ -210,7 +211,7 @@ export default class App extends Component {
       <audio loop id="beep-down">
         <source src={beepDown} type="audio/mpeg"/>
       </audio>
-      <Overview state={this.state}/>
+      {/* <Overview state={this.state}/> */}
       <VolumeFlowChart state={this.state}/>
       <BitmexRecentTrades data={this.state.recentTrades}/>
     </div>;
@@ -219,7 +220,7 @@ export default class App extends Component {
 
 function Overview(props) {
   const { dominance, fearAndGreed } = props.state;
-  return <Panel title="Overview" padding={true}>
+  return <Panel title="Overview" padding={true} margin={false}>
     <ListBlock>
       <li>
         <LabeledRow label="Dominance">
@@ -349,7 +350,7 @@ function BitmexRecentTrades(props) {
     return " w3-medium";
   };
 
-  return <Panel theme="w3-theme-d4">
+  return <Panel theme="w3-theme-dark" margin={false}>
     <table className="monospace" style={{'margin': 'auto'}}>
       <tbody>
       {
