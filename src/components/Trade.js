@@ -448,7 +448,7 @@ class Trade extends Component {
         max:       parseFloat(cookies.get('profit-max')) || 0,
         enabled:   (cookies.get('profit-enabled') === 'true') !== false,
       },
-      risk:       parseFloat(cookies.get('risk')) || 0.02,
+      risk:       parseFloat(cookies.get('risk')) || 0.01,
       instrument: cookies.get('instrument') || instrument,
     };
 
