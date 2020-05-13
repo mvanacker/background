@@ -125,7 +125,7 @@ function OhlcChart(props) {
       xValueType:    "dateTime",
       dataPoints:    forecast[0].ema_89,
       markerType:    "none",
-      color:         "blue",
+      color:         "cyan",
       lineThickness: 1,
     }, {
       type:          "rangeArea",
@@ -177,7 +177,7 @@ function OhlcChart(props) {
       xValueType:    "dateTime",
       dataPoints:    ema_89,
       markerType:    "none",
-      color:         "blue",
+      color:         "cyan",
       lineThickness: 1,
     }, {
       type:          "line",
