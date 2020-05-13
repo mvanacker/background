@@ -46,7 +46,7 @@ function StochChart(props) {
         startValue:   forecast[0].stoch_K[0].x,
         endValue:     forecast[0].stoch_K[forecast[0].stoch_K.length - 1].x,
         color:        "white",
-        opacity:      0.07,
+        opacity:      0.05,
       }],
       // ...format,
     },
@@ -122,7 +122,7 @@ function StochChart(props) {
       dataPoints:        forecast[1].stoch_K,
       markerType:        "none",
       lineThickness:     0,
-      fillOpacity:       0.3,
+      fillOpacity:       0.5,
     }, {
       lineColor:         "white",
       type:              "rangeArea",

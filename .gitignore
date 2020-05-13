@@ -24,3 +24,9 @@ yarn-error.log*
 
 # vs code
 .vscode/
+
+# Old WebStorm files
+/.idea
+
+# Not using yarn
+yarn.lock
