@@ -9,7 +9,6 @@ import { DATA_URI } from "./config";
 import Panel from './common/Panel';
 import LabeledRow from './common/LabeledRow';
 import ListBlock from './common/ListBlock';
-import { DoubleLeft, DoubleRight } from './common/Icons';
 
 export default class App extends Component {
   constructor(props) {

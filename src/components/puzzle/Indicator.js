@@ -23,40 +23,15 @@ export default class Indicator extends Component {
       ['6h', '12h', '1d', '2d'],
       ['3d', '1w', '1M', '3M'],
     ];
-    // const hourlyFormat = { valueFormatString: 'HH tt', intervalType: 'hour' };
-    // const dailyFormat = { valueFormatString: 'DD MMM', intervalType: 'day' };
-    // const { limit } = this.props;
-    // this.formats = [[
-    //   { interval: limit / 2, ...hourlyFormat },
-    //   { interval: limit, ...hourlyFormat },
-    //   { interval: 3 * limit / 2, ...hourlyFormat },
-    //   { interval: 2 * limit, ...hourlyFormat },
-    // ], [
-    //   { interval: 3 * limit, ...hourlyFormat },
-    //   { interval: 6 * limit, ...hourlyFormat },
-    //   { interval: 4 * limit / 7, ...dailyFormat },
-    //   { interval: 8 * limit / 7, ...dailyFormat },
-    // ], [
-    //   { interval: 12 * limit / 7, ...dailyFormat },
-    //   { interval: 24 * limit / 7, ...dailyFormat },
-    //   { interval: limit * 15, ...dailyFormat },
-    //   { interval: limit * 45, ...dailyFormat },
-    // ]];
     this.termsTitles = ["Short Term", "Medium Term", "Long Term"];
 
     const initState = {
-      // visible: this.props.visible,
       history:  {},
       forecast: this.initialForecast(),
     };
     this.timeframes.forEach(tf => initState.history[tf] = {});
     this.state = initState;
   }
-
-  // experimental approach to rerendering when parent changes size
-  // componentWillReceiveProps(visible) {
-  //   this.setState({ visible });
-  // }
 
   initialForecast() {
     const forecast = {'0': {}};
@@ -252,7 +227,6 @@ export default class Indicator extends Component {
                   {...history[tf]}
                   forecast={forecast[tf]}
                   title={this.titles[i][j]}
-                  // format={this.formats[i][j]}
                 />)
             }
           </div>
