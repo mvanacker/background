@@ -30,3 +30,6 @@ yarn-error.log*
 
 # Not using yarn
 yarn.lock
+
+# Ignore test files
+*[Tt]est.*
