@@ -32,7 +32,7 @@ import Analyzer from './components/Analyzer';
 import Navigation from './components/common/Navigation';
 
 // Test component(s)
-import Test from './components/Test.js';
+import Test from './sandbox/Test.js';
 
 // When a page has a vertical scrollbar, a white band appears at its bottom.
 // To counter this, I place the background color directly on the <html> tag,
