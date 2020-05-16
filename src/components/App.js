@@ -16,26 +16,24 @@ export default class App extends Component {
     this.state = {
       
       // static
-      openInterestRefreshRate: 10000,
       refreshRate:             1000,
       recentTradesCount:       100,
-      historyLength:           180,
       openInterestFraction:    1000000,
       alarmScalar:             100,
       // minimumYScalar:          10,
 
       // dynamic
-      price:               -1,
-      buyFlow:             -1,
-      sellFlow:            -1,
-      openInterest:        -1,
+      price:               NaN,
+      buyFlow:             NaN,
+      sellFlow:            NaN,
+      openInterest:        NaN,
       priceHistory:        [],
       buyFlowHistory:      [],
       sellFlowHistory:     [],
       openInterestHistory: [],
       recentTrades:        [],
-      fearAndGreed:        -1,
-      dominance:           -1,
+      fearAndGreed:        NaN,
+      dominance:           NaN,
     };
   }
 
@@ -52,56 +50,55 @@ export default class App extends Component {
   }
 
   componentDidMount() {
-
     const update = () => {
 
       // Fetch data
       Promise.all([{
-        link: `${DATA_URI}/data/price.txt`,
+        link:      `${DATA_URI}/data/price.txt`,
         onsuccess: response => response.text(),
         onfailure: () => this.state.price,
       }, {
-        link: `${DATA_URI}/data/buy-flow.txt`,
+        link:      `${DATA_URI}/data/buy-flow.txt`,
         onsuccess: response => response.text(),
         onfailure: () => this.state.buyFlow,
       }, {
-        link: `${DATA_URI}/data/sell-flow.txt`,
+        link:      `${DATA_URI}/data/sell-flow.txt`,
         onsuccess: response => response.text(),
         onfailure: () => this.state.sellFlow,
       }, {
-        link: `${DATA_URI}/data/open-interest.txt`,
+        link:      `${DATA_URI}/data/open-interest.txt`,
         onsuccess: response => response.text(),
         onfailure: () => this.state.openInterest,
       }, {
-        link: `${DATA_URI}/data/price-history.json`,
+        link:      `${DATA_URI}/data/price-history.json`,
         onsuccess: response => response.json(),
         onfailure: () => this.state.priceHistory,
       }, {
-        link: `${DATA_URI}/data/buy-flow-history.json`,
+        link:      `${DATA_URI}/data/buy-flow-history.json`,
         onsuccess: response => response.json(),
         onfailure: () => this.state.buyFlowHistory,
       }, {
-        link: `${DATA_URI}/data/sell-flow-history.json`,
+        link:      `${DATA_URI}/data/sell-flow-history.json`,
         onsuccess: response => response.json(),
         onfailure: () => this.state.sellFlowHistory,
       }, {
-        link: `${DATA_URI}/data/open-interest-history.json`,
+        link:      `${DATA_URI}/data/open-interest-history.json`,
         onsuccess: response => response.json(),
         onfailure: () => this.state.openInterestHistory,
       }, {
-        link: `${DATA_URI}/data/recent-trades.json`,
+        link:      `${DATA_URI}/data/recent-trades.json`,
         onsuccess: response => response.json(),
         onfailure: () => this.state.recentTrades,
       }, {
-        link: `${DATA_URI}/data/fear-and-greed.json`,
+        link:      `${DATA_URI}/data/fear-and-greed.json`,
         onsuccess: response => response.json(),
         onfailure: () => this.state.fearAndGreed,
       }, {
-        link: `${DATA_URI}/data/bitcoin-dominance.txt`,
+        link:      `${DATA_URI}/data/bitcoin-dominance.txt`,
         onsuccess: response => response.text(),
         onfailure: () => this.state.dominance,
-      }].map(item =>
-        fetch(item.link).then(item.onsuccess).catch(item.onfailure)
+      }].map(({ link, onsuccess, onfailure }) =>
+        fetch(link).then(onsuccess).catch(onfailure)
       ))
       .then(responses => {
 
@@ -111,72 +108,29 @@ export default class App extends Component {
           sellFlowHistory, openInterestHistory, recentTrades, fearAndGreed,
           dominance
         ] = responses;
-
-        if (price && !isNaN(price)) {
-          price = Math.trunc(parseFloat(price));
-        } else {
-          price = this.state.price;
-        }
-        if (buyFlow && !isNaN(buyFlow)) {
-          buyFlow = Math.trunc(parseFloat(buyFlow));
-        } else {
-          buyFlow = this.state.buyFlow;
-        }
-        if (sellFlow && !isNaN(sellFlow)) {
-          sellFlow = Math.trunc(parseFloat(sellFlow));
-        } else {
-          sellFlow = this.state.sellFlow;
-        }
-        if (openInterest && !isNaN(openInterest)) {
-          openInterest = Math.trunc(parseFloat(openInterest));
-        } else {
-          openInterest = this.state.openInterest;
-        }
-        if (priceHistory && priceHistory.length && priceHistory.length > 1) {
-          priceHistory = priceHistory.map(entry => {
-            return { x: entry.time, y: entry.price }
-          });
-        } else {
-          priceHistory = this.state.priceHistory;
-        }
-        if (buyFlowHistory && buyFlowHistory.length && buyFlowHistory.length > 1) {
-          buyFlowHistory = buyFlowHistory.map(entry => {
-            return { x: entry.time, y: 1 + entry.buyFlow }
-          });
-        }
-        if (sellFlowHistory && sellFlowHistory.length && sellFlowHistory.length > 1) {
-          sellFlowHistory = sellFlowHistory.map(entry => {
-            return { x: entry.time, y: 1 + entry.sellFlow }
-          });
-        } else {
-          sellFlowHistory = this.state.sellFlowHistory;
-        }
-        if (openInterestHistory && openInterestHistory.length && openInterestHistory.length > 1) {
-          openInterestHistory = openInterestHistory.map(entry => {
-            return {
-              x: entry.time,
-              y: isNaN(entry.openInterest) ? undefined : entry.openInterest / this.state.openInterestFraction
-            }
-          });
-        } else {
-          openInterestHistory = this.state.openInterestHistory;
-        }
-        if (recentTrades && recentTrades.length && recentTrades.length > 0) {
-          recentTrades = recentTrades.slice(0, this.state.recentTradesCount);
-          recentTrades.forEach(trade => trade.size = parseInt(trade.size));
-        } else {
-          recentTrades = this.state.recentTrades;
-        }
-        if (fearAndGreed && fearAndGreed.data) {
-          fearAndGreed = fearAndGreed.data[0];
-        } else {
-          fearAndGreed = this.state.fearAndGreed;
-        }
-        if (dominance) {
-          dominance = Math.round(parseFloat(dominance) * 100) / 100;
-        } else {
-          dominance = this.state.dominance;
-        }
+        price = Math.trunc(parseFloat(price));
+        buyFlow = Math.trunc(parseFloat(buyFlow));
+        sellFlow = Math.trunc(parseFloat(sellFlow));
+        openInterest = Math.trunc(parseFloat(openInterest));
+        priceHistory = priceHistory.map(entry => {
+          return { x: entry.time, y: entry.price }
+        });
+        buyFlowHistory = buyFlowHistory.map(entry => {
+          return { x: entry.time, y: 1 + entry.buyFlow }
+        });
+        sellFlowHistory = sellFlowHistory.map(entry => {
+          return { x: entry.time, y: 1 + entry.sellFlow }
+        });
+        openInterestHistory = openInterestHistory.map(entry => {
+          return {
+            x: entry.time,
+            y: isNaN(entry.openInterest) ? undefined : entry.openInterest / this.state.openInterestFraction
+          }
+        });
+        recentTrades = recentTrades.slice(0, this.state.recentTradesCount);
+        recentTrades.forEach(trade => trade.size = parseInt(trade.size));
+        fearAndGreed = fearAndGreed.data[0];
+        dominance = Math.round(parseFloat(dominance) * 100) / 100;
 
         // Play or pause alarms
         this._alarm('beep-up', buyFlow);
@@ -203,17 +157,23 @@ export default class App extends Component {
   }
 
   render() {
-    return <div id="app">
-      <audio loop id="beep-up">
-        <source src={beepUp} type="audio/mpeg"/>
-      </audio>
-      <audio loop id="beep-down">
-        <source src={beepDown} type="audio/mpeg"/>
-      </audio>
-      {/* <Overview state={this.state}/> */}
-      <VolumeFlowChart state={this.state}/>
-      <BitmexRecentTrades data={this.state.recentTrades}/>
-    </div>;
+    if (isNaN(this.state.price)) {
+      return <div className="w3-container w3-center w3-xxlarge">
+        Loading...
+      </div>;
+    } else {
+      return <div id="app">
+        <audio loop id="beep-up">
+          <source src={beepUp} type="audio/mpeg"/>
+        </audio>
+        <audio loop id="beep-down">
+          <source src={beepDown} type="audio/mpeg"/>
+        </audio>
+        {/* <Overview state={this.state}/> */}
+        <VolumeFlowChart state={this.state}/>
+        <BitmexRecentTrades data={this.state.recentTrades}/>
+      </div>;
+    }
   }
 }
 
