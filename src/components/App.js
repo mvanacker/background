@@ -16,7 +16,7 @@ export default class App extends Component {
     this.state = {
       
       // static
-      refreshRate:             1000,
+      refreshRate:             2000,
       recentTradesCount:       100,
       openInterestFraction:    1000000,
       alarmScalar:             100,
@@ -129,7 +129,7 @@ export default class App extends Component {
         });
         recentTrades = recentTrades.slice(0, this.state.recentTradesCount);
         recentTrades.forEach(trade => trade.size = parseInt(trade.size));
-        fearAndGreed = fearAndGreed.data[0];
+        fearAndGreed = fearAndGreed.data ? fearAndGreed.data[0] : this.state.fearAndGreed;
         dominance = Math.round(parseFloat(dominance) * 100) / 100;
 
         // Play or pause alarms
