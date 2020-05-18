@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+import { Link } from 'react-router-dom';
 import CanvasJSReact from '../canvasjs.react';
 
 import beepDown from '../assets/beep_down.mp3';
@@ -20,7 +21,6 @@ export default class App extends Component {
       recentTradesCount:       100,
       openInterestFraction:    1000000,
       alarmScalar:             100,
-      // minimumYScalar:          10,
 
       // dynamic
       price:               NaN,
@@ -171,6 +171,7 @@ export default class App extends Component {
         <audio loop id="beep-down">
           <source src={beepDown} type="audio/mpeg"/>
         </audio>
+        <Title/>
         <Overview state={this.state}/>
         <VolumeFlowChart state={this.state}/>
         <BitmexRecentTrades data={this.state.recentTrades}/>
@@ -179,9 +180,17 @@ export default class App extends Component {
   }
 }
 
+function Title() {
+  return <div id="title" className="w3-container w3-theme-d3">
+    <h1>
+      <Link to='/'>Trading Application</Link>
+    </h1>
+  </div>
+}
+
 function Overview(props) {
   const { dominance, fearAndGreed } = props.state;
-  return <Panel title={false} padding={true}>
+  return <Panel title={false} padding={false}>
     <ListBlock>
       <li>
         <LabeledRow label="Dominance">
@@ -203,7 +212,6 @@ function VolumeFlowChart(props) {
   const { 
     price, buyFlow, sellFlow, openInterest,
     priceHistory, buyFlowHistory, sellFlowHistory, openInterestHistory,
-    // minimumYScalar,
   } = props.state;
   const options = {
     culture:          "be",

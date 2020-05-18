@@ -16,6 +16,25 @@ code {
     monospace;
 }
 
+div#title {
+  top: 0;
+  position: sticky;
+  margin-top: 0;
+  margin-bottom: 16px;
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+div#title h1 {
+  font-family: 'Dancing Script', serif;
+  font-size: 58px;
+  text-decoration: none;
+}
+
+div#title h1 a {
+  text-decoration: none;
+}
+
 .monospace {
   font-size: 16px;
   font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
