@@ -121,15 +121,17 @@ export default class App extends Component {
         sellFlowHistory = sellFlowHistory.map(entry => {
           return { x: entry.time, y: 1 + entry.sellFlow }
         });
-        openInterestHistory = openInterestHistory.map(entry => {
-          return {
-            x: entry.time,
-            y: isNaN(entry.openInterest) ? undefined : entry.openInterest / this.state.openInterestFraction
-          }
-        });
+        openInterestHistory = openInterestHistory.map(entry => ({
+          x: entry.time,
+          y: isNaN(entry.openInterest) 
+            ? undefined 
+            : entry.openInterest / this.state.openInterestFraction
+        }));
         recentTrades = recentTrades.slice(0, this.state.recentTradesCount);
         recentTrades.forEach(trade => trade.size = parseInt(trade.size));
-        fearAndGreed = fearAndGreed.data ? fearAndGreed.data[0] : this.state.fearAndGreed;
+        fearAndGreed = fearAndGreed.data
+          ? fearAndGreed.data[0]
+          : this.state.fearAndGreed;
         dominance = Math.round(parseFloat(dominance) * 100) / 100;
 
         // Play or pause alarms
@@ -169,7 +171,7 @@ export default class App extends Component {
         <audio loop id="beep-down">
           <source src={beepDown} type="audio/mpeg"/>
         </audio>
-        {/* <Overview state={this.state}/> */}
+        <Overview state={this.state}/>
         <VolumeFlowChart state={this.state}/>
         <BitmexRecentTrades data={this.state.recentTrades}/>
       </div>;
@@ -179,7 +181,7 @@ export default class App extends Component {
 
 function Overview(props) {
   const { dominance, fearAndGreed } = props.state;
-  return <Panel title="Overview" padding={true} margin={false}>
+  return <Panel title={false} padding={true}>
     <ListBlock>
       <li>
         <LabeledRow label="Dominance">
@@ -219,7 +221,6 @@ function VolumeFlowChart(props) {
       valueFormatString: "#,###",
       gridColor:         "#444444",
       minimum:           1000,
-      // minimum:           minimumYScalar * price,
     }],
     axisY2:           [{
       // title:             "open interest in million $",
