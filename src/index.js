@@ -22,11 +22,10 @@ import Rsi from './components/puzzle/Rsi';
 import Hvp from './components/puzzle/Hvp';
 
 // Deprecated components
-import IV from './components/IV';
-import GIV from './components/GIV';
-import Probs from './components/Probs';
-import TradeJournal from './components/TradeJournal';
-import Analyzer from './components/Analyzer';
+import IV from './components/deprecated/IV';
+import GIV from './components/deprecated/GIV';
+import Probs from './components/deprecated/Probs';
+import TradeJournal from './components/deprecated/TradeJournal';
 
 // UI components
 import Navigation from './components/common/Navigation';
@@ -84,7 +83,6 @@ ReactDOM.render(
             <Route path='/giv' component={GIV}/>
             <Route path='/probs' component={Probs}/>
             <Route path='/journal' component={TradeJournal}/>
-            <Route path='/analyzer' component={Analyzer}/>
 
             {/* Testing */}
             <Route path='/test' component={Test}/>
