@@ -183,7 +183,7 @@ export default class App extends Component {
 function Title() {
   return <div id="title" className="w3-container w3-theme-d3">
     <h1>
-      <Link to='/'>Trading Application</Link>
+      <Link to='/'>Tranquilo Trading</Link>
     </h1>
   </div>
 }
