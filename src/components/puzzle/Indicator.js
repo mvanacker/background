@@ -119,8 +119,8 @@ export default class Indicator extends Component {
 
           if (responses.length === 0
               // Fallback in case of (synchronization or http) error
-              || (responses.every(r => r.length === 0 || r === null)
-              && !responses.every(r => r.length === responses[0].length))) {
+              || responses.every(r => r.length === 0 || r === null)
+              || !responses.every(r => r.length === responses[0].length)) {
             return this.state.forecast;
           }
 
