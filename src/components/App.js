@@ -181,9 +181,12 @@ export default class App extends Component {
 }
 
 function Title() {
+  // Other ideas:
+  //   Trappy Trade
+  //   Tracky Trade
   return <div id="title" className="w3-container w3-theme-d3">
     <h1>
-      <Link to='/'>Tranquilo Trading</Link>
+      <Link to='/'>Trashy Trade</Link>
     </h1>
   </div>
 }
