@@ -11,11 +11,12 @@ export default function Hvp(props) {
     chart={HvpChart}
     limit={150}
     windowLimit={33}
+    forecast={true}
   />;
 }
 
 function HvpChart(props) {
-  let { hvp } = props;
+  let { hvp, forecast } = props;
   const { hvp_ma, title } = props;
   if (!hvp) { return null; }
 
@@ -42,6 +43,17 @@ function HvpChart(props) {
         enabled:         true,
         snapToDataPoint: true,
       },
+      stripLines:        [{
+        value:        forecast[0].hvp[0].x,
+        color:        "white",
+        opacity:      0.5,
+        lineDashType: "dash",
+      }, {
+        startValue:   forecast[0].hvp[0].x,
+        endValue:     forecast[0].hvp[forecast[0].hvp.length - 1].x,
+        color:        "white",
+        opacity:      0.05,
+      }],
     },
     axisY:            [{
       includeZero:       true,
@@ -59,6 +71,17 @@ function HvpChart(props) {
       type:          "column",
       xValueType:    "dateTime",
       dataPoints:    hvp,
+      markerType:    "none",
+    }, {
+      type:          "column",
+      xValueType:    "dateTime",
+      dataPoints:    forecast[0].hvp,
+      markerType:    "none",
+    }, {
+      lineColor:     "white",
+      type:          "line",
+      xValueType:    "dateTime",
+      dataPoints:    forecast[0].hvp_ma,
       markerType:    "none",
     }, {
       lineColor:     "white",
