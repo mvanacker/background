@@ -1,4 +1,4 @@
-import { stdNormalCDF, stdNormalInverseCDF, stdNormalPDF } from "./util.math";
+import { stdNormalCDF, stdNormalInverseCDF, stdNormalPDF } from './math';
 
 export function compute_d1(price, strike, volatility, time) {
   return (Math.log(price / strike) + volatility ** 2 / 2 * time)

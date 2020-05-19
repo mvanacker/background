@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { instanceOf } from "prop-types";
 import { Cookies, withCookies } from "react-cookie";
 
-import setYearlyCookie from './util.cookie';
+import setYearlyCookie from '../util/cookie';
 import { DoubleLeft, DoubleRight } from './common/Icons';
 
 class Content extends Component {

@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { DATA_URI, REFRESH_RATE } from "../config";
 import { instanceOf } from "prop-types";
 import { Cookies, withCookies } from "react-cookie";
-import { round_to } from '../util.math';
-import { compute_probs, compute_reverse } from "../util.math.bs";
+import { round_to } from '../../util/math';
+import { compute_probs, compute_reverse } from "../../util/math.bs";
 
 class Probs extends Component {
   static propTypes = {

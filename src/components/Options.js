@@ -6,12 +6,12 @@ import { Cookies, withCookies } from "react-cookie";
 
 import { 
   compute_call, compute_put, compute_prob_itm, compute_iv_call, compute_iv_put
-} from './util.math.bs';
-import { round_to } from './util.math';
-import { reverseEnum } from './util.enum';
-import { toYears, toDaysHours } from './util.date';
-import { zip } from './util.general';
-import setYearlyCookie from './util.cookie';
+} from '../util/math.bs';
+import { round_to } from '../util/math';
+import { reverseEnum } from '../util/enum';
+import { toYears, toDaysHours } from '../util/date';
+import { zip } from '../util/general';
+import setYearlyCookie from '../util/cookie';
 
 import Tabs from './common/Tabs';
 import Panel from './common/Panel';

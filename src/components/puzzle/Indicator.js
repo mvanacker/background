@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 
 import { DATA_URI } from '../config';
-import { isoStringToUnix } from '../util.date';
-import { zip } from '../util.general';
+import { isoStringToUnix } from '../../util/date';
+import { zip } from '../../util/general';
 import Panel from '../common/Panel';
 
 const REFRESH_RATE = 60000;// milliseconds
