@@ -155,8 +155,7 @@ export default function VolumeFlowChart() {
 
         const priceAxis = g => g
           .call(axisRight(priceScale)
-            .ticks(3)
-            .tickSizeOuter(0))
+            .ticks(3))
 
         const priceLine = line()
           .x(d => x(d.x))
@@ -170,8 +169,7 @@ export default function VolumeFlowChart() {
         const openInterestAxis = g => g
           .call(axisRight(openInterestScale)
             .ticks(3)
-            .tickFormat(y => format('.3s')(y))
-            .tickSizeOuter(0));
+            .tickFormat(y => format('.3s')(y)));
 
         const openInterestLine = line()
           .x(d => x(d.x))
