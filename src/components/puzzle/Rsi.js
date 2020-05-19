@@ -1,7 +1,6 @@
 import React from 'react';
 
 import CanvasJSReact from '../../canvasjs.react';
-import { Up, Down } from '../common/Icons';
 import Indicator from './Indicator.js';
 
 export default function Rsi(props) {
@@ -16,20 +15,14 @@ export default function Rsi(props) {
 }
 
 function RsiChart(props) {
-  const { rsi, title, format } = props;
-  // const rsi_ema = props['rsi-ema'];
+  const { rsi, title } = props;
   if (!rsi) { return null; }
-  
-  // const crossed_up = rsi[0].y > rsi_ema[0].y;
 
   const options = {
     animationEnabled: true,
     theme:            "dark2",
     backgroundColor:  "transparent",
     height:           180,
-    toolTip:          {
-      enabled: false,
-    },
     axisX:            {
       lineThickness:     0.5,
       crosshair:         {
@@ -37,7 +30,6 @@ function RsiChart(props) {
         snapToDataPoint: true,
         color:           "white",
       },
-      // ...format,
     },
     axisY:            [{
       includeZero:       true,
@@ -48,7 +40,6 @@ function RsiChart(props) {
       interval:          20,
       crosshair:         {
         enabled:         true,
-        // snapToDataPoint: true,
         labelMaxWidth:   40,
         color:           "white",
       },
@@ -76,7 +67,6 @@ function RsiChart(props) {
 
   return <div className="w3-cell my-fourth" style={{'padding': '0 4px'}}>
     {title}
-    {/* {rsi_ema[0].y === null ? '' : crossed_up ? <Up/> : <Down/> } */}
     <CanvasJSReact.CanvasJSChart options={options}/>
   </div>;
 }

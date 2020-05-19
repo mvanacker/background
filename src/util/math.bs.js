@@ -67,7 +67,6 @@ export function compute_iv(price, strike, time, premium, compute_premium) {
     const premium_i = compute_premium(price, strike, iv, time);
     const vega_i = compute_vega(price, strike, iv, time);
     const iv_i = iv - (premium_i - premium) / vega_i;
-    console.log(iv_i);
     if (Math.abs(iv_i - iv) < 0.00001 || isNaN(iv_i)) { 
       iv = iv_i;
       break;

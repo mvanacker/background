@@ -16,7 +16,7 @@ export default function Hvp(props) {
 
 function HvpChart(props) {
   let { hvp } = props;
-  const { hvp_ma, title, format } = props;
+  const { hvp_ma, title } = props;
   if (!hvp) { return null; }
 
   // Add color to the histogram
@@ -36,14 +36,12 @@ function HvpChart(props) {
     theme:            "dark2",
     backgroundColor:  "transparent",
     height:           180,
-    // toolTip:          { enabled: false, },
     axisX:            {
       lineThickness:     0.5,
       crosshair:         {
         enabled:         true,
         snapToDataPoint: true,
       },
-      // ...format,
     },
     axisY:            [{
       includeZero:       true,
@@ -54,7 +52,6 @@ function HvpChart(props) {
       interval:          20,
       crosshair:         {
         enabled:         true,
-        // snapToDataPoint: true,
         labelMaxWidth:   40,
       },
     }],

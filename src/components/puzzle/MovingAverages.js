@@ -19,7 +19,7 @@ export default function MovingAverages(props) {
 
 function OhlcChart(props) {
   const { open, high, low, close, ema_21, ema_55, ema_89, ema_200, ema_377,
-    sma_10, sma_200, title, format, forecast } = props;
+    sma_10, sma_200, title, forecast } = props;
   if (!open) { return null; }
 
   // Resample candles (a bit of overhead, but clean)
@@ -57,7 +57,6 @@ function OhlcChart(props) {
     theme:            "dark2",
     backgroundColor:  "transparent",
     height:           180,
-    // toolTip:          { enabled: false },
     axisX:            {
       lineThickness:     0.5,
       crosshair:         {
@@ -75,7 +74,6 @@ function OhlcChart(props) {
         color:        "white",
         opacity:      0.07,
       }],
-      // ...format,
     },
     axisY:            [{
       minimum:           lowest,
@@ -85,7 +83,6 @@ function OhlcChart(props) {
       lineThickness:     0.5,
       crosshair:         {
         enabled:         true,
-        // snapToDataPoint: true,
         labelMaxWidth:   40,
       },
     }],

@@ -28,7 +28,6 @@ export default withCookies(class Options extends Component {
   constructor(props) {
     super(props);
     const { cookies } = this.props;
-    console.log(cookies.get('form-optionPractical-daysRemaining'));
     this.state = {
       activeForm: cookies.get('activeForm') || Form.UNDERLYING,
       form:       {

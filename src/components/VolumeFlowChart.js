@@ -267,9 +267,6 @@ export default function VolumeFlowChart() {
 
           // Process new data
           .then(data => {
-            console.log(data);
-            console.log(data.map(isNaN));
-
             let [lastBuyFlow, lastSellFlow, lastPrice, lastOpenInterest] = data;
 
             // TODO temporary patch until I rewire the back-end

@@ -121,7 +121,6 @@ class Deribit extends Component {
     .then(result => {
 
       if (result) {
-        // console.log(result);
 
         // cancel current polling on subsequent passes
         if (this.updateInterval) {
