@@ -43,7 +43,7 @@ export default function VolumeFlowChart() {
   const alarm = (audioId, flow, price) => {
     const beep = document.getElementById(audioId);
     try {
-      if (price > 0 && flow >= price * ALARM_SCALAR) {
+      if (flow >= price * ALARM_SCALAR) {
         beep.play();
       } else {
         beep.pause();
@@ -284,8 +284,8 @@ export default function VolumeFlowChart() {
             }
 
             // Firstly sound any alarm
-            alarm(beepUpId, buyFlow, lastPrice);
-            alarm(beepDownId, sellFlow, lastPrice);
+            alarm(beepUpId, lastBuyFlow, lastPrice);
+            alarm(beepDownId, lastSellFlow, lastPrice);
 
             // Set page title
             document.title = lastPrice;
