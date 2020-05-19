@@ -156,27 +156,24 @@ export default class Indicator extends Component {
 
           // Zip the standard deviation levels together (0, n-1), (1, n-2), ...
           for (const tf in forecast) {
-            const zipt_tf = {};
+            const zipped_tf = {};
             const len = Object.keys(forecast[tf]).length;
             const half_len = Math.floor(len / 2);
             for (let level = 0; level < half_len; level++) {
               const new_level = half_len - level;// lower level <=> lower index
-              zipt_tf[new_level] = {};
+              zipped_tf[new_level] = {};
               for (const column in forecast[tf][level]) {
                 const lower = forecast[tf][level][column];
                 const upper = forecast[tf][len - 1 - level][column];
-                zipt_tf[new_level][column] = zip(lower, upper).map(([l, u]) => {
-                  return { x: l.x, y: [l.y, u.y] };
-                });
+                zipped_tf[new_level][column] = zip(lower, upper)
+                  .map(([l, u]) => ({
+                    x: l.x,
+                    y: [l.y, u.y],
+                  }));
               }
             }
-            zipt_tf[0] = {};
-            for (const column in forecast[tf][half_len]) {
-              zipt_tf[0][column] = forecast[tf][half_len][column].map(d => {
-                return { x: d.x, y: [d.y, d.y] };
-              });
-            }
-            forecast[tf] = zipt_tf;
+            zipped_tf[0] = forecast[tf][half_len];
+            forecast[tf] = zipped_tf;
           }
 
           return forecast;

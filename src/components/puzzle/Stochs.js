@@ -82,14 +82,14 @@ function StochChart(props) {
       fillOpacity:       0.5,
     }, {
       lineColor:         "white",
-      type:              "rangeArea",
+      type:              "line",
       xValueType:        "dateTime",
       dataPoints:        forecast[0].stoch_K_D,
       markerType:        "none",
       lineThickness:     1.3,
     }, {
       lineColor:         "orange",
-      type:              "rangeArea",
+      type:              "line",
       xValueType:        "dateTime",
       dataPoints:        forecast[0].stoch_K,
       markerType:        "none",
