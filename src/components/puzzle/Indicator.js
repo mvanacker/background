@@ -189,9 +189,9 @@ export default class Indicator extends Component {
           if (tf in history) {
             for (const level in forecast[tf]) {
               for (const column in forecast[tf][level]) {
-                const part = history[tf][column][0];
-                const prep = { x: part.x, y: [part.y, part.y] };
-                forecast[tf][level][column].unshift(prep);
+                const { x, y } = history[tf][column][0];
+                const head = level === '0' ? { x, y } : { x, y: [y, y] };
+                forecast[tf][level][column].unshift(head);
               }
             }
           }
