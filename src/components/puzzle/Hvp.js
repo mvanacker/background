@@ -95,9 +95,9 @@ function HvpChart(props) {
   return <div className="w3-cell my-fourth" style={{'padding': '0 4px'}}>
     {title} {
       very_low_vol
-        ? <Alarm title="Below 20"/>
+        ? <Alarm title="Below 10"/>
         : low_vol
-          ? <Alert title="Below 10"/>
+          ? <Alert title="Below 20"/>
           : ''
     }
     <CanvasJSReact.CanvasJSChart options={options}/>
