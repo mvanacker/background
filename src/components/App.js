@@ -99,7 +99,7 @@ function Title() {
   //   Bitcoin Market Forecast
   return <div id="title" className="w3-container w3-theme-d3">
     <h1>
-      <Link to='/'>Bitcoin Market Forecast</Link>
+      <Link to='/'>Technical Forecast</Link>
     </h1>
   </div>
 }
