@@ -21,11 +21,14 @@ import Stochs from './components/puzzle/Stochs';
 import Rsi from './components/puzzle/Rsi';
 import Hvp from './components/puzzle/Hvp';
 
+// Easter eggs
+import Probs from './components/easter-eggs/Probs';
+import Futures from './components/easter-eggs/Futures';
+import Simulation from './components/easter-eggs/Simulation';
+
 // Deprecated components
 import IV from './components/deprecated/IV';
 import GIV from './components/deprecated/GIV';
-import Probs from './components/deprecated/Probs';
-import Futures from './components/deprecated/Futures';
 import TradeJournal from './components/deprecated/TradeJournal';
 
 // UI components
@@ -75,15 +78,17 @@ ReactDOM.render(
             <Route path='/stochs' component={Stochs}/>
             <Route path='/rsi' component={Rsi}/>
             <Route path='/volatility' component={Hvp}/>
-
             <Route path='/trade' component={Trade}/>
             <Route path='/options' component={Options}/>
+
+            {/* Easter eggs */}
+            <Route path='/probs' component={Probs}/>
+            <Route path='/futures' component={Futures}/>
+            <Route path='/simulation' component={Simulation}/>
 
             {/* Deprecated features */}
             <Route path='/iv' component={IV}/>
             <Route path='/giv' component={GIV}/>
-            <Route path='/probs' component={Probs}/>
-            <Route path='/futures' component={Futures}/>
             <Route path='/journal' component={TradeJournal}/>
 
             {/* Testing */}
