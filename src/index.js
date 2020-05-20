@@ -25,6 +25,7 @@ import Hvp from './components/puzzle/Hvp';
 import IV from './components/deprecated/IV';
 import GIV from './components/deprecated/GIV';
 import Probs from './components/deprecated/Probs';
+import Futures from './components/deprecated/Futures';
 import TradeJournal from './components/deprecated/TradeJournal';
 
 // UI components
@@ -82,6 +83,7 @@ ReactDOM.render(
             <Route path='/iv' component={IV}/>
             <Route path='/giv' component={GIV}/>
             <Route path='/probs' component={Probs}/>
+            <Route path='/futures' component={Futures}/>
             <Route path='/journal' component={TradeJournal}/>
 
             {/* Testing */}
