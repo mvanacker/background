@@ -1,15 +1,14 @@
 import React from 'react';
 
 export default function Panel(props) {
-  const { theme, title, children, padding, margin, titleFont } = props;
+  const { theme, title, children, padding, margin } = props;
   const _theme = !theme ? 'w3-theme-d3' : theme;
   const _padding = padding ? 'w3-padding-16' : '';
   const _margin = margin === undefined || margin === true ? 'w3-margin' : '';
-  const titleStyle = { fontFamily: titleFont ? titleFont : 'Oswald' };
-  return <div className={`${_margin} w3-container w3-padding-16 ${_theme}`}>
+  return <div className={`${_margin} w3-padding-large ${_theme}`}>
     {
       title === false ? ''
-        : <h4 className="w3-center" style={titleStyle}>{title}</h4>
+        : <h4 className="w3-center my-panel-title">{title}</h4>
     }
     <div className={_padding}>{children}</div>
   </div>;

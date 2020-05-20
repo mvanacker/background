@@ -4,9 +4,8 @@ html, body, div#root {
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Kreon', 'Segoe UI', 'Roboto',
-    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
-    'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Roboto',
+    'Segoe UI', sans-serif;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -15,6 +14,14 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.my-panel-title {
+  font-family: 'Roboto Condensed';
+}
+
+.monospace {
+  font-family: 'Roboto Mono', 'PT Mono', Monaco, Menlo, Consolas, "Courier New", monospace;
 }
 
 div#title {
@@ -28,7 +35,7 @@ div#title {
 
 div#title h1 {
   font-family: 'Parisienne', 'Alex Brush', 'Allura', 'Dancing Script', serif;
-  font-size: 42pt;
+  font-size: 80pt;
   text-decoration: none;
 }
 
@@ -36,14 +43,23 @@ div#title h1 a {
   text-decoration: none;
 }
 
+.toggle-handle {
+  position: fixed;
+  bottom: 20px;
+  cursor: pointer;
+  padding: 8px 8px 8px 15px;
+  opacity: 0.6;
+  transition: 0.3s;
+}
+
+.toggle-handle:hover {
+  opacity: 1;
+}
+
 nav.my-nav {
   position: sticky;
   top: 0;
   z-index: 1;
-}
-
-.monospace {
-  font-family: 'PT Mono', Monaco, Menlo, Consolas, "Courier New", monospace;
 }
 
 .my-column {

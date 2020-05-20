@@ -6,7 +6,7 @@ export default function Navigation(props) {
   const navTheme = level ? `w3-theme-d${5 - level}` : 'w3-theme-d4';
   const navStyle = `my-nav w3-bar ${navTheme}`;
   const linkStyle = 'w3-bar-item w3-button w3-hover-theme';
-  const offset = { top: `${39 * (level - 1)}px` };
+  const offset = { top: `${40 * (level - 1)}px` };
   return <nav className={navStyle} style={offset}>
     {
       Object.entries(items).map(([key, val]) => 

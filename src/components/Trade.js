@@ -591,7 +591,7 @@ class Trade extends Component {
   render() {
     const { entry, stop, profit, risk, instrument } = this.state;
     const { cookies, account_summary, instruments } = this.props;
-    return <div>
+    return <div className="w3-container">
       <div className="w3-center w3-theme-l1 w3-padding w3-section">
         You are kindly advised to <b>log out</b> after usage.
       </div>

@@ -97,9 +97,10 @@ function Title() {
   //   Trashy Trade
   //   Poor Man's Trading
   //   Bitcoin Market Forecast
+  //   Technical Forecast
   return <div id="title" className="w3-container w3-theme-d3">
     <h1>
-      <Link to='/'>Technical Forecast</Link>
+      <Link to='/'>Maurits'</Link>
     </h1>
   </div>
 }

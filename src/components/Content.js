@@ -28,38 +28,18 @@ class Content extends Component {
   render() {
     const { visible } = this.state;
     const { left, right } = this.props;
-    const hideHandle = {
-      position: 'fixed',
-      bottom: '20px',
-      cursor: 'pointer',
-      padding: '5px 5px 5px 15px',
-      margin: '5px 5px 5px 0',
-    };
-    const showHandle = {
-      ...hideHandle,
-    };
-    const leftStyle = {
-      minWidth: '375px',
-      width: '500px',
-      display: this.state.visible ? 'table-cell' : 'none',
-    };
-    const handleClass = "w3-theme-l1";
+    const handleClass = "w3-theme-l1 toggle-handle";
+
     return <div>
-      {
-        visible
-          ? <span onClick={() => this.setVisible(false)}>
-            <span style={hideHandle} className={handleClass}>
-              <DoubleLeft title="Hide"/>
-            </span>
-          </span>
-          : <span onClick={() => this.setVisible(true)}>
-            <span style={showHandle} className={handleClass}>
-              <DoubleRight title="Show"/>
-            </span>
-          </span>
-      }
+      <span className={handleClass} onClick={() => this.setVisible(!visible)}>
+        {visible ? <DoubleLeft title="Hide"/> : <DoubleRight title="Show"/>}
+      </span>
       <div className="w3-cell-row" style={{width:'100%'}}>
-        <div style={leftStyle}>{left}</div>
+        <div style={{
+          minWidth: '375px',
+          width: '500px',
+          display: visible ? 'table-cell' : 'none',
+        }}>{left}</div>
         <div className="w3-cell">{right}</div>
       </div>
     </div>;

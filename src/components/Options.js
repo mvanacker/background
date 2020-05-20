@@ -362,7 +362,7 @@ export default withCookies(class Options extends Component {
     const FormComponent = FormComponents[_activeForm];
     return <div>
       <Tabs enum={Form} titles={FormTitles} onClick={this.onTabsClick}/>
-      <div className="w3-cell-row">
+      <div className="w3-cell-row w3-container">
         <div className="w3-cell">
           <FormComponent
             formData={form[formStateName]} formStateName={formStateName}
@@ -446,7 +446,7 @@ function Underlying(props) {
   const { hedgeOnly } = props.formData;
   const { onFormChange, formStateName, onLong, onShort } = props;
   return <form>
-    <div className="w3-content w3-theme-d5">
+    <div className="w3-section w3-theme-d5">
       <InputQuantity
         value={quantity} min="1"
         onChange={e => onFormChange(e, formStateName, 'quantity')}
@@ -478,7 +478,7 @@ function OptionPractical(props) {
                        hoursRemaining + hoursTransacted)
   const iv = compute_iv(type, underlyingPrice, strike, time, premium);
   return <form>
-    <div className="w3-content w3-theme-dark">
+    <div className="w3-section w3-theme-dark">
       <InputQuantity
         value={quantity} step="0.1" min="0.1"
         onChange={e => onFormChange(e, formStateName, 'quantity')}
@@ -553,7 +553,7 @@ function OptionTheoretical(props) {
   const put = compute_put(underlyingPrice, strike, volatility, timeRemaining);
   const { onFormChange, formStateName, onLong, onShort } = props;
   return <form>
-    <div className="w3-content w3-theme-d5">
+    <div className="w3-section w3-theme-d5">
       <InputQuantity
         value={quantity} step="0.1" min="0.1"
         onChange={e => onFormChange(e, formStateName, 'quantity')}
