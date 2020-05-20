@@ -10,7 +10,7 @@ export default function Hvp(props) {
     columns={['hvp', 'hvp_ma']}
     chart={HvpChart}
     limit={150}
-    windowLimit={33}
+    windowLimit={40}
     forecast={true}
   />;
 }
