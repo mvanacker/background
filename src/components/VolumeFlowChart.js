@@ -10,7 +10,7 @@ import { timeFormat } from 'd3-time-format';
 
 import beepDown from '../assets/beep_down.mp3';
 import beepUp from '../assets/beep_up.mp3';
-import { DATA_URI, REFRESH_RATE } from './config';
+import { DATA_URI, REFRESH_RATE } from '../config';
 
 import '../volume-flow-chart.css';
 

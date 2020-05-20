@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { DATA_URI } from "../config";
+import { DATA_URI } from "../../config";
 import { mean } from '../../util/math';
 import moment from 'moment';
 

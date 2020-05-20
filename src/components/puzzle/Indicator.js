@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { DATA_URI } from '../config';
+import { DATA_URI } from '../../config';
 import { isoStringToUnix } from '../../util/date';
 import { zip } from '../../util/general';
 import Panel from '../common/Panel';

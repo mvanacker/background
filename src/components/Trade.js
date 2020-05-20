@@ -4,7 +4,7 @@ import { element, func, instanceOf, object } from "prop-types";
 import { Cookies, withCookies } from "react-cookie";
 
 import { lcm, mean as mean_, round_to } from '../util/math';
-import { DATA_URI, REFRESH_RATE } from './config';
+import { DATA_URI, REFRESH_RATE } from '../config';
 import { dump_params } from '../util/web';
 import setYearlyCookie from '../util/cookie';
 

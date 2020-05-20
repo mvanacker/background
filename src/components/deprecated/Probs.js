@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { DATA_URI, REFRESH_RATE } from "../config";
+import { DATA_URI, REFRESH_RATE } from "../../config";
 import { instanceOf } from "prop-types";
 import { Cookies, withCookies } from "react-cookie";
 import { round_to } from '../../util/math';

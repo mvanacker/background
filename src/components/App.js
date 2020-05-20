@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { Link } from 'react-router-dom';
 
-import { DATA_URI } from "./config";
+import { DATA_URI } from "../config";
 
 import VolumeFlowChart from './VolumeFlowChart';
 import Panel from './common/Panel';

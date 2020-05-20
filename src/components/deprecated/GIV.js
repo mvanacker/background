@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { DATA_URI } from "../config";
+import { DATA_URI } from "../../config";
 import { parseFilename, parsePoints } from '../../util/IV';
 import SimpleChart from './SimpleChart';
 
