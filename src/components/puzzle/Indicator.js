@@ -27,20 +27,21 @@ export default class Indicator extends Component {
     ];
     this.termsTitles = ["Short Term", "Medium Term", "Long Term"];
 
+    const { columns } = this.props;
     const initState = {
       history:  {},
-      forecast: this.initialForecast(),
+      forecast: {},
     };
-    this.timeframes.forEach(tf => initState.history[tf] = {});
+    this.timeframes.forEach(tf => {
+      initState.history[tf] = {};
+      initState.forecast[tf] = {'0': {}};
+      columns.forEach(col => initState.forecast[tf][0][col] = []);
+    })
     this.state = initState;
   }
 
   initialForecast() {
     const forecast = {'0': {}};
-    this.timeframes.forEach(tf => {
-      forecast[tf] = {'0': {}};
-      this.props.columns.forEach(col => forecast[tf][0][col] = []);
-    });
     return forecast;
   }
 
@@ -215,7 +216,6 @@ export default class Indicator extends Component {
 
   render() {
     const { history, forecast } = this.state;
-    const { forecast: hasForecast } = this.props;
     const hasHistoryLoaded = Object.keys(history['1h']).length === 0;
     return <div className="w3-container w3-section w3-center">
       {
