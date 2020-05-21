@@ -41,6 +41,12 @@ import Navigation from './components/common/Navigation';
 // Test component(s)
 import Test from './sandbox/Test.js';
 
+// When a page has a vertical scrollbar, a white band appears at its bottom.
+// To counter this, I place the background color directly on the <html> tag,
+// which does stretch all the way to the bottom, unlike the <body> element or
+// the <div id="root"> element, even when the page has a vertical scrollbar.
+document.body.classList.add('w3-theme-dark');
+
 // Right-hand side of the application
 // A note on resize detection: it forces rerenders on resizes, if the left-hand
 // side of the application (or any future hideable component) is hidden, the
