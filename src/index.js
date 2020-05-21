@@ -40,29 +40,19 @@ import Navigation from './components/common/Navigation';
 // Test component(s)
 import Test from './sandbox/Test.js';
 
-// Define affordances
-const Affordance = {
-  HOME:     0,
-  TRADE:    1,
-  OPTIONS:  2,
-};
-const AffordanceTitles = {
-  HOME:     'Home',
-  TRADE:    'Trade',
-  OPTIONS:  'Options',
-};
-const AffordancePaths = {
-  HOME:     '/',
-  TRADE:    '/trade',
-  OPTIONS:  '/options',
-};
-
 // Right-hand side of the application
 const Right = () => <div>
   <Navigation
-    items={Affordance}
-    titles={AffordanceTitles}
-    paths={AffordancePaths}
+    items={[{
+      title: 'Home',
+      path:  '/',
+    }, {
+      title: 'Trade',
+      path:  '/trade',
+    }, {
+      title: 'Options',
+      path:  '/options',
+    }]}
   />
 
   {/* Top-level pages */}
