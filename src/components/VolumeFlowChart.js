@@ -25,7 +25,7 @@ const ALARM_SCALAR = 75;
 export default function VolumeFlowChart() {
 
   // Decide dimensions
-  const margin = { top: 10, bottom: 25, flow: 65, price: 50, openInterest: 40 };
+  const margin = { top: 25, bottom: 25, flow: 65, price: 50, openInterest: 40 };
   const width = 468;
   const height = 300;
 
