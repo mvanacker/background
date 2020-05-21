@@ -40,11 +40,6 @@ export default class Indicator extends Component {
     this.state = initState;
   }
 
-  initialForecast() {
-    const forecast = {'0': {}};
-    return forecast;
-  }
-
   componentDidMount() {
     const { title, columns, forecast } = this.props;
     const { limit, windowLimit } = this.props;
@@ -219,7 +214,16 @@ export default class Indicator extends Component {
     const hasHistoryLoaded = Object.keys(history['1h']).length === 0;
     return <div className="w3-container w3-section w3-center">
       {
-        hasHistoryLoaded ? <div className="w3-margin"><Loading256/></div>
+        hasHistoryLoaded
+        ? <div className="w3-content" style={{
+            // 80px menu, 2x16px margins, 2x16px padding
+            height: 'calc(100vh - 112px)',
+            display: 'table',
+          }}>
+          <div className="w3-cell w3-cell-middle">
+            <Loading256/>
+          </div>
+        </div>
         : this.terms.map((term, i) =>
           <Panel title={this.termsTitles[i]} key={i}>
             <div className="w3-cell-row w3-center">
