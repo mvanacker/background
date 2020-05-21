@@ -10,6 +10,7 @@ import './index.css';
 import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { CookiesProvider } from "react-cookie";
+import { withResizeDetector } from 'react-resize-detector';
 
 // Components
 import Content from './components/Content';
@@ -41,7 +42,11 @@ import Navigation from './components/common/Navigation';
 import Test from './sandbox/Test.js';
 
 // Right-hand side of the application
-const Right = () => <div>
+// A note on resize detection: it forces rerenders on resizes, if the left-hand
+// side of the application (or any future hideable component) is hidden, the
+// charts on the right-hand side won't change into an overlapping mess.
+// Changing charting libraries might alleviate this necessity in the future.
+const Right = withResizeDetector(() => <div>
   <Navigation
     items={[{
       title: 'Home',
@@ -79,7 +84,7 @@ const Right = () => <div>
 
   {/* Testing */}
   <Route path='/test' component={Test}/>
-</div>;
+</div>);
 
 // Render application
 ReactDOM.render(
