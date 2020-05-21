@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+
 import './w3.css';
 import './w3-theme-indigo.css';
 import './w3-theme-indigo-extension.css';
 import './components/App.css';
 import './index.css';
+
 import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { CookiesProvider } from "react-cookie";
@@ -15,6 +17,7 @@ import App from './components/App';
 import Trade from './components/Trade';
 import Options from './components/Options';
 
+// Puzzle pieces
 import Puzzle from './components/Puzzle';
 import MovingAverages from './components/puzzle/MovingAverages';
 import Stochs from './components/puzzle/Stochs';
@@ -37,18 +40,12 @@ import Navigation from './components/common/Navigation';
 // Test component(s)
 import Test from './sandbox/Test.js';
 
-// When a page has a vertical scrollbar, a white band appears at its bottom.
-// To counter this, I place the background color directly on the <html> tag,
-// which does stretch all the way to the bottom, unlike the <body> element or
-// the <div id="root"> element, even when the page has a vertical scrollbar.
-document.body.classList.add('w3-theme-dark');
-
-// Affordance
+// Define affordances
 const Affordance = {
   HOME:     0,
   TRADE:    1,
   OPTIONS:  2,
-}
+};
 const AffordanceTitles = {
   HOME:     'Home',
   TRADE:    'Trade',
@@ -60,41 +57,46 @@ const AffordancePaths = {
   OPTIONS:  '/options',
 };
 
-// Rendering
+// Right-hand side of the application
+const Right = () => <div>
+  <Navigation
+    items={Affordance}
+    titles={AffordanceTitles}
+    paths={AffordancePaths}
+  />
+
+  {/* Top-level pages */}
+  <Route path='/' component={Puzzle}/>
+  <Route exact path='/' component={MovingAverages}/>
+  <Route path='/trade' component={Trade}/>
+  <Route path='/options' component={Options}/>
+
+  {/* Puzzle pieces */}
+  <Route path='/moving-averages' component={MovingAverages}/>
+  <Route path='/stochs' component={Stochs}/>
+  <Route path='/rsi' component={Rsi}/>
+  <Route path='/volatility' component={Hvp}/>
+
+  {/* Easter eggs */}
+  <Route path='/probs' component={Probs}/>
+  <Route path='/futures' component={Futures}/>
+  <Route path='/simulation' component={Simulation}/>
+
+  {/* Deprecated features */}
+  <Route path='/iv' component={IV}/>
+  <Route path='/giv' component={GIV}/>
+  <Route path='/journal' component={TradeJournal}/>
+
+  {/* Testing */}
+  <Route path='/test' component={Test}/>
+</div>;
+
+// Render application
 ReactDOM.render(
   <CookiesProvider>
     <div className="w3-theme-dark w3-text-white">
       <Router>
-        <Content left={<App/>} right={
-          <div>
-            <Navigation
-              items={Affordance}
-              titles={AffordanceTitles}
-              paths={AffordancePaths}
-            />
-            <Route path='/' component={Puzzle}/>
-            <Route exact path='/' component={MovingAverages}/>
-            <Route path='/moving-averages' component={MovingAverages}/>
-            <Route path='/stochs' component={Stochs}/>
-            <Route path='/rsi' component={Rsi}/>
-            <Route path='/volatility' component={Hvp}/>
-            <Route path='/trade' component={Trade}/>
-            <Route path='/options' component={Options}/>
-
-            {/* Easter eggs */}
-            <Route path='/probs' component={Probs}/>
-            <Route path='/futures' component={Futures}/>
-            <Route path='/simulation' component={Simulation}/>
-
-            {/* Deprecated features */}
-            <Route path='/iv' component={IV}/>
-            <Route path='/giv' component={GIV}/>
-            <Route path='/journal' component={TradeJournal}/>
-
-            {/* Testing */}
-            <Route path='/test' component={Test}/>
-          </div>
-        }/>
+        <Content left={<App/>} right={<Right/>}/>
       </Router>
     </div>
   </CookiesProvider>,
