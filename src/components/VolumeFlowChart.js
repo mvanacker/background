@@ -329,7 +329,11 @@ export default function VolumeFlowChart() {
               // Update flow axis
               flowScale.domain([
                 MIN_FLOW,
-                Math.max(MAX_FLOW, buyFlow[last].y, sellFlow[last].y),
+                Math.max(
+                  MAX_FLOW,
+                  max(buyFlow, d => d.y),
+                  max(sellFlow, d => d.y)
+                ),
               ]);
               svg.select('g.flow-axis')
                   .call(flowAxis);
