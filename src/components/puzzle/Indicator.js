@@ -3,6 +3,8 @@ import React, { Component } from 'react';
 import { DATA_URI } from '../../config';
 import { isoStringToUnix } from '../../util/date';
 import { zip } from '../../util/general';
+
+import { Loading256 } from '../common/Icons';
 import Panel from '../common/Panel';
 
 const REFRESH_RATE = 60000;// milliseconds
@@ -214,20 +216,23 @@ export default class Indicator extends Component {
   render() {
     const { history, forecast } = this.state;
     const { forecast: hasForecast } = this.props;
-    return <div className="w3-container w3-section">
+    const hasHistoryLoaded = Object.keys(history['1h']).length === 0;
+    return <div className="w3-container w3-section w3-center">
       {
-        this.terms.map((term, i) => <Panel title={this.termsTitles[i]} key={i}>
-          <div className="w3-cell-row w3-center">
-            {
-              term.map((tf, j) =>
-                <this.props.chart key={j}
-                  {...history[tf]}
-                  forecast={forecast[tf]}
-                  title={this.titles[i][j]}
-                />)
-            }
-          </div>
-        </Panel>)
+        hasHistoryLoaded ? <div className="w3-margin"><Loading256/></div>
+        : this.terms.map((term, i) =>
+          <Panel title={this.termsTitles[i]} key={i}>
+            <div className="w3-cell-row w3-center">
+              {
+                term.map((tf, j) =>
+                  <this.props.chart key={j}
+                    {...history[tf]}
+                    forecast={forecast[tf]}
+                    title={this.titles[i][j]}
+                  />)
+              }
+            </div>
+          </Panel>)
       }
       {
         !hasForecast ? '' : <div className="w3-center w3-small">

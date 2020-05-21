@@ -8,6 +8,7 @@ import VolumeFlowChart from './VolumeFlowChart';
 import Panel from './common/Panel';
 import LabeledRow from './common/LabeledRow';
 import ListBlock from './common/ListBlock';
+import { Loading128 } from './common/Icons';
 
 // Never needs to update
 const VolumeFlowChartWrapper = React.memo(() => <VolumeFlowChart/>);
@@ -77,7 +78,9 @@ export default class App extends Component {
     return <div id="app">
       {
         isNaN(this.state.dominance)
-          ? 'Loading...'
+          ? <div className="w3-margin">
+            <Loading128/>
+          </div>
           : <div>
             <Title/>
             <Overview state={this.state}/>

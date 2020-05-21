@@ -8,6 +8,10 @@ import alert from '../../assets/alert.png';
 import alarm from '../../assets/alarm.png';
 import doubleLeft from '../../assets/double-left.png';
 import doubleRight from '../../assets/double-right.png';
+import loading32 from '../../assets/loading32.svg';
+import loading64 from '../../assets/loading64.svg';
+import loading128 from '../../assets/loading128.svg';
+import loading256 from '../../assets/loading256.svg';
 
 // filters computation app: https://codepen.io/sosuke/pen/Pjoqqp
 
@@ -38,7 +42,19 @@ export const Alarm = props =>
   <img src={alarm} title={props.title} alt={props.title} width='16px'/>;
 
 export const DoubleLeft = props =>
-  <img src={doubleLeft} title={props.title} alt={props.title} width='32px' style={white}/>
+  <img src={doubleLeft} title={props.title} alt={props.title} width='32px' style={white}/>;
 
 export const DoubleRight = props =>
-  <img src={doubleRight} title={props.title} alt={props.title} width='32px' style={white}/>
+  <img src={doubleRight} title={props.title} alt={props.title} width='32px' style={white}/>;
+
+export const Loading32 = () =>
+  <img src={loading32} title="Loading..." alt="Loading..."/>;
+  
+export const Loading64 = () =>
+  <img src={loading64} title="Loading..." alt="Loading..."/>;
+  
+export const Loading128 = () =>
+  <img src={loading128} title="Loading..." alt="Loading..."/>;
+
+export const Loading256 = () =>
+  <img src={loading256} title="Loading..." alt="Loading..."/>;

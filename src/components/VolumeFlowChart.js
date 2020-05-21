@@ -8,6 +8,7 @@ import { line } from 'd3-shape';
 import { format } from 'd3-format';
 import { timeFormat } from 'd3-time-format';
 
+import { Loading32 } from './common/Icons';
 import beepDown from '../assets/beep_down.mp3';
 import beepUp from '../assets/beep_up.mp3';
 import { DATA_URI, REFRESH_RATE } from '../config';
@@ -362,7 +363,7 @@ export default function VolumeFlowChart() {
     </audio>
     <div className="w3-cell-row">
       <div className="w3-cell w3-text-white" id={openInterestId}>
-        Loading...
+        <Loading32/>
       </div>
     </div>
     <div className="w3-cell-row w3-section">
@@ -371,20 +372,20 @@ export default function VolumeFlowChart() {
         style={{ color: 'royalblue' }}
         id={priceId}
       >
-        Loading...
+        <Loading32/>
       </div>
       <div
         className="w3-cell my-third w3-text-lime"
         id={buyFlowId}
       >
-        Loading...
+        <Loading32/>
       </div>
       <div
         className="w3-cell my-third"
         style={{ color : '#b33' }}
         id={sellFlowId}
       >
-        Loading...
+        <Loading32/>
       </div>
     </div>
     <svg
