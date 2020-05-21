@@ -173,9 +173,12 @@ class Deribit extends Component {
   render() {
     if (!this.state.response) {
       const { key, secret } = this.state;
-      return <div style={{maxWidth: '750px', margin: 'auto'}}>
-        <div className="w3-section w3-container w3-center w3-theme-l1 w3-padding">
-          Warning: do not use this. It will work, but your credentials will be sent over the internet unencrypted.
+      return <div style={{maxWidth: '600px', margin: 'auto'}}>
+        <div
+          className="w3-section w3-container w3-center w3-padding-large
+                     w3-theme-l1 w3-padding my-round">
+          Warning: do not use this tool yet. It will work, but it is unsafe.
+          Your credentials would be sent over the internet unencrypted.
         </div>
         <Panel padding={true}>
           <form onSubmit={this.authenticate}>
@@ -592,7 +595,7 @@ class Trade extends Component {
     const { entry, stop, profit, risk, instrument } = this.state;
     const { cookies, account_summary, instruments } = this.props;
     return <div className="w3-container">
-      <div className="w3-center w3-theme-l1 w3-padding w3-section">
+      <div className="w3-center w3-theme-l1 w3-padding w3-section my-round">
         You are kindly advised to <b>log out</b> after usage.
       </div>
       <div className="w3-cell-row">
@@ -688,7 +691,7 @@ function OrderButton(props) {
   const { isLong, onClick } = props;
   const color = isLong ? 'w3-green' : 'w3-red';
   const text = isLong ? 'Long' : 'Short';
-  const _class = `w3-button w3-block w3-xlarge w3-section ${color}`;
+  const _class = `w3-button w3-block w3-xlarge w3-section ${color} my-round`;
   return <button className={_class} onClick={onClick}>
     {text}
   </button>;

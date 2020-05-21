@@ -644,7 +644,7 @@ function Submit(props) {
     <div className="w3-cell">
       <button
         type="button" onClick={onLong}
-        className="w3-button w3-block w3-green w3-large"
+        className="w3-button w3-block w3-green w3-large my-round-left"
       >
         Long
       </button>
@@ -652,7 +652,7 @@ function Submit(props) {
     <div className="w3-cell">
       <button
         type="button" onClick={onShort}
-        className="w3-button w3-block w3-red w3-large"
+        className="w3-button w3-block w3-red w3-large my-round-right"
       >
         Short
       </button>

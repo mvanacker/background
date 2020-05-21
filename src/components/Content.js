@@ -28,7 +28,7 @@ class Content extends Component {
   render() {
     const { visible } = this.state;
     const { left, right } = this.props;
-    const handleClass = "w3-theme-l1 toggle-handle";
+    const handleClass = "w3-theme-l1 toggle-handle my-round-right";
 
     return <div>
       <span className={handleClass} onClick={() => this.setVisible(!visible)}>

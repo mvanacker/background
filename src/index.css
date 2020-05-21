@@ -20,6 +20,22 @@ code {
   font-family: 'Roboto Condensed';
 }
 
+.my-round {
+  border-radius: 8px;
+}
+
+.my-round-left {
+  border-radius: 8px 0 0 8px;
+}
+
+.my-round-right {
+  border-radius: 0 8px 8px 0;
+}
+
+.my-round-bottom {
+  border-radius: 0 0 8px 8px;
+}
+
 .monospace {
   font-family: 'Roboto Mono', 'PT Mono', Monaco, Menlo, Consolas, "Courier New", monospace;
 }

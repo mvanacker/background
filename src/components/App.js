@@ -101,7 +101,7 @@ function Title() {
   //   Poor Man's Trading
   //   Bitcoin Market Forecast
   //   Technical Forecast
-  return <div id="title" className="w3-container w3-theme-d3">
+  return <div id="title" className="w3-container w3-theme-d3 my-round-bottom">
     <h1>
       <Link to='/'>Maurits'</Link>
     </h1>
