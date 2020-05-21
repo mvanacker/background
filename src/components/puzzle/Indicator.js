@@ -234,11 +234,6 @@ export default class Indicator extends Component {
             </div>
           </Panel>)
       }
-      {
-        !hasForecast ? '' : <div className="w3-center w3-small">
-          Highlighted areas contain forecast values.
-        </div>
-      }
     </div>;
   }
 }
