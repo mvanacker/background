@@ -191,15 +191,14 @@ const update = async ({ columns, limit }) => {
 };
 
 // Data fetching hook
-function useData(options) {
+export function useData(options) {
   const [data, setData] = useState({});
   const callback = () => update(options).then(setData);
   useInterval(callback, REFRESH_RATE);
   return data;
 }
 
-export default function Indicator({ Chart, options }) {
-  const { history, forecast } = useData(options);
+export function Overview({ Chart, data: { history, forecast} }) {
   
   // Render loading icon
   if (!history) {
@@ -229,4 +228,8 @@ export default function Indicator({ Chart, options }) {
       </div>
     </Panel>);
   }
+}
+
+export default function Indicator({ options, ...props }) {
+  return <Overview {...props} data={useData(options)}/>
 };
