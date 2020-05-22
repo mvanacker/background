@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, memo } from 'react';
 
 import { Link } from 'react-router-dom';
 
@@ -11,7 +11,7 @@ import ListBlock from './common/ListBlock';
 import { Loading128 } from './common/Icons';
 
 // Never needs to update
-const VolumeFlowChartWrapper = React.memo(() => <VolumeFlowChart/>);
+const VolumeFlowChartWrapper = memo(() => <VolumeFlowChart/>);
 
 export default class App extends Component {
   constructor(props) {
