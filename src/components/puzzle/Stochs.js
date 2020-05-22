@@ -5,20 +5,18 @@ import { Up, Down } from '../common/Icons';
 
 import Indicator from './Indicator.js';
 
-export default function Stochs(props) {
-  return <Indicator
-    title='Stochs'
-    columns={['stoch_K', 'stoch_K_D']}
-    chart={StochChart}
-    limit={150}
-    windowLimit={33}
-    forecast={true}
-  />;
+export default function Stochs() {
+  const options = {
+    limit:   40,
+    columns: ['stoch_K', 'stoch_K_D'],
+  };
+  return <Indicator Chart={StochChart} options={options}/>;
 }
 
-function StochChart(props) {
-  const { stoch_K, stoch_K_D, title, forecast } = props;
-  if (!stoch_K) { return null; }
+function StochChart({ title, history, forecast }) {
+  if (!history) { return null; }
+
+  const { stoch_K, stoch_K_D } = history;
 
   // Crossedness
   const crossed_up = stoch_K[0].y > stoch_K_D[0].y;
@@ -111,7 +109,7 @@ function StochChart(props) {
     }]
   };
 
-  return <div className="w3-cell my-fourth" style={{'padding': '0 4px'}}>
+  return <div className="w3-cell my-fourth">
     {title} {
       crossed_up
         ? <Up title="Crossed up"/>

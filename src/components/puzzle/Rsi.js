@@ -3,20 +3,18 @@ import React from 'react';
 import CanvasJSReact from '../../canvasjs.react';
 import Indicator from './Indicator.js';
 
-export default function Rsi(props) {
-  return <Indicator
-    title='RSI'
-    columns={['rsi']}
-    chart={RsiChart}
-    limit={150}
-    windowLimit={33}
-    forecast={false}
-  />;
+export default function Rsi() {
+  const options = {
+    limit:   40,
+    columns: ['rsi'],
+  };
+  return <Indicator Chart={RsiChart} options={options}/>;
 }
 
-function RsiChart(props) {
-  const { rsi, title } = props;
-  if (!rsi) { return null; }
+function RsiChart({ title, history }) {
+  if (!history) { return null; }
+
+  const { rsi } = history;
 
   const options = {
     animationEnabled: true,
@@ -65,7 +63,7 @@ function RsiChart(props) {
     }]
   };
 
-  return <div className="w3-cell my-fourth" style={{'padding': '0 4px'}}>
+  return <div className="w3-cell my-fourth">
     {title}
     <CanvasJSReact.CanvasJSChart options={options}/>
   </div>;

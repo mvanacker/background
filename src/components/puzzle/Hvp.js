@@ -4,24 +4,21 @@ import CanvasJSReact from '../../canvasjs.react';
 import Indicator from './Indicator.js';
 import { Alert, Alarm } from '../common/Icons';
 
-export default function Hvp(props) {
-  return <Indicator
-    title='Historical Volatility Percentile'
-    columns={['hvp', 'hvp_ma']}
-    chart={HvpChart}
-    limit={150}
-    windowLimit={40}
-    forecast={true}
-  />;
+export default function Hvp() {
+  const options = {
+    limit:   45,
+    columns: ['hvp', 'hvp_ma'],
+  };
+  return <Indicator Chart={HvpChart} options={options}/>;
 }
 
-function HvpChart(props) {
-  let { hvp, forecast } = props;
-  const { hvp_ma, title } = props;
-  if (!hvp) { return null; }
+function HvpChart({ title, history, forecast }) {
+  if (!history) { return null; }
+  
+  const { hvp, hvp_ma } = history;
 
   // Add color to the histogram
-  hvp = hvp.map(({x, y}) => {
+  const _hvp = hvp.map(({x, y}) => {
     const color = y > 90 ? 'maroon' : y > 80 ? 'orange' : 'lightblue';
     return { x, y, color };
   });
@@ -70,7 +67,7 @@ function HvpChart(props) {
     data:             [{
       type:          "column",
       xValueType:    "dateTime",
-      dataPoints:    hvp,
+      dataPoints:    _hvp,
       markerType:    "none",
     }, {
       type:          "column",
@@ -92,7 +89,7 @@ function HvpChart(props) {
     }]
   };
 
-  return <div className="w3-cell my-fourth" style={{'padding': '0 4px'}}>
+  return <div className="w3-cell my-fourth">
     {title} {
       very_low_vol
         ? <Alarm title="Below 10"/>

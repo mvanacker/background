@@ -5,22 +5,26 @@ import { Up, Down, Gold, Death, SplayUp, SplayDown } from '../common/Icons';
 
 import Indicator from './Indicator.js';
 
-export default function MovingAverages(props) {
-  return <Indicator
-    title='MAs'
-    columns={['open', 'high', 'low', 'close', 'ema_21', 'ema_55', 'ema_89',
-      'ema_200', 'ema_377', 'sma_10', 'sma_200']}
-    chart={OhlcChart}
-    limit={150}
-    windowLimit={60}
-    forecast={true}
-  />;
+export default function MovingAverages() {
+  const options = {
+    limit:       40,
+    columns:     [
+      'open', 'high', 'low', 'close',
+      'ema_21', 'ema_55', 'ema_89', 'ema_200', 'ema_377',
+      'sma_10', 'sma_200',
+    ],
+  };
+  return <Indicator Chart={CandlestickChart} options={options}/>;
 }
 
-function OhlcChart(props) {
-  const { open, high, low, close, ema_21, ema_55, ema_89, ema_200, ema_377,
-    sma_10, sma_200, title, forecast } = props;
-  if (!open) { return null; }
+function CandlestickChart({ title, history, forecast }) {
+  if (!history) { return null; }
+
+  const {
+    open, high, low, close,
+    ema_21, ema_55, ema_89, ema_200, ema_377,
+    sma_10, sma_200,
+  } = history;
 
   // Resample candles (a bit of overhead, but clean)
   const ohlc = [];
@@ -48,8 +52,6 @@ function OhlcChart(props) {
   const splay_bear = ema_21[0].y < ema_55[0].y
                   && ema_55[0].y < ema_89[0].y
                   && ema_89[0].y < ema_200[0].y;
-
-  console.log(forecast);
 
   const options = {
     animationEnabled: true,
@@ -209,23 +211,20 @@ function OhlcChart(props) {
     }]
   };
 
-  return <div className="w3-cell my-fourth" style={{'padding': '0 4px'}}>
+  return <div className="w3-cell my-fourth">
     {title} {
       crossed_up
         ? <Up title="Above 21 EMA"/>
         : crossed_down
           ? <Down title="Below 21 EMA"/>
           : ''
-    }{' '}
-    {
+    } {
       golden_cross
         ? <Gold title="Golden cross"/>
         : death_cross
           ? <Death title="Death cross"/>
           : ''
-    }{' '}
-    {/* {splay_bull ? '🐂' : splay_bear ? '🧸' : ''} */}
-    {
+    } {
       splay_bull
         ? <SplayUp title="Full bullish splay"/>
         : splay_bear
@@ -234,6 +233,4 @@ function OhlcChart(props) {
     }
     <CanvasJSReact.CanvasJSChart options={options}/>
   </div>;
-
-  // Other unicode icons: 🐻 🐄 🐮
 }
