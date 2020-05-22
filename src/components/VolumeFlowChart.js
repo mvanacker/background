@@ -25,7 +25,8 @@ const ALARM_SCALAR = 75;
 export default function VolumeFlowChart() {
 
   // State
-  const [isDrawing, setIsDrawing] = useState(false);
+  // const [isDrawing, setIsDrawing] = useState(false);
+  const isDrawing = true;
 
   // Decide dimensions
   const margin = { top: 25, bottom: 25, flow: 65, price: 50, openInterest: 40 };
@@ -418,7 +419,7 @@ export default function VolumeFlowChart() {
     />
 
     {/* Draw option; TODO: optimize drawing */}
-    <div className="w3-center w3-section">
+    {/* <div className="w3-center w3-section">
       <input
         id="isDrawingId"
         className="w3-check"
@@ -428,6 +429,6 @@ export default function VolumeFlowChart() {
         onChange={e => setIsDrawing(e.target.checked)}
       />{' '}
       <label htmlFor="isDrawingId">Enable drawing (moderate CPU usage)</label>
-    </div>
+    </div> */}
   </div>;
 }
