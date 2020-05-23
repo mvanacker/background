@@ -6,7 +6,7 @@ import { isoStringToUnix } from '../../util/date';
 import { zip } from '../../util/general';
 import { retry } from '../../util/promise';
 
-import { Loading256 } from '../common/Icons';
+import Loading from '../Loading';
 import Panel from '../common/Panel';
 
 import useInterval from '../../hooks/useInterval';
@@ -226,37 +226,21 @@ export function useData(options) {
 }
 
 export function Overview({ Chart, data: { history, forecast} }) {
-  
-  // Render loading icon
-  if (!history) {
-    return <div className="w3-content" style={{
-      // 80px menu, 2x16px margins, 2x16px padding
-      height: 'calc(100vh - 112px)',
-      display: 'table',
-    }}>
-      <div className="w3-cell w3-cell-middle">
-        <Loading256/>
-      </div>
-    </div>;
-  }
-
-  // Render charts overview
-  else {
-    return terms.map(term => <Panel title={term.title} key={term.title}>
-      <div className="w3-cell-row w3-center">
-        {
-          Object.entries(term.timeframes).map(([tf, title]) => <Chart
-            key={title}
-            title={title}
-            history={history[tf]}
-            forecast={forecast[tf]}
-          />)
-        }
-      </div>
-    </Panel>);
-  }
+  return terms.map(term => <Panel title={term.title} key={term.title}>
+    <div className="w3-cell-row w3-center">
+      {
+        Object.entries(term.timeframes).map(([tf, title]) => <Chart
+          key={title}
+          title={title}
+          history={history[tf]}
+          forecast={forecast[tf]}
+        />)
+      }
+    </div>
+  </Panel>);
 }
 
 export default function Indicator({ options, ...props }) {
-  return <Overview {...props} data={useData(options)}/>
+  const data = useData(options);
+  return !data.history ? <Loading/> : <Overview {...props} data={data}/>;
 };
