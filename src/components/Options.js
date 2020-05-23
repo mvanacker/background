@@ -10,7 +10,7 @@ import {
 import { round_to } from '../util/math';
 import { reverseEnum } from '../util/enum';
 import { toYears, toDaysHours } from '../util/date';
-import { zip } from '../util/general';
+import { zip } from '../util/array';
 import setYearlyCookie from '../util/cookie';
 
 import Tabs from './common/Tabs';

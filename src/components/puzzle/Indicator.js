@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { DATA_URI } from '../../config';
 
 import { isoStringToUnix } from '../../util/date';
-import { zip } from '../../util/general';
+import { zip } from '../../util/array';
 import { retry } from '../../util/promise';
 
 import Loading from '../Loading';
