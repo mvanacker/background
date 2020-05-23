@@ -4,6 +4,7 @@ import { DATA_URI } from '../../config';
 
 import { isoStringToUnix } from '../../util/date';
 import { zip } from '../../util/general';
+import { retry } from '../../util/promise';
 
 import { Loading256 } from '../common/Icons';
 import Panel from '../common/Panel';
@@ -12,6 +13,9 @@ import useInterval from '../../hooks/useInterval';
 
 // Local refresh rate; note that too short a duration will cause a crash
 const REFRESH_RATE = 60000;// milliseconds
+
+// Delay between update attempts
+const RETRY_DELAY = 5000;
 
 // Constants
 const timeframes = [
@@ -43,6 +47,15 @@ const terms = [{
   }
 }];
 
+// Custom error to signal failure whilst fetching data
+class UpdateError extends Error {
+  constructor(message, responses) {
+    super(message);
+    this.responses = responses;
+    this.name      = 'UpdateError';
+  }
+}
+
 // Update history and forecast
 const update = async ({ columns, limit }) => {
 
@@ -61,9 +74,9 @@ const update = async ({ columns, limit }) => {
     });
   };
 
-  return Promise.all([
+  const attempt = () => Promise.all([
   
-    // Fetch and parse historical data (as well as partial data)
+    // Fetch historical data
     Promise.all(timeframes.map(tf => {
         const query = `timeframe=${tf}&limit=${limit}&columns=${_columns}`;
         return `${DATA_URI}/candles?${query}`;
@@ -72,73 +85,79 @@ const update = async ({ columns, limit }) => {
         return `${DATA_URI}/partials?timeframe=${tf}`;
       }))
       .map(uri2fetch))
+    
+    // Cancel if any requests failed
     .then(responses => {
+      if (!responses.every(r => r !== null)) {
+        throw new UpdateError('Failed to fetch history.', responses);
+      }
+      return responses;
+    })
 
-      // Build state (historical part)
+    // Parse historical data
+    .then(responses => {
       const history = {};
       const m = timeframes.length;
       for (let i = 0; i < m; i++) {
 
-        // Cancel if any this timeframes' HTTP requests failed
-        if (responses[i] !== null && responses[i + m] !== null) {
+        // Setup data structure
+        const tf = timeframes[i];
+        history[tf] = {};
+        columns.forEach(column => history[tf][column] = []);
 
-          // Setup data structure
-          const tf = timeframes[i];
-          history[tf] = {};
-          columns.forEach(column => history[tf][column] = []);
-
-          // Transform data (this is tricky because the first half of the
-          // responses are historical data and the latter half are partials)
-          // Extract XY values row by row, starting with the partial
-          extract(history[tf], responses[i + m]);
-          const n = responses[i].length;
-          const first_row = Math.max(n - limit, 0);
-          for (let r = n - 1; r > first_row; r--) {
-            extract(history[tf], responses[i][r]);
-          }
+        // Transform data (this is tricky because the first half of the
+        // responses are historical data and the latter half are partials)
+        // Extract XY values row by row, starting with the partial
+        extract(history[tf], responses[i + m]);
+        const n = responses[i].length;
+        const first_row = Math.max(n - limit, 0);
+        for (let r = n - 1; r > first_row; r--) {
+          extract(history[tf], responses[i][r]);
         }
       }
       return history;
     }),
 
-    // Fetch and parse forecast data
+    // Fetch forecast data
     Promise.all(timeframes.map(tf => {
       return `${DATA_URI}/forecast?timeframe=${tf}&columns=${_columns}`;
     }).map(uri2fetch))
+
+    // Cancel if response was incomplete
     .then(responses => {
-
-      if (responses.length === 0
-          // Fallback in case of (synchronization or http) error
-          || responses.every(r => r.length === 0 || r === null)
-          || !responses.every(r => r.length === responses[0].length)) {
-        return this.state.forecast;
+      // some or all responses were empty or null: forecast was just reset
+      if (!responses.every(r => r.length !== 0 && r !== null)
+        // not all responses were of equal length: forecast was in progress
+        || !responses.every(r => r.length === responses[0].length)) {
+        throw new UpdateError('Failed to fetch forecast.', responses);
       }
+      return responses;
+    })
 
-      // Build state (forecast part)
+    // Parse forecast
+    .then(responses => {
       const forecast = {};
       for (let i = 0; i < timeframes.length; i++) {
-        if (responses[i] !== null) {
 
-          // Separate by level
-          const rows = responses[i];
-          const levels = {};
-          rows.forEach(row => {
-            if (!(row.level in levels)) {
-              levels[row.level] = [];
-            }
-            levels[row.level].push(row);
-          });
-
-          // Analogous to how we extract historical data above, except there
-          // are multiple levels (and no partials to deal with, also there
-          // are always a constant amount of forecast candles)
-          const tf = timeframes[i];
-          forecast[tf] = {};
-          for (const level in levels) {
-            forecast[tf][level] = {};
-            columns.forEach(column => forecast[tf][level][column] = []);
-            levels[level].forEach(row => extract(forecast[tf][level], row));
+        // Separate by level
+        const rows = responses[i];
+        const levels = {};
+        rows.forEach(row => {
+          if (!(row.level in levels)) {
+            levels[row.level] = [];
           }
+          levels[row.level].push(row);
+        });
+
+        // Analogous to how we extract historical data above, except there
+        // are multiple levels (and no partials to deal with, also there
+        // are always a constant amount of forecast candles)
+        const tf = timeframes[i];
+        forecast[tf] = {};
+        for (const level in levels) {
+          forecast[tf][level] = {};
+          columns.forEach(column => forecast[tf][level][column] = []);
+          levels[level].forEach(row => extract(forecast[tf][level], row));
         }
       }
 
@@ -168,9 +187,9 @@ const update = async ({ columns, limit }) => {
     })
   ])
 
-  // Bring everything together
-  .then(states => {
-    const [history, forecast] = states;
+  // Bring history and forecast together
+  .then(both => {
+    const [history, forecast] = both;
 
     // Prepend the partial values to the forecast
     for (const tf in forecast) {
@@ -187,6 +206,14 @@ const update = async ({ columns, limit }) => {
 
     // Finally return the data
     return { history, forecast };
+  });
+
+  // Effectively retry forever
+  const tries = Math.floor(REFRESH_RATE / RETRY_DELAY) - 1;
+  return retry(tries, attempt, RETRY_DELAY, err => {
+    console.error(err);
+    console.error(err.responses);
+    console.error(`Retry in ${RETRY_DELAY} ms...`);
   });
 };
 
