@@ -6,6 +6,10 @@ export function zip(array1, array2) {
   }
 }
 
+export function subsequentPairs(array) {
+  return zip(array.slice(0, -1), array.slice(1));
+}
+
 export function head(array, n) {
   return array.slice(0, n);
 }
