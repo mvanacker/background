@@ -243,10 +243,10 @@ export default function VolumeFlowChart() {
             .attr('stroke-linecap', 'round')
             .attr('d', line);
 
+        appendPath('open-interest', openInterest, 'white', openInterestLine); 
+        appendPath('price', price, 'royalblue', priceLine);
         appendPath('buy-flow', buyFlow, 'lime', flowLine);
         appendPath('sell-flow', sellFlow, '#b33', flowLine);
-        appendPath('price', price, 'royalblue', priceLine);
-        appendPath('open-interest', openInterest, 'white', openInterestLine); 
 
         // Update chart
         const update = () => Promise.all([
@@ -334,14 +334,14 @@ export default function VolumeFlowChart() {
                 .call(openInterestAxis);
   
               // Update paths
+              svg.select('path#open-interest')
+                .attr('d', openInterestLine(openInterest));
+              svg.select('path#price')
+                .attr('d', priceLine(price));
               svg.select('path#buy-flow')
                 .attr('d', flowLine(buyFlow));
               svg.select('path#sell-flow')
                 .attr('d', flowLine(sellFlow));
-              svg.select('path#price')
-                .attr('d', priceLine(price));
-              svg.select('path#open-interest')
-                .attr('d', openInterestLine(openInterest));
             }
           });
         handle = setInterval(update, REFRESH_RATE);
