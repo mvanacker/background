@@ -640,7 +640,7 @@ function InputVolatility(props) {
 
 function Submit(props) {
   const { onLong, onShort } = props;
-  return <div className="w3-cell-row">
+  return <div className="w3-cell-row w3-card">
     <div className="w3-cell">
       <button
         type="button" onClick={onLong}
