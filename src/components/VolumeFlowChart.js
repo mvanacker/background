@@ -13,8 +13,6 @@ import beepDown from '../assets/beep_down.mp3';
 import beepUp from '../assets/beep_up.mp3';
 import { DATA_URI, REFRESH_RATE } from '../config';
 
-import '../volume-flow-chart.css';
-
 // Note on REFRESH_RATE: it is assumed in the code below that this value is
 // at least the update rate of the back-end.
 
@@ -29,7 +27,7 @@ export default function VolumeFlowChart() {
   const isDrawing = true;
 
   // Decide dimensions
-  const margin = { top: 25, bottom: 25, flow: 65, price: 50, openInterest: 40 };
+  const margin = { top: 25, bottom: 25, flow: 65, price: 50, openInterest: 45 };
   const width = 468;
   const height = 300;
 
@@ -410,6 +408,7 @@ export default function VolumeFlowChart() {
 
     {/* Volume Flow Chart itself */}
     <svg
+      id="volume-flow-chart"
       ref={d3svg}
       role="img"
       width={width}

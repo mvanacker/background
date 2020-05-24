@@ -59,6 +59,22 @@ div#title h1 a {
   text-decoration: none;
 }
 
+svg g {
+  font-family: 'Kreon', sans-serif;
+}
+
+svg#volume-flow-chart g {
+  font-size: 0.85em;
+}
+
+svg#belt g {
+  font-size: 0.9em;
+}
+
+svg#belt g.lump-axis text {
+  font-size: 1.2em;
+}
+
 .toggle-handle {
   position: fixed;
   bottom: 20px;
