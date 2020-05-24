@@ -595,7 +595,9 @@ class Trade extends Component {
     const { entry, stop, profit, risk, instrument } = this.state;
     const { cookies, account_summary, instruments } = this.props;
     return <div className="w3-container">
-      <div className="w3-center w3-theme-l1 w3-padding w3-section my-round">
+      <div
+        className="w3-card w3-center w3-theme-l1 w3-padding w3-section my-round"
+      >
         You are kindly advised to <b>log out</b> after usage.
       </div>
       <div className="w3-cell-row">
@@ -691,7 +693,8 @@ function OrderButton(props) {
   const { isLong, onClick } = props;
   const color = isLong ? 'w3-green' : 'w3-red';
   const text = isLong ? 'Long' : 'Short';
-  const _class = `w3-button w3-block w3-xlarge w3-section ${color} my-round`;
+  const _class = `w3-card w3-button w3-block w3-xlarge`
+               + ` w3-section ${color} my-round`;
   return <button className={_class} onClick={onClick}>
     {text}
   </button>;
