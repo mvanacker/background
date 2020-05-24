@@ -1,9 +1,13 @@
 import React from 'react';
 
 import CanvasJSReact from '../../canvasjs.react';
-import { Up, Down, Gold, Death, SplayUp, SplayDown } from '../common/Icons';
 
-import Indicator from './Indicator.js';
+import { Up, Down, Gold, Death, SplayUp, SplayDown } from '../common/Icons';
+import Panel from '../common/Panel';
+
+import Loading from '../Loading';
+import { useData, Overview } from './Indicator';
+import ConfluenceDetector from './ConfluenceDetector';
 
 export default function MovingAverages() {
   const options = {
@@ -14,7 +18,24 @@ export default function MovingAverages() {
       'sma_10', 'sma_200',
     ],
   };
-  return <Indicator Chart={CandlestickChart} options={options}/>;
+  const data = useData(options);
+  return !data.history ? <Loading/> : <>
+    <Overview Chart={CandlestickChart} data={data}/>
+    <Panel title="MA Confluence Detector">
+      <div className="w3-center w3-padding-large"> 
+        <ConfluenceDetector data={data}/>
+      </div>
+      <small>
+        <h6>Note</h6>
+        <p>This detector only considers the following</p>
+        <ul>
+          <li>timeframes: 2h, 4h, 12h, 1d, 2d, 1w, 1M;</li>
+          <li>EMA periods: 21, 55, 89, 200, 377;</li>
+          <li>SMA period: 200.</li>
+        </ul>
+      </small>
+    </Panel>
+  </>;
 }
 
 function CandlestickChart({ title, history, forecast }) {

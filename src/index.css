@@ -67,12 +67,19 @@ svg#volume-flow-chart g {
   font-size: 0.85em;
 }
 
-svg#belt g {
-  font-size: 0.9em;
+svg#confluence-detector g {
+  font-size: 0.95em;
 }
 
-svg#belt g.lump-axis text {
+svg#confluence-detector g.lump-axis text,
+svg#confluence-detector g.lump-axis .tick,
+svg#confluence-detector g.lump-name-axis text {
+  color: orange;
   font-size: 1.2em;
+}
+svg#confluence-detector g.price-axis text,
+svg#confluence-detector g.unlump-name-axis text {
+  font-size: 0.9em;
 }
 
 .toggle-handle {
