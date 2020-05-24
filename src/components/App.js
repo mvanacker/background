@@ -93,15 +93,10 @@ export default class App extends Component {
 }
 
 function Title() {
-  // Other ideas:
-  //   Trappy Trade
-  //   Tracky Trade
-  //   Tricky Trade
-  //   Trashy Trade
-  //   Poor Man's Trading
-  //   Bitcoin Market Forecast
-  //   Technical Forecast
-  return <div id="title" className="w3-container w3-theme-d3 my-round-bottom">
+  return <div
+    id="title"
+    className="w3-card w3-container w3-theme-d3 my-round-bottom"
+  >
     <h1>
       <Link to='/'>Maurits'</Link>
     </h1>
@@ -153,7 +148,7 @@ function BitmexRecentTrades(props) {
     return " w3-medium";
   };
 
-  return <Panel theme="w3-theme-dark" margin={false}>
+  return <Panel>
     <table className="monospace" style={{'margin': 'auto'}}>
       <tbody>
       {
