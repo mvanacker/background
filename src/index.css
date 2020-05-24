@@ -67,6 +67,12 @@ svg#volume-flow-chart g {
   font-size: 0.85em;
 }
 
+svg#volume-flow-chart g.flow-grid line {
+  stroke: lightgrey;
+  stroke-opacity: 0.3;
+  shape-rendering: crispEdges;
+}
+
 svg#confluence-detector g {
   font-size: 0.95em;
 }

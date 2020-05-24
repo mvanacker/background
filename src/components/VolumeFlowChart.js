@@ -104,6 +104,7 @@ export default function VolumeFlowChart() {
 
       // Draw the initial chart
       .then(({ buyFlow, sellFlow, price, openInterest }) => {
+        const xMargin = margin.flow + margin.price + margin.openInterest;
         const last = buyFlow.length - 1;
 
         // Write initial values into divs
@@ -140,12 +141,21 @@ export default function VolumeFlowChart() {
             Math.max(MAX_FLOW, max(buyFlow, d => d.y), max(sellFlow, d => d.y)),
           ])
           .range(yRange);
+
+        const flowValues = [1, 10, 100, 1e3, 1e4, 1e5, 1e6, 1e7];
     
         const flowAxis = g => g
           .call(axisLeft(flowScale)
-            .tickValues([1, 10, 100, 1e3, 1e4, 1e5, 1e6, 1e7])
+            .tickValues(flowValues)
             .tickFormat(y => format(',.0r')(y))
             .tickSizeOuter(0));
+
+        const flowGrid = g => g
+          .call(axisLeft(flowScale)
+            .tickValues(flowValues)
+            .tickSize(-width + xMargin)
+            .tickSizeOuter(0)
+            .tickFormat(''));
 
         const flowLine = line()
           .x(d => x(d.x))
@@ -197,6 +207,11 @@ export default function VolumeFlowChart() {
           .call(flowAxis);
 
         svg.append('g')
+          .attr('transform', `translate(${margin.flow},0)`)
+          .attr('class', 'flow-grid')
+          .call(flowGrid);
+
+        svg.append('g')
           .attr('transform', `translate(${width - margin.price},0)`)
           .attr('class', 'price-axis')
           .call(priceAxis);
@@ -208,7 +223,6 @@ export default function VolumeFlowChart() {
           .call(openInterestAxis);
 
         // Clip path
-        const xMargin = margin.flow + margin.price + margin.openInterest;
         svg.append('clipPath')
           .attr('id', 'rect-clip')
           .append('rect')
