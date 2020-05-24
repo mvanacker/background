@@ -232,49 +232,21 @@ export default function VolumeFlowChart() {
             .attr('height', height - (margin.top + margin.bottom))
 
         // Paths
-        svg.append('path')
-          .attr('id', 'buy-flow')
+        const appendPath = (id, data, color, line) => svg.append('path')
+          .attr('id', id)
           .attr('clip-path', 'url(#rect-clip)')
-          .datum(buyFlow)
+          .datum(data)
             .attr('fill', 'none')
-            .attr('stroke', 'lime')
+            .attr('stroke', color)
             .attr('stroke-width', 2)
             .attr('stroke-linejoin', 'round')
             .attr('stroke-linecap', 'round')
-            .attr('d', flowLine);
+            .attr('d', line);
 
-        svg.append('path')
-          .attr('id', 'sell-flow')
-          .attr('clip-path', 'url(#rect-clip)')
-          .datum(sellFlow)
-            .attr('fill', 'none')
-            .attr('stroke', '#b33')
-            .attr('stroke-width', 2)
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('d', flowLine);
-
-        svg.append('path')
-          .attr('id', 'price')
-          .attr('clip-path', 'url(#rect-clip)')
-          .datum(price)
-            .attr('fill', 'none')
-            .attr('stroke', 'royalblue')
-            .attr('stroke-width', 2)
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('d', priceLine);
-
-        svg.append('path')
-          .attr('id', 'open-interest')
-          .attr('clip-path', 'url(#rect-clip)')
-          .datum(openInterest)
-            .attr('fill', 'none')
-            .attr('stroke', 'white')
-            .attr('stroke-width', 2)
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('d', openInterestLine);
+        appendPath('buy-flow', buyFlow, 'lime', flowLine);
+        appendPath('sell-flow', sellFlow, '#b33', flowLine);
+        appendPath('price', price, 'royalblue', priceLine);
+        appendPath('open-interest', openInterest, 'white', openInterestLine); 
 
         // Update chart
         const update = () => Promise.all([
