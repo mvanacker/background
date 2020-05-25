@@ -1,4 +1,4 @@
-import React, { memo, useRef, useEffect } from 'react';
+import React, { memo, useRef, useEffect, useState } from 'react';
 
 import { select } from 'd3-selection';
 import { extent, median, mean } from 'd3-array';
@@ -6,33 +6,82 @@ import { axisLeft, axisRight } from 'd3-axis';
 import { scaleLinear } from 'd3-scale';
 
 import { subsequentPairs } from '../../util/array';
+import Panel from '../common/Panel';
 
-// Auxiliary function; basically a datum's toString()
-const d2name = d => `${d.timeframe} ${d.name.toUpperCase().replace('_', ' ')}`;
+// Local storage variables
+const timeframesId = 'confluence-detector-timeframes';
+const indicatorsId = 'confluence-detector-indicators';
 
 export default memo(({
-  width = 700,
-  height = 1000,
+  width,
+  fixedHeight = 900,
   tolerance = 3,
   lumpThreshold = 30,
-  margin = { left: 200, right: 25, top: 25, bottom: 25 },
-  // include forecast to remind to make a "future confluence detector"
+  margin = { left: 135, right: 25, top: 25, bottom: 25 },
+  // Include forecast to remind me to make a "future confluence detector"
   data: { history, forecast },
+  // Note: a difficulty would be to harmonioulsy visualize future confluence
+  //       over different timeframes. Imagine a time slider with a step of one
+  //       hour. Imagine you want to slide a day into the future. There are only
+  //       6 or so hourly predictions available. However, there would be a
+  //       sufficient amount of 4-hourly (or higher) predictions available.
+  // Suggestion: just stop considering the timeframes with an insufficient
+  //             amount of predictions.
+  //             The alternative would be to go with wildly inaccurate
+  //             predictions, possibly also complicating things with differing
+  //             amounts of predictions amongst the timeframes.
 }) => {
   const rimsvg = useRef(null);
 
+  // Retrieve custom timeframes and indicators from local storage or use default
+  const storedTimeframes = localStorage.getItem(timeframesId);
+  const [timeframes, setTimeframes] = useState(storedTimeframes
+    ? JSON.parse(storedTimeframes)
+    : {
+    '1h':  false,
+    '2h':  true,
+    '3h':  false,
+    '4h':  true,
+    '6h':  false,
+    '12h': true,
+    '1d':  true,
+    '2d':  true,
+    '3d':  false,
+    '1w':  true,
+    '1M':  true,
+    '3M':  false,
+  });
+  const storedIndicators = localStorage.getItem(indicatorsId);
+  const [indicators, setIndicators] = useState(storedIndicators
+    ? JSON.parse(storedIndicators)
+    : {
+    'ema_21':  true,
+    'ema_55':  true,
+    'ema_89':  true,
+    'ema_200': true,
+    'ema_377': true,
+    'sma_10':  false,
+    'sma_200': true,
+  });
+
+  // Store custom timeframes and indicators in local storage
+  useEffect(() => {
+    localStorage.setItem(timeframesId, JSON.stringify(timeframes));
+    localStorage.setItem(indicatorsId, JSON.stringify(indicators));
+  }, [timeframes, indicators]);
+
+  // Get, for example, timeframes or indicators which are set to true
+  const getSelected = obj => Object.keys(obj).filter(k => obj[k]);
+
   // Use D3 to draw a custom visualization
+  // Note: there should be a way to harness the true power of D3's general
+  //       update pattern whenever timeframes or indicators change.
   useEffect(() => {
   
-    // Compile list of relevant prices
-    const relev_tfs = ['2h', '4h', '12h', '1d', '2d', '1w', '1M'];
-    // const relev_tfs = Object.keys(history);
-    const relev_names = [
-      'ema_21', 'ema_55', 'ema_89', 'ema_200', 'ema_377', 'sma_200',
-    ];
+    // Compile list of customized data
     const data = [];
-    relev_tfs.forEach(timeframe => {
-      relev_names.forEach(name => {
+    getSelected(timeframes).forEach(timeframe => {
+      getSelected(indicators).forEach(name => {
         const price = history[timeframe][name][0].y;
         if (price) {
           data.push({ timeframe, name, price });
@@ -40,12 +89,18 @@ export default memo(({
       });
     });
 
+    // Grab current price, also add it to data
+    const price = history[Object.keys(history)[0]].close[0].y;
+    data.push({
+      timeframe: '',
+      name: 'Current Price',
+      price,
+    });
+
     // Inspired by Christophe Leys' proposed outlier removal technique
     // https://dipot.ulb.ac.be/dspace/bitstream/2013/139499/1/Leys_MAD_final-libre.pdf
     // Filter out levels that're too far from the current price
-    const m = median(data, d => d.price);
-    const mad = median(data, d => Math.abs(d.price - m));
-    const price = history[relev_tfs[0]].close[0].y;
+    const mad = median(data, d => Math.abs(d.price - price));
     const lower = price - tolerance * mad,
           upper = price + tolerance * mad;
     const toleratedData = data.filter(d => lower < d.price && d.price < upper);
@@ -56,7 +111,7 @@ export default memo(({
     // Axes
     const priceScale = scaleLinear()
       .domain(extent(lumps.sortedPrices))
-      .range([height - margin.bottom, margin.top]);
+      .range([fixedHeight - margin.bottom, margin.top]);
 
     const priceAxis = g => g
       .call(axisLeft(priceScale)
@@ -77,7 +132,7 @@ export default memo(({
 
     const unlumpNameAxis = g => g
       .call(axisRight(priceScale)
-        .tickValues(lumps.unrepresentatives.map(d => d.price))
+        .tickValues(lumps.unlumps.map(d => d.price))
         .tickSizeOuter(0));
 
     // Grab (and clear) the SVG-element
@@ -118,18 +173,94 @@ export default memo(({
       .call(translateAxis)
       .call(unlumpNameAxis);
     svg.selectAll('.unlump-name-axis text')
-      .text((_, i) => d2name(lumps.unrepresentatives[i]));
-  }, [width, height, history, tolerance, lumpThreshold, margin]);
+      .text((_, i) => d2string(lumps.unlumps[i]));
 
-  return <svg
-    id="confluence-detector"
-    ref={rimsvg}
-    role="img"
-    width={width}
-    height={height}
-  />;
+    // Set width after all is said and done
+    const bb = svg.node().getBBox();
+    svg.attr('width', Math.min(bb.width + bb.x, width ? width : Infinity));
+
+    // Mark the current price
+    svg.append('circle')
+      .attr('fill', '#b33')
+      .attr('r', 5)
+      .attr('cx', margin.left)
+      .attr('cy', priceScale(price))
+      .attr('stroke', 'white')
+      .attr('stroke-width', 2);
+  }, [
+    // props
+    width, history, tolerance, lumpThreshold, margin,
+    // states
+    timeframes, indicators,
+  ]);
+
+  return <Panel title="Confluence Detector">
+    <div className="w3-cell-row">
+      <div
+        className="w3-cell w3-cell-top w3-content"
+        style={{width: '175px', minWidth: '175px'}}
+      >
+        <Checks title="Timeframes" getter={timeframes} setter={setTimeframes}/>
+        <Checks
+          title="MAs"
+          getter={indicators}
+          setter={setIndicators}
+          key2id={name => name.replace('_', '-')}
+          key2label={name2string}
+        />
+      </div>
+      <div className="w3-cell">
+        <svg
+          id="confluence-detector"
+          ref={rimsvg}
+          role="img"
+          height={fixedHeight}
+        />
+      </div>
+    </div>
+  </Panel>;
 });
 
+// Auxiliary function; e.g. convert 'ema_200' to 'EMA 200'
+const name2string = name => name.toUpperCase().replace('_', ' ');
+// Auxiliary function; basically a datum's toString()
+const d2string = d => `${d.timeframe} ${name2string(d.name)}`;
+
+// Auxiliary component to customize timeframes and indicators
+const Checks = ({
+  title,
+  getter,
+  setter,
+  key2id    = x => x,
+  key2label = x => x,
+}) => <ul style={{listStyleType: 'none', lineHeight: 2, fontFamily: 'Kreon'}}>
+  <li>{title}</li>
+  {
+    Object.keys(getter).map(key => {
+      const id = `${key2id(key)}-check`
+      return <li key={id}>
+        <label htmlFor={id}>
+          <input
+            id={id}
+            type="checkbox"
+            className="w3-check"
+            checked={getter[key]}
+            onChange={e => {
+              const newState = { ...getter };
+              newState[key] = e.target.checked;
+              setter(newState);
+            }}
+          />
+          <span style={{margin: '0 7px 0 5px'}}>
+            {key2label(key)}
+          </span>
+        </label>
+      </li>;
+    })
+  }
+</ul>;
+
+// Auxiliary data structure
 class Lumps {
   constructor(points, threshold) {
 
@@ -139,19 +270,19 @@ class Lumps {
 
     // Run over the sorted prices and lump points together
     this.lumps = [];
-    this.unrepresentatives = [this.sortedData[0]];
+    this.unlumps = [this.sortedData[0]];
     const didLump = [false];
     subsequentPairs(this.sortedPrices).forEach(([d, e], i) => {
       const shouldLump = e - d <= threshold;
       if (shouldLump) {
         if (!didLump[i]) {
           this.lumps.push([this.sortedData[i]]);
-          this.unrepresentatives.pop();
+          this.unlumps.pop();
         }
         const lastLump = this.lumps[this.lumps.length - 1];
         lastLump.push(this.sortedData[i + 1]);
       } else {
-        this.unrepresentatives.push(this.sortedData[i + 1]);
+        this.unlumps.push(this.sortedData[i + 1]);
       }
       didLump.push(shouldLump);
     });
@@ -162,9 +293,11 @@ class Lumps {
     this.representatives = this.lumps.map(lump => mean(lump, d => d.price));
 
     // Generate names
-    this.names = this.lumps.map(lump => lump.map(d2name).join(' + '));
+    this.names = this.lumps.map(lump => lump.map(d2string).join(' + '));
   }
 
+  // Get the index of the lump of associated with the given price, if any,
+  // otherwise return -1.
   getIndex = price => {
     for (let i = 0; i < this.lumps.length; i++) {
       const lumpedPrices = Array.from(this.lumps[i], d => d.price);
