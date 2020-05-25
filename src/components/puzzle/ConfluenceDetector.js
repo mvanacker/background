@@ -139,7 +139,7 @@ class Lumps {
 
     // Run over the sorted prices and lump points together
     this.lumps = [];
-    this.unrepresentatives = [this.sortedPrices[0]];
+    this.unrepresentatives = [this.sortedData[0]];
     const didLump = [false];
     subsequentPairs(this.sortedPrices).forEach(([d, e], i) => {
       const shouldLump = e - d <= threshold;
