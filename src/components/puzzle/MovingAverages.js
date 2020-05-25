@@ -1,7 +1,6 @@
 import React from 'react';
 
 import CanvasJSReact from '../../canvasjs.react';
-import ReactResizeDetector from 'react-resize-detector';
 
 import { Up, Down, Gold, Death, SplayUp, SplayDown } from '../common/Icons';
 import Loading from '../Loading';
@@ -20,9 +19,7 @@ export default function MovingAverages() {
   const data = useData(options);
   return !data.history ? <Loading/> : <>
     <Overview Chart={CandlestickChart} data={data}/>
-    <ReactResizeDetector handleWidth>
-      <ConfluenceDetector data={data}/>
-    </ReactResizeDetector>
+    <ConfluenceDetector data={data}/>
   </>;
 }
 

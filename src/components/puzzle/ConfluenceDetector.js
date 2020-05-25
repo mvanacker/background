@@ -13,7 +13,6 @@ const timeframesId = 'confluence-detector-timeframes';
 const indicatorsId = 'confluence-detector-indicators';
 
 export default memo(({
-  width,
   fixedHeight = 900,
   tolerance = 3,
   lumpThreshold = 30,
@@ -177,7 +176,7 @@ export default memo(({
 
     // Set width after all is said and done
     const bb = svg.node().getBBox();
-    svg.attr('width', Math.min(bb.width + bb.x, width ? width : Infinity));
+    svg.attr('width', bb.width + bb.x);
 
     // Mark the current price
     svg.append('circle')
@@ -189,7 +188,7 @@ export default memo(({
       .attr('stroke-width', 2);
   }, [
     // props
-    width, history, tolerance, lumpThreshold, margin,
+    history, tolerance, lumpThreshold, margin,
     // states
     timeframes, indicators,
   ]);
