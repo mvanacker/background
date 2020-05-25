@@ -229,7 +229,7 @@ class Deribit extends Component {
                 account_summary,
                 apiCall:    this.apiCall,
                 exchange:   'Deribit',
-                instruments: ['BTC-PERPETUAL', 'BTC-26JUN20', 'BTC-25SEP20'],
+                instruments: ['BTC-PERPETUAL', 'BTC-26JUN20', 'BTC-25SEP20', 'BTC-25DEC20'],
                 instrument: 'BTC-PERPETUAL',
                 contract:   'inverse',
               }
