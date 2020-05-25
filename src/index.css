@@ -53,6 +53,7 @@ div#title h1 {
   font-family: 'Parisienne', 'Alex Brush', 'Allura', 'Dancing Script', serif;
   font-size: 80pt;
   text-decoration: none;
+  line-height: 1.2;
 }
 
 div#title h1 a {
