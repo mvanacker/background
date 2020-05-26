@@ -87,6 +87,12 @@ export default memo(({
         }
       });
     });
+    
+    // Grab (and clear) the SVG-element
+    const svg = select(rimsvg.current);
+    svg.selectAll('*').remove();
+
+    if (data.length === 0) { return; }
 
     // Grab current price, also add it to data
     const price = history[Object.keys(history)[0]].close[0].y;
@@ -133,10 +139,6 @@ export default memo(({
       .call(axisRight(priceScale)
         .tickValues(lumps.unlumps.map(d => d.price))
         .tickSizeOuter(0));
-
-    // Grab (and clear) the SVG-element
-    const svg = select(rimsvg.current);
-    svg.selectAll('*').remove();
 
     const translateAxis = g => g
       .attr('transform', `translate(${margin.left},0)`);
