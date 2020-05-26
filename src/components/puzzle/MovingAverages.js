@@ -18,12 +18,12 @@ export default function MovingAverages() {
   };
   const data = useData(options);
   return !data.history ? <Loading/> : <>
-    <Overview Chart={CandlestickChart} data={data}/>
+    <Overview chart={CandlestickChart} data={data}/>
     <ConfluenceDetector data={data}/>
   </>;
 }
 
-function CandlestickChart({ title, history, forecast }) {
+const CandlestickChart = ({ title, history, forecast }) => {
   if (!history) { return null; }
 
   const {

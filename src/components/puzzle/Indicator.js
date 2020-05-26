@@ -226,20 +226,20 @@ export function useData(options) {
   return data;
 }
 
-export function Overview({ Chart, data: { history, forecast} }) {
+export function Overview({ chart, data: { history, forecast} }) {
   return terms.map(term => <Panel title={term.title} key={term.title}>
     <div className="w3-cell-row w3-center">
       {
         Object.entries(term.timeframes).map(([tf, title]) => 
         <ReactResizeDetector key={title} handleWidth>
           {
-            ({ width }) => <Chart
-              title={title}
-              history={history[tf]}
-              forecast={forecast[tf]}
-              width={width / 4}
-              height={175}
-            />
+            ({ width }) => chart({
+              title,
+              history: history[tf],
+              forecast: forecast[tf],
+              width: width / 4,
+              height: 175,
+            })
           }
         </ReactResizeDetector>)
       }
