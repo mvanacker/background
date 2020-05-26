@@ -188,7 +188,7 @@ export default memo(({
       .attr('stroke-width', 2);
   }, [
     // props
-    history, tolerance, lumpThreshold, margin,
+    fixedHeight, history, tolerance, lumpThreshold, margin,
     // states
     timeframes, indicators,
   ]);
