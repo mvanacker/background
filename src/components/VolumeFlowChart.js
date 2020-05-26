@@ -16,8 +16,8 @@ import { DATA_URI, REFRESH_RATE } from '../config';
 // Note on REFRESH_RATE: it is assumed in the code below that this value is
 // at least the update rate of the back-end.
 
-const MIN_FLOW = 1000;
-const MAX_FLOW = 1000000;
+const MIN_FLOW = 10000;
+const MAX_FLOW = 10000000;
 const ALARM_SCALAR = 75;
 
 export default function VolumeFlowChart() {
@@ -54,7 +54,14 @@ export default function VolumeFlowChart() {
     } catch(e) {
       console.error(e);
     }
-  }
+  };
+
+  // Stretch linear domains a bit
+  const STRETCH_LIN = .1;
+  const stretchLinear = ([lower, upper]) => {
+    const extra = (upper - lower) * STRETCH_LIN;
+    return [lower - extra, upper + extra];
+  };
 
   // Draw after render
   useEffect(() => {
@@ -143,7 +150,6 @@ export default function VolumeFlowChart() {
           .range(yRange);
 
         const flowValues = [1, 10, 100, 1e3, 1e4, 1e5, 1e6, 1e7];
-    
         const flowAxis = g => g
           .call(axisLeft(flowScale)
             .tickValues(flowValues)
@@ -163,7 +169,7 @@ export default function VolumeFlowChart() {
 
         // Price axis
         const priceScale = scaleLinear()
-          .domain(extent(price, d => d.y))
+          .domain(stretchLinear(extent(price, d => d.y)))
           .range(yRange);
 
         const priceAxis = g => g
@@ -176,7 +182,7 @@ export default function VolumeFlowChart() {
 
         // Open interest axis
         const openInterestScale = scaleLinear()
-          .domain(extent(openInterest, d => d.y))
+          .domain(stretchLinear(extent(openInterest, d => d.y)))
           .range(yRange);
 
         const openInterestAxis = g => g
@@ -232,21 +238,28 @@ export default function VolumeFlowChart() {
             .attr('height', height - (margin.top + margin.bottom))
 
         // Paths
-        const appendPath = (id, data, color, line) => svg.append('path')
-          .attr('id', id)
+        const appendPath = (data, line) => svg.append('path')
           .attr('clip-path', 'url(#rect-clip)')
-          .datum(data)
-            .attr('fill', 'none')
-            .attr('stroke', color)
-            .attr('stroke-width', 2)
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('d', line);
+          .attr('fill', 'none')
+          .attr('stroke-width', 2)
+          .attr('stroke-linejoin', 'round')
+          .attr('stroke-linecap', 'round')
+          .attr('d', line(data));
 
-        appendPath('open-interest', openInterest, 'white', openInterestLine); 
-        appendPath('price', price, 'royalblue', priceLine);
-        appendPath('buy-flow', buyFlow, 'lime', flowLine);
-        appendPath('sell-flow', sellFlow, '#b33', flowLine);
+        appendPath(openInterest, openInterestLine)
+          .attr('id', 'open-interest')
+          .attr('opacity', .4)
+          .attr('stroke', 'white');
+        appendPath(price, priceLine)
+          .attr('id', 'price')
+          .attr('opacity', .4)
+          .attr('stroke', 'royalblue');
+        appendPath(buyFlow, flowLine)
+          .attr('id', 'buy-flow')
+          .attr('stroke', 'lime');
+        appendPath(sellFlow, flowLine)
+          .attr('id', 'sell-flow')
+          .attr('stroke', '#b33');
 
         // Update chart
         const update = () => Promise.all([
@@ -324,12 +337,12 @@ export default function VolumeFlowChart() {
                   .call(flowAxis);
   
               // Update price axis
-              priceScale.domain(extent(price, d => d.y));
+              priceScale.domain(stretchLinear(extent(price, d => d.y)));
               svg.select('g.price-axis')
                 .call(priceAxis);
   
               // Update open interest axis
-              openInterestScale.domain(extent(openInterest, d => d.y));
+              openInterestScale.domain(stretchLinear(extent(openInterest, d => d.y)));
               svg.select('g.open-interest-axis')
                 .call(openInterestAxis);
   
