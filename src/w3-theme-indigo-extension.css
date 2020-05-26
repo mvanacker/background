@@ -18,3 +18,7 @@ body {
   scrollbar-width: auto;
   scrollbar-color: #26316d #b1b8e3;
 }
+
+.w3-hover-theme:hover {
+  transition: 0.3s;
+}
