@@ -96,6 +96,7 @@ svg#confluence-detector g.unlump-name-axis text {
   padding: 8px 8px 8px 15px;
   opacity: 0.6;
   transition: 0.3s;
+  z-index: 1;
 }
 
 .toggle-handle:hover {

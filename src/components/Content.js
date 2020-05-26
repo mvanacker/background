@@ -28,18 +28,24 @@ class Content extends Component {
   render() {
     const { visible } = this.state;
     const { left, right } = this.props;
-    const handleClass = "w3-card w3-theme-l1 toggle-handle my-round-right";
 
     return <div>
-      <span className={handleClass} onClick={() => this.setVisible(!visible)}>
+      <div
+        className="w3-card w3-theme-l1 toggle-handle my-round-right"
+        onClick={() => this.setVisible(!visible)}
+      >
         {visible ? <DoubleLeft title="Hide"/> : <DoubleRight title="Show"/>}
-      </span>
-      <div className="w3-cell-row" style={{width:'100%'}}>
-        <div style={{
-          minWidth: '375px',
-          width: '500px',
-          display: visible ? 'table-cell' : 'none',
-        }}>{left}</div>
+      </div>
+      <div className="w3-cell-row">
+        {
+          !visible ? '' : <div style={{
+            minWidth: '500px',
+            width: '500px',
+            display: 'table-cell',
+          }}>
+            {left}
+          </div>
+        }
         <div className="w3-cell">{right}</div>
       </div>
     </div>;
