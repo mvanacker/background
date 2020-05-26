@@ -261,7 +261,7 @@ const Checks = ({
 
 // Auxiliary data structure
 class Lumps {
-  constructor(points, threshold) {
+  constructor(points, threshold, maxNameLength = 5) {
 
     // Sort the points array by price
     this.sortedData = points.sort((d, e) => d.price < e.price ? -1 : 1);
@@ -292,7 +292,14 @@ class Lumps {
     this.representatives = this.lumps.map(lump => mean(lump, d => d.price));
 
     // Generate names
-    this.names = this.lumps.map(lump => lump.map(d2string).join(' + '));
+    this.names = this.lumps.map(lump => {
+      const d2name = d => d.map(d2string).join(' + ');
+      if (lump.length <= maxNameLength) {
+        return d2name(lump);
+      } else {
+        return `${d2name(lump.slice(0, maxNameLength))}, ... (${lump.length})`;
+      }
+    });
   }
 
   // Get the index of the lump of associated with the given price, if any,
