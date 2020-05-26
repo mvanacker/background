@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-import CanvasJSReact from '../../canvasjs.react';
-import Indicator from './Indicator.js';
+import { scaleLinear, scaleUtc } from 'd3-scale';
+import { axisRight, axisBottom } from 'd3-axis';
+
 import { Alert, Alarm } from '../common/Icons';
+import Indicator from './Indicator.js';
+import TitledChart from './TitledChart';
+import {
+  appendLine,
+  appendRect,
+  appendPathLine,
+} from '../../util/svg';
 
 export default function Hvp() {
   const options = {
@@ -12,91 +20,95 @@ export default function Hvp() {
   return <Indicator Chart={HvpChart} options={options}/>;
 }
 
-function HvpChart({ title, history, forecast }) {
-  if (!history) { return null; }
-  
-  const { hvp, hvp_ma } = history;
-
-  // Add color to the histogram
-  const _hvp = hvp.map(({x, y}) => {
-    const color = y > 90 ? 'maroon' : y > 80 ? 'orange' : 'lightblue';
-    return { x, y, color };
-  });
-
-  // Low volatility warnings, but only for timeframes with enough data
-  const enough_data = hvp[hvp.length - 1].y !== null;
-  const low_vol = enough_data && hvp[0].y < 20;
-  const very_low_vol = enough_data && hvp[0].y < 10;
-
-  const options = {
-    animationEnabled: true,
-    dataPointWidth:   4,
-    theme:            "dark2",
-    backgroundColor:  "transparent",
-    height:           180,
-    axisX:            {
-      lineThickness:     0.5,
-      crosshair:         {
-        enabled:         true,
-        snapToDataPoint: true,
-      },
-      stripLines:        [{
-        value:        forecast[0].hvp[0].x,
-        color:        "white",
-        opacity:      0.5,
-        lineDashType: "dash",
-      }, {
-        startValue:   forecast[0].hvp[0].x,
-        endValue:     forecast[0].hvp[forecast[0].hvp.length - 1].x,
-        color:        "white",
-        opacity:      0.05,
-      }],
+const HvpChart = memo(({
+  title,
+  history: { hvp, hvp_ma },
+  forecast: {
+    '0': {
+      hvp: hvp_expected,
+      hvp_ma: hvp_ma_expected,
     },
-    axisY:            [{
-      includeZero:       true,
-      valueFormatString: "#.#",
-      gridColor:         "transparent",
-      maximum:           100,
-      minimum:           0,
-      interval:          20,
-      crosshair:         {
-        enabled:         true,
-        labelMaxWidth:   40,
-      },
-    }],
-    data:             [{
-      type:          "column",
-      xValueType:    "dateTime",
-      dataPoints:    _hvp,
-      markerType:    "none",
-    }, {
-      type:          "column",
-      xValueType:    "dateTime",
-      dataPoints:    forecast[0].hvp,
-      markerType:    "none",
-    }, {
-      lineColor:     "white",
-      type:          "line",
-      xValueType:    "dateTime",
-      dataPoints:    forecast[0].hvp_ma,
-      markerType:    "none",
-    }, {
-      lineColor:     "white",
-      type:          "line",
-      xValueType:    "dateTime",
-      dataPoints:    hvp_ma,
-      markerType:    "none",
-    }]
-  };
-
-  return <div className="w3-cell my-fourth">
-    {title} {
-      very_low_vol
-        ? <Alarm title="Below 10"/>
-        : low_vol
-          ? <Alert title="Below 20"/>
-          : ''
+  },
+  width,
+  height,
+  margin = { top: 4, right: 26, bottom: 18, left: 15 },
+}) => <TitledChart
+  width={width}
+  height={height}
+  title={() => {
+    const enough_data = hvp[hvp.length - 1].y !== null;
+    let icon = null;
+    if (enough_data && hvp[0].y < 10) {
+      icon = <Alarm title="Below 10"/>;
+    } else if (enough_data && hvp[0].y < 20) {
+      icon = <Alert title="Below 20"/>;
     }
-    <CanvasJSReact.CanvasJSChart options={options}/>
-  </div>;
-}
+    return <>{title} {icon}</>;
+  }}
+  draw={svg => {
+  
+    // X-axis breakpoints
+    const first = hvp[hvp.length - 1].x;
+    const middle = hvp_expected[0].x // not really middle
+    const last = hvp_expected[hvp_expected.length - 1].x
+
+    // X-axis
+    const x = scaleUtc()
+      .domain([first, last])
+      .range([margin.left, width - margin.right]);
+
+    svg.append('g')
+      .attr('transform', `translate(0,${height - margin.bottom})`)
+      .call(axisBottom(x)
+        .ticks(5)
+        .tickSizeOuter(0));
+
+    // Y-axis
+    const y = scaleLinear()
+      .domain([0, 100])
+      .range([height - margin.bottom, margin.top]);
+
+    svg.append('g')
+      .attr('transform', `translate(${width - margin.right},0)`)
+      .call(axisRight(y)
+        .ticks(6)
+        // .tickValues([0, 20, 40, 60, 80, 100])
+        .tickSizeOuter(0));
+
+    // Bar width
+    const xWidth = x(last) - x(first);
+    const hvpLength = hvp.length + hvp_expected.length;
+    const barWidth = Math.floor(xWidth / hvpLength);
+
+    // Mark forecast
+    appendLine(svg)(x(middle), x(middle), y(100), y(0))
+      .attr('stroke', 'white')
+      .attr('stroke-dasharray', '10,3')
+      .attr('opacity', .35);
+    appendRect(svg)(x(middle), y(100), x(last) - x(middle), y(0) - y(100))
+      .attr('fill', 'white')
+      .attr('opacity', .04);
+
+    // Bars
+    const color = y => y > 90 ? 'maroon' : y > 80 ? 'orange' : 'lightblue';
+    const drawBars = (selector, data) => svg.selectAll(selector)
+      .data(data)
+      .join('rect')
+        .attr('fill', d => color(d.y))
+        .attr('x', d => x(d.x) - barWidth)
+        .attr('y', d => y(d.y))
+        .attr('width', barWidth)
+        .attr('height', d => height - y(d.y) - margin.bottom);
+
+    const valid = d => d.y && d.y !== null;
+    drawBars('rect.expected', hvp_expected.filter(valid))
+      .attr('fill', 'lightgreen');
+    drawBars('rect.historical', hvp.slice(0, -1).filter(valid));
+    
+    // Lines
+    appendPathLine(svg)(hvp_ma.filter(valid), x, y)
+      .attr('stroke', 'white');
+    appendPathLine(svg)(hvp_ma_expected.filter(valid), x, y)
+      .attr('stroke', 'white');
+  }}
+/>);
