@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { round_to } from '../../util/math';
+import useStorage from '../../hooks/useStorage';
 
 const futureId = 'future';
 const spotId   = 'spot';
@@ -9,9 +10,6 @@ const minsId   = 'mins';
 const annualId = 'annual';
 const spotTargetId = 'spot-target';
 const futureTargetId = 'future-target';
-
-const get = (id)      => localStorage.getItem(id);
-const set = (id, val) => localStorage.setItem(id, val);
 
 const Field = ({ id, value, setValue }) => <input
   className="w3-input"
@@ -27,23 +25,14 @@ const Row = ({ left, right }) => <div className="w3-cell-row">
 </div>;
 
 export default function Futures() {
-  const [future,       setFuture]       = useState(get(futureId)       ? get(futureId)       : NaN);
-  const [spot,         setSpot]         = useState(get(spotId)         ? get(spotId)         : NaN);
-  const [days,         setDays]         = useState(get(daysId)         ? get(daysId)         : NaN);
-  const [hours,        setHours]        = useState(get(hoursId)        ? get(hoursId)        : NaN);
-  const [mins,         setMins]         = useState(get(minsId)         ? get(minsId)         : NaN);
-  const [annual,       setAnnual]       = useState(get(annualId)       ? get(annualId)       : 365);
-  const [spotTarget,   setSpotTarget]   = useState(get(spotTargetId)   ? get(spotTargetId)   : NaN);
-  const [futureTarget, setFutureTarget] = useState(get(futureTargetId) ? get(futureTargetId) : NaN);
-
-  useEffect(() => set(futureId,       future),       [future]);
-  useEffect(() => set(spotId,         spot),         [spot]);
-  useEffect(() => set(daysId,         days),         [days]);
-  useEffect(() => set(hoursId,        hours),        [hours]);
-  useEffect(() => set(minsId,         mins),         [mins]);
-  useEffect(() => set(annualId,       annual),       [annual]);
-  useEffect(() => set(spotTargetId,   spotTarget),   [spotTarget]);
-  useEffect(() => set(futureTargetId, futureTarget), [futureTarget]);
+  const [future,       setFuture]       = useStorage(futureId,       NaN);
+  const [spot,         setSpot]         = useStorage(spotId,         NaN);
+  const [days,         setDays]         = useStorage(daysId,         NaN);
+  const [hours,        setHours]        = useStorage(hoursId,        NaN);
+  const [mins,         setMins]         = useStorage(minsId,         NaN);
+  const [annual,       setAnnual]       = useStorage(annualId,       365);
+  const [spotTarget,   setSpotTarget]   = useStorage(spotTargetId,   NaN);
+  const [futureTarget, setFutureTarget] = useStorage(futureTargetId, NaN);
 
   const [
     ffuture, fspot, fannual, fdays, fhours, fmins, fspotTarget, ffutureTarget
