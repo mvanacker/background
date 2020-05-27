@@ -14,9 +14,9 @@ export default function Puzzle() {
     }, {
       title: 'Stochs',
       path:  '/stochs',
-    }, {
-      title: 'RSI',
-      path:  '/rsi',
+    // }, {
+    //   title: 'RSI',
+    //   path:  '/rsi',
     // }, {
     //   title: 'Pattern/Volume/Other symbols',
     //   path:  '/to-do',
