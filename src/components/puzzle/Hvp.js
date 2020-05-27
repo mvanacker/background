@@ -77,7 +77,7 @@ export default () => <Indicator
       const barWidth = Math.floor(xWidth / hvpLength);
   
       // Mark forecast
-      appendForecastRect(svg)(x(middle), x(last), y(100), y(0));
+      appendForecastRect(svg)(x(middle) - barWidth / 2, x(last), y(100), y(0));
   
       // Bars
       const color = y => y > 90 ? 'maroon' : y > 80 ? 'orange' : 'lightblue';
