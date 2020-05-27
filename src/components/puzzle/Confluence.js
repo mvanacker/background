@@ -5,6 +5,8 @@ import { extent, median, mean } from 'd3-array';
 import { axisLeft, axisRight } from 'd3-axis';
 import { scaleLinear } from 'd3-scale';
 
+import Loading from '../Loading';
+import { useData } from './Indicator';
 import { subsequentPairs } from '../../util/array';
 import Panel from '../common/Panel';
 
@@ -12,7 +14,19 @@ import Panel from '../common/Panel';
 const timeframesId = 'confluence-detector-timeframes';
 const indicatorsId = 'confluence-detector-indicators';
 
-export default memo(({
+export default () => {
+  const data = useData({
+    limit:   1,
+    columns: [
+      'close',
+      'ema_21', 'ema_55', 'ema_89', 'ema_200', 'ema_377',
+      'sma_10', 'sma_200',
+    ],
+  });
+  return !data.history ? <Loading/> : <Confluence data={data}/>;
+};
+
+const Confluence = memo(({
   fixedHeight = 900,
   tolerance = 3,
   lumpThreshold = 30,
@@ -38,14 +52,14 @@ export default memo(({
     ? JSON.parse(storedTimeframes)
     : {
     '1h':  false,
-    '2h':  true,
+    '2h':  false,
     '3h':  false,
-    '4h':  true,
+    '4h':  false,
     '6h':  false,
     '12h': true,
     '1d':  true,
     '2d':  true,
-    '3d':  false,
+    '3d':  true,
     '1w':  true,
     '1M':  true,
     '3M':  false,
@@ -195,7 +209,7 @@ export default memo(({
     timeframes, indicators,
   ]);
 
-  return <Panel title="Confluence Detector">
+  return <Panel title="Confluence">
     <div className="w3-cell-row">
       <div
         className="w3-cell w3-cell-top w3-content"

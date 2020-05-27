@@ -20,6 +20,7 @@ import Options from './components/Options';
 
 // Puzzle pieces
 import Puzzle from './components/Puzzle';
+import Confluence from './components/puzzle/Confluence';
 import MovingAverages from './components/puzzle/MovingAverages';
 import Stochs from './components/puzzle/Stochs';
 import Rsi from './components/puzzle/Rsi';
@@ -73,6 +74,7 @@ const Right = withResizeDetector(() => <div>
   <Route path='/options' component={Options}/>
 
   {/* Puzzle pieces */}
+  <Route path='/confluence' component={Confluence}/>
   <Route path='/moving-averages' component={MovingAverages}/>
   <Route path='/stochs' component={Stochs}/>
   <Route path='/rsi' component={Rsi}/>

@@ -3,6 +3,9 @@ import Navigation from './common/Navigation';
 
 export default function Puzzle() {
   return <Navigation level={2} items={[{
+      title: 'Confluence',
+      path:  '/confluence',
+    }, {
       title: 'MAs',
       path:  '/moving-averages',
     }, {
