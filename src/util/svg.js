@@ -25,3 +25,13 @@ export const appendPathArea = svg => (data, x, y) => svg.append('path')
     .x(d => x(d.x))
     .y0(d => y(d.y[0]))
     .y1(d => y(d.y[1]))(data));
+
+export const appendForecastRect = svg => (x0, x1, y0, y1) => {
+  appendLine(svg)(x0, x0, y0, y1)
+    .attr('stroke', 'white')
+    .attr('stroke-dasharray', '10,3')
+    .attr('opacity', .35);
+  appendRect(svg)(x0, y0, x1 - x0, y1 - y0)
+    .attr('fill', 'white')
+    .attr('opacity', .04);
+}

@@ -7,10 +7,10 @@ import { Up, Down } from '../common/Icons';
 import Indicator from './Indicator';
 import TitledChart from './TitledChart';
 import {
-  appendLine,
   appendRect,
   appendPathArea,
   appendPathLine,
+  appendForecastRect,
 } from '../../util/svg';
 
 export default () => <Indicator
@@ -90,13 +90,7 @@ export default () => <Indicator
         .attr('fill', 'white');
   
       // Mark forecast
-      appendLine(svg)(x(middle), x(middle), y(100), y(0))
-        .attr('stroke', 'white')
-        .attr('stroke-dasharray', '10,3')
-        .attr('opacity', .35);
-      appendRect(svg)(x(middle), y(100), x(last) - x(middle), y(0) - y(100))
-        .attr('fill', 'white')
-        .attr('opacity', .04);
+      appendForecastRect(svg)(x(middle), x(last), y(100), y(0));
   
       // Lines
       const valid = d => d.y && d.y !== null;
