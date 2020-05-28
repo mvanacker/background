@@ -1,11 +1,10 @@
 import React, {
   Component,
   memo,
-  useRef,
-  useEffect,
 } from 'react';
 
 import { Link } from 'react-router-dom';
+import TextareaAutosize from 'react-textarea-autosize';
 
 import { DATA_URI } from "../config";
 
@@ -111,29 +110,15 @@ function Title() {
 }
 
 const Notes = memo(() => {
-  const [notes, setNotes] = useStorage('notes', '');
-
-  // Listen to textarea resize event to remember height between visits
-  const [height, setHeight] = useStorage('notes-height', 70);
-  const textareaRef = useRef(null);
-  useEffect(() => {
-    new ResizeObserver(e => {
-      const { bottom, top } = e[0].contentRect;
-      setHeight(bottom + top + 1);
-    }).observe(textareaRef.current);
-  }, [setHeight]);
-
-  return <Panel>
-    <textarea
+  const [notes, setNotes] = useStorage('notes');
+  return <Panel title={false}>
+    <TextareaAutosize
       placeholder="Write notes..."
-      ref={textareaRef}
       value={notes}
       onChange={e => setNotes(e.target.value)}
       className="w3-input w3-theme-l4 w3-round-large"
-      style={{
-        resize: 'vertical',
-        height: `${height}px`,
-      }}
+      minRows={2}
+      style={{ resize: 'none' }}
     />
   </Panel>;
 })
