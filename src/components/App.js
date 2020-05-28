@@ -9,6 +9,7 @@ import Panel from './common/Panel';
 import LabeledRow from './common/LabeledRow';
 import ListBlock from './common/ListBlock';
 import { Loading128 } from './common/Icons';
+import useStorage from '../hooks/useStorage';
 
 // Never needs to update
 const VolumeFlowChartWrapper = memo(() => <VolumeFlowChart/>);
@@ -83,6 +84,7 @@ export default class App extends Component {
           </div>
           : <div>
             <Title/>
+            <Notes/>
             <Overview state={this.state}/>
             <VolumeFlowChartWrapper/>
             <BitmexRecentTrades data={this.state.recentTrades}/>
@@ -101,6 +103,19 @@ function Title() {
       <Link to='/'>Maurits'</Link>
     </h1>
   </div>
+}
+
+function Notes() {
+  const [notes, setNotes] = useStorage('');
+  return <Panel>
+    <textarea
+      value={notes && notes !== 'null' ? notes : ''}
+      onChange={e => setNotes(e.target.value)}
+      className="w3-input w3-theme-l4 w3-round-large w3-border"
+      style={{ resize: 'vertical' }}
+      placeholder="Write notes..."
+    />
+  </Panel>;
 }
 
 function Overview(props) {
