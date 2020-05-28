@@ -1,4 +1,9 @@
-import React, { Component, memo } from 'react';
+import React, {
+  Component,
+  memo,
+  useRef,
+  useEffect,
+} from 'react';
 
 import { Link } from 'react-router-dom';
 
@@ -105,18 +110,33 @@ function Title() {
   </div>
 }
 
-function Notes() {
-  const [notes, setNotes] = useStorage('');
+const Notes = memo(() => {
+  const [notes, setNotes] = useStorage('notes', '');
+
+  // Listen to textarea resize event to remember height between visits
+  const [height, setHeight] = useStorage('notes-height', 70);
+  const textareaRef = useRef(null);
+  useEffect(() => {
+    new ResizeObserver(e => {
+      const { bottom, top } = e[0].contentRect;
+      setHeight(bottom + top + 1);
+    }).observe(textareaRef.current);
+  }, [setHeight]);
+
   return <Panel>
     <textarea
-      value={notes && notes !== 'null' ? notes : ''}
-      onChange={e => setNotes(e.target.value)}
-      className="w3-input w3-theme-l4 w3-round-large w3-border"
-      style={{ resize: 'vertical' }}
       placeholder="Write notes..."
+      ref={textareaRef}
+      value={notes}
+      onChange={e => setNotes(e.target.value)}
+      className="w3-input w3-theme-l4 w3-round-large"
+      style={{
+        resize: 'vertical',
+        height: `${height}px`,
+      }}
     />
   </Panel>;
-}
+})
 
 function Overview(props) {
   const { dominance, fearAndGreed } = props.state;
