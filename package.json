@@ -11,13 +11,13 @@
     "moment": "^2.25.3",
     "react": "^16.13.1",
     "react-annotation": "^2.2.1",
-    "react-autosize-textarea": "^7.0.0",
     "react-cookie": "^4.0.3",
     "react-dom": "^16.13.1",
     "react-resize-detector": "^4.2.3",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "3.3.0"
+    "react-scripts": "3.3.0",
+    "react-textarea-autosize": "^8.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
