@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 export const get = (id)      => localStorage.getItem(id);
 export const set = (id, val) => localStorage.setItem(id, val);
 
-export default function useStorage(id, initialValue = null) {
+export default function useStorage(id, initialValue = '') {
   const storedValue = get(id);
   if (storedValue) {
     initialValue = storedValue;
