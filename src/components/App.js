@@ -88,6 +88,7 @@ export default class App extends Component {
           </div>
           : <div>
             <Title/>
+            <Disclaimer/>
             <Notes/>
             <Overview state={this.state}/>
             <VolumeFlowChartWrapper/>
@@ -108,6 +109,28 @@ function Title() {
     </h1>
   </div>
 }
+
+const Disclaimer = () => {
+  const [understood, setUnderstood] = useStorage('hide-disclaimer', false);
+  if (understood) { return null; }
+  return <div className="w3-margin w3-padding-large w3-small">
+    <p>
+      Information on this website is not financial advice,
+      nor should it be treated as a substitute
+      for the services of a certified financial advisor.
+    </p>
+    <p>
+      You are responsible for your own actions or lack thereof.
+      You have the power to make up your own mind.
+    </p>
+    <button
+      className="w3-btn w3-theme-l2 w3-margin my-round"
+      onClick={() => setUnderstood(true)}
+    >
+      I understand
+    </button>
+  </div>;
+};
 
 const Notes = memo(() => {
   const [notes, setNotes] = useStorage('notes');
