@@ -86,14 +86,14 @@ export default class App extends Component {
           ? <div className="w3-margin">
             <Loading128/>
           </div>
-          : <div>
+          : <>
             <Title/>
             <Disclaimer/>
             <Notes/>
             <Overview state={this.state}/>
             <VolumeFlowChartWrapper/>
             <BitmexRecentTrades data={this.state.recentTrades}/>
-          </div>
+          </>
       }
     </div>;
   }
@@ -111,7 +111,9 @@ function Title() {
 }
 
 const Disclaimer = () => {
-  const [understood, setUnderstood] = useStorage('hide-disclaimer', false);
+  const [understood, setUnderstood] = useStorage('hide-disclaimer', {
+    intialValue: false,
+  });
   if (understood) { return null; }
   return <div className="w3-margin w3-padding-large w3-small">
     <p>
@@ -139,7 +141,7 @@ const Notes = memo(() => {
       placeholder="Write notes..."
       value={notes}
       onChange={e => setNotes(e.target.value)}
-      className="w3-input w3-theme-l4 w3-round-large"
+      className="w3-input w3-theme-l1 w3-round-large"
       minRows={2}
       style={{
         resize: 'none',
