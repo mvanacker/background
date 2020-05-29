@@ -141,7 +141,10 @@ const Notes = memo(() => {
       onChange={e => setNotes(e.target.value)}
       className="w3-input w3-theme-l4 w3-round-large"
       minRows={2}
-      style={{ resize: 'none' }}
+      style={{
+        resize: 'none',
+        overflow: 'hidden',
+      }}
     />
   </Panel>;
 })
