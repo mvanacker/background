@@ -25,14 +25,14 @@ const Row = ({ left, right }) => <div className="w3-cell-row">
 </div>;
 
 export default function Futures() {
-  const [future,       setFuture]       = useStorage(futureId,       NaN);
-  const [spot,         setSpot]         = useStorage(spotId,         NaN);
-  const [days,         setDays]         = useStorage(daysId,         NaN);
-  const [hours,        setHours]        = useStorage(hoursId,        NaN);
-  const [mins,         setMins]         = useStorage(minsId,         NaN);
-  const [annual,       setAnnual]       = useStorage(annualId,       365);
-  const [spotTarget,   setSpotTarget]   = useStorage(spotTargetId,   NaN);
-  const [futureTarget, setFutureTarget] = useStorage(futureTargetId, NaN);
+  const [future,       setFuture]       = useStorage(futureId,       { initialValue: NaN });
+  const [spot,         setSpot]         = useStorage(spotId,         { initialValue: NaN });
+  const [days,         setDays]         = useStorage(daysId,         { initialValue: NaN });
+  const [hours,        setHours]        = useStorage(hoursId,        { initialValue: NaN });
+  const [mins,         setMins]         = useStorage(minsId,         { initialValue: NaN });
+  const [annual,       setAnnual]       = useStorage(annualId,       { initialValue: 365 });
+  const [spotTarget,   setSpotTarget]   = useStorage(spotTargetId,   { initialValue: NaN });
+  const [futureTarget, setFutureTarget] = useStorage(futureTargetId, { initialValue: NaN });
 
   const [
     ffuture, fspot, fannual, fdays, fhours, fmins, fspotTarget, ffutureTarget
