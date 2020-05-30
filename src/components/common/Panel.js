@@ -1,17 +1,27 @@
 import React from 'react';
 
-export default function Panel(props) {
-  const { theme, title, children, padding, margin } = props;
-  const _theme = !theme ? 'w3-theme-d3' : theme;
-  const _padding = padding ? 'w3-padding-16' : '';
-  const _margin = margin === undefined || margin === true ? 'w3-margin' : '';
-  return <div
-    className={`w3-card ${_margin} w3-padding-large ${_theme} my-round`}
-  >
-    {
-      title === false ? ''
-        : <h4 className="w3-center my-panel-title">{title}</h4>
+export default ({
+  title = false,
+  theme = 'w3-theme-d3',
+  padding = 'w3-padding-16',
+  margin = 'w3-margin',
+  className,
+  children,
+  ...props
+}) => {
+  return <div 
+    className={
+      `
+      w3-card
+      ${margin ? margin : ''}
+      w3-padding-large
+      ${theme}
+      my-round
+      ${className}`
     }
-    <div className={_padding}>{children}</div>
+    {...props}
+  >
+    {title && <h4 className="w3-center my-panel-title">{title}</h4>}
+    <div className={padding ? padding : ''}>{children}</div>
   </div>;
-}
+};
