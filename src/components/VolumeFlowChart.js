@@ -78,324 +78,326 @@ export default function VolumeFlowChart() {
           `${DATA_URI}/data/open-interest-history.json`,
         ].map((uri) => fetch(uri).then((r) => r.json()))
       )
-    )
-      // Transform data
-      .then((data) => {
-        const [buyFlow, sellFlow, price, openInterest] = data;
-        return {
-          // Transform buy flow
-          buyFlow: buyFlow.map(({ time, buyFlow }) => ({
-            x: new Date(time),
-            y: 1 + parseFloat(buyFlow),
-          })),
+        // Transform data
+        .then((data) => {
+          const [buyFlow, sellFlow, price, openInterest] = data;
+          return {
+            // Transform buy flow
+            buyFlow: buyFlow.map(({ time, buyFlow }) => ({
+              x: new Date(time),
+              y: 1 + parseFloat(buyFlow),
+            })),
 
-          // Transform sell flow
-          sellFlow: sellFlow.map(({ time, sellFlow }) => ({
-            x: new Date(time),
-            y: 1 + parseFloat(sellFlow),
-          })),
+            // Transform sell flow
+            sellFlow: sellFlow.map(({ time, sellFlow }) => ({
+              x: new Date(time),
+              y: 1 + parseFloat(sellFlow),
+            })),
 
-          // Transform prices
-          price: price.map(({ time, price }) => ({
-            x: new Date(time),
-            y: parseFloat(price),
-          })),
+            // Transform prices
+            price: price.map(({ time, price }) => ({
+              x: new Date(time),
+              y: parseFloat(price),
+            })),
 
-          // Transform open interest
-          openInterest: openInterest.map(({ time, openInterest }) => ({
-            x: new Date(time),
-            y: parseFloat(openInterest),
-          })),
-        };
-      })
+            // Transform open interest
+            openInterest: openInterest.map(({ time, openInterest }) => ({
+              x: new Date(time),
+              y: parseFloat(openInterest),
+            })),
+          };
+        })
 
-      // Draw the initial chart
-      .then(({ buyFlow, sellFlow, price, openInterest }) => {
-        const xMargin = margin.flow + margin.price + margin.openInterest;
-        const last = buyFlow.length - 1;
+        // Draw the initial chart
+        .then(({ buyFlow, sellFlow, price, openInterest }) => {
+          const xMargin = margin.flow + margin.price + margin.openInterest;
+          const last = buyFlow.length - 1;
 
-        // Write initial values into divs
-        document.getElementById(openInterestId).innerText = openInterest[
-          last
-        ].y.toLocaleString();
-        document.getElementById(priceId).innerText = price[
-          last
-        ].y.toLocaleString();
-        document.getElementById(buyFlowId).innerText = buyFlow[
-          last
-        ].y.toLocaleString();
-        document.getElementById(sellFlowId).innerText = sellFlow[
-          last
-        ].y.toLocaleString();
+          // Write initial values into divs
+          document.getElementById(openInterestId).innerText = openInterest[
+            last
+          ].y.toLocaleString();
+          document.getElementById(priceId).innerText = price[
+            last
+          ].y.toLocaleString();
+          document.getElementById(buyFlowId).innerText = buyFlow[
+            last
+          ].y.toLocaleString();
+          document.getElementById(sellFlowId).innerText = sellFlow[
+            last
+          ].y.toLocaleString();
 
-        // X-axis
-        const x = scaleUtc()
-          .domain([buyFlow[0].x, buyFlow[last].x])
-          .range([margin.flow, width - margin.price - margin.openInterest]);
+          // X-axis
+          const x = scaleUtc()
+            .domain([buyFlow[0].x, buyFlow[last].x])
+            .range([margin.flow, width - margin.price - margin.openInterest]);
 
-        const xAxis = (g) =>
-          g.call(
-            axisBottom(x)
-              .ticks(5)
-              .tickFormat((x) => timeFormat('%H:%M')(x))
-              .tickSizeOuter(0)
-          );
+          const xAxis = (g) =>
+            g.call(
+              axisBottom(x)
+                .ticks(5)
+                .tickFormat((x) => timeFormat('%H:%M')(x))
+                .tickSizeOuter(0)
+            );
 
-        // Y-axes
-        const yRange = [height - margin.bottom, margin.top];
+          // Y-axes
+          const yRange = [height - margin.bottom, margin.top];
 
-        // Flow axis
-        const flowScale = scaleLog()
-          .domain([
-            MIN_FLOW,
-            Math.max(
-              MAX_FLOW,
-              max(buyFlow, (d) => d.y),
-              max(sellFlow, (d) => d.y)
-            ),
-          ])
-          .range(yRange);
+          // Flow axis
+          const flowScale = scaleLog()
+            .domain([
+              MIN_FLOW,
+              Math.max(
+                MAX_FLOW,
+                max(buyFlow, (d) => d.y),
+                max(sellFlow, (d) => d.y)
+              ),
+            ])
+            .range(yRange);
 
-        const flowValues = [1, 10, 100, 1e3, 1e4, 1e5, 1e6, 1e7];
-        const flowAxis = (g) =>
-          g.call(
-            axisLeft(flowScale)
-              .tickValues(flowValues)
-              .tickFormat((y) => format(',.0r')(y))
-              .tickSizeOuter(0)
-          );
+          const flowValues = [1, 10, 100, 1e3, 1e4, 1e5, 1e6, 1e7];
+          const flowAxis = (g) =>
+            g.call(
+              axisLeft(flowScale)
+                .tickValues(flowValues)
+                .tickFormat((y) => format(',.0r')(y))
+                .tickSizeOuter(0)
+            );
 
-        const flowGrid = (g) =>
-          g.call(
-            axisLeft(flowScale)
-              .tickValues(flowValues)
-              .tickSize(-width + xMargin)
-              .tickSizeOuter(0)
-              .tickFormat('')
-          );
+          const flowGrid = (g) =>
+            g.call(
+              axisLeft(flowScale)
+                .tickValues(flowValues)
+                .tickSize(-width + xMargin)
+                .tickSizeOuter(0)
+                .tickFormat('')
+            );
 
-        const flowLine = line()
-          .x((d) => x(d.x))
-          .y((d) => flowScale(d.y));
+          const flowLine = line()
+            .x((d) => x(d.x))
+            .y((d) => flowScale(d.y));
 
-        // Price axis
-        const priceScale = scaleLinear()
-          .domain(stretchLinear(extent(price, (d) => d.y)))
-          .range(yRange);
+          // Price axis
+          const priceScale = scaleLinear()
+            .domain(stretchLinear(extent(price, (d) => d.y)))
+            .range(yRange);
 
-        const priceAxis = (g) => g.call(axisRight(priceScale).ticks(3));
+          const priceAxis = (g) => g.call(axisRight(priceScale).ticks(3));
 
-        const priceLine = line()
-          .x((d) => x(d.x))
-          .y((d) => priceScale(d.y));
+          const priceLine = line()
+            .x((d) => x(d.x))
+            .y((d) => priceScale(d.y));
 
-        // Open interest axis
-        const openInterestScale = scaleLinear()
-          .domain(stretchLinear(extent(openInterest, (d) => d.y)))
-          .range(yRange);
+          // Open interest axis
+          const openInterestScale = scaleLinear()
+            .domain(stretchLinear(extent(openInterest, (d) => d.y)))
+            .range(yRange);
 
-        const openInterestAxis = (g) =>
-          g.call(
-            axisRight(openInterestScale)
-              .ticks(3)
-              .tickFormat((y) => format('.3s')(y))
-          );
+          const openInterestAxis = (g) =>
+            g.call(
+              axisRight(openInterestScale)
+                .ticks(3)
+                .tickFormat((y) => format('.3s')(y))
+            );
 
-        const openInterestLine = line()
-          .x((d) => x(d.x))
-          .y((d) => openInterestScale(d.y));
+          const openInterestLine = line()
+            .x((d) => x(d.x))
+            .y((d) => openInterestScale(d.y));
 
-        // Assemble the SVG-element
-        const svg = select(d3svg.current).attr('viewbox', [
-          0,
-          0,
-          width,
-          height,
-        ]);
+          // Assemble the SVG-element
+          const svg = select(d3svg.current).attr('viewbox', [
+            0,
+            0,
+            width,
+            height,
+          ]);
 
-        // No-op on first render, but clears previous drawings on re-renders
-        svg.selectAll('*').remove();
+          // No-op on first render, but clears previous drawings on re-renders
+          svg.selectAll('*').remove();
 
-        // Axes groups
-        svg
-          .append('g')
-          .attr('transform', `translate(0,${height - margin.bottom})`)
-          .attr('class', 'x-axis')
-          .call(xAxis);
-
-        svg
-          .append('g')
-          .attr('transform', `translate(${margin.flow},0)`)
-          .attr('class', 'flow-axis')
-          .call(flowAxis);
-
-        svg
-          .append('g')
-          .attr('transform', `translate(${margin.flow},0)`)
-          .attr('class', 'flow-grid')
-          .call(flowGrid);
-
-        svg
-          .append('g')
-          .attr('transform', `translate(${width - margin.price},0)`)
-          .attr('class', 'price-axis')
-          .call(priceAxis);
-
-        const tx = width - margin.price - margin.openInterest;
-        svg
-          .append('g')
-          .attr('transform', `translate(${tx},0)`)
-          .attr('class', 'open-interest-axis')
-          .call(openInterestAxis);
-
-        // Clip path
-        svg
-          .append('clipPath')
-          .attr('id', 'rect-clip')
-          .append('rect')
-          .attr('x', margin.flow)
-          .attr('y', margin.top)
-          .attr('width', width - xMargin)
-          .attr('height', height - (margin.top + margin.bottom));
-
-        // Paths
-        const appendPath = (data, line) =>
+          // Axes groups
           svg
-            .append('path')
-            .attr('clip-path', 'url(#rect-clip)')
-            .attr('fill', 'none')
-            .attr('stroke-width', 2)
-            .attr('stroke-linejoin', 'round')
-            .attr('stroke-linecap', 'round')
-            .attr('d', line(data));
+            .append('g')
+            .attr('transform', `translate(0,${height - margin.bottom})`)
+            .attr('class', 'x-axis')
+            .call(xAxis);
 
-        appendPath(openInterest, openInterestLine)
-          .attr('id', 'open-interest')
-          .attr('opacity', 0.4)
-          .attr('stroke', 'white');
-        appendPath(price, priceLine)
-          .attr('id', 'price')
-          .attr('opacity', 0.4)
-          .attr('stroke', 'royalblue');
-        appendPath(buyFlow, flowLine)
-          .attr('id', 'buy-flow')
-          .attr('stroke', 'lime');
-        appendPath(sellFlow, flowLine)
-          .attr('id', 'sell-flow')
-          .attr('stroke', '#b33');
+          svg
+            .append('g')
+            .attr('transform', `translate(${margin.flow},0)`)
+            .attr('class', 'flow-axis')
+            .call(flowAxis);
 
-        // Update chart
-        const update = () =>
-          Promise.all(
-            [
-              `${DATA_URI}/data/buy-flow.txt`,
-              `${DATA_URI}/data/sell-flow.txt`,
-              `${DATA_URI}/data/price.txt`,
-              `${DATA_URI}/data/open-interest.txt`,
-            ].map((uri) => fetch(uri).then((r) => r.text()))
-          )
-            .then((data) => data.map(parseFloat))
+          svg
+            .append('g')
+            .attr('transform', `translate(${margin.flow},0)`)
+            .attr('class', 'flow-grid')
+            .call(flowGrid);
 
-            // Process new data
-            .then((data) => {
-              let [
-                lastBuyFlow,
-                lastSellFlow,
-                lastPrice,
-                lastOpenInterest,
-              ] = data;
+          svg
+            .append('g')
+            .attr('transform', `translate(${width - margin.price},0)`)
+            .attr('class', 'price-axis')
+            .call(priceAxis);
 
-              // TODO temporary patch until I rewire the back-end
-              if (isNaN(lastBuyFlow)) {
-                lastBuyFlow = buyFlow[last].y;
-              }
-              if (isNaN(lastSellFlow)) {
-                lastSellFlow = sellFlow[last].y;
-              }
-              if (isNaN(lastPrice)) {
-                lastPrice = price[last].y;
-              }
-              if (isNaN(lastOpenInterest)) {
-                lastOpenInterest = openInterest[last].y;
-              }
+          const tx = width - margin.price - margin.openInterest;
+          svg
+            .append('g')
+            .attr('transform', `translate(${tx},0)`)
+            .attr('class', 'open-interest-axis')
+            .call(openInterestAxis);
 
-              // Firstly sound any alarm
-              alarm(beepUpId, lastBuyFlow, lastPrice);
-              alarm(beepDownId, lastSellFlow, lastPrice);
+          // Clip path
+          svg
+            .append('clipPath')
+            .attr('id', 'rect-clip')
+            .append('rect')
+            .attr('x', margin.flow)
+            .attr('y', margin.top)
+            .attr('width', width - xMargin)
+            .attr('height', height - (margin.top + margin.bottom));
 
-              // Set page title
-              document.title = lastPrice;
+          // Paths
+          const appendPath = (data, line) =>
+            svg
+              .append('path')
+              .attr('clip-path', 'url(#rect-clip)')
+              .attr('fill', 'none')
+              .attr('stroke-width', 2)
+              .attr('stroke-linejoin', 'round')
+              .attr('stroke-linecap', 'round')
+              .attr('d', line(data));
 
-              // Update the divs
-              document.getElementById(
-                openInterestId
-              ).innerText = lastOpenInterest.toLocaleString();
-              document.getElementById(
-                priceId
-              ).innerText = lastPrice.toLocaleString();
-              document.getElementById(
-                buyFlowId
-              ).innerText = lastBuyFlow.toLocaleString();
-              document.getElementById(
-                sellFlowId
-              ).innerText = lastSellFlow.toLocaleString();
+          appendPath(openInterest, openInterestLine)
+            .attr('id', 'open-interest')
+            .attr('opacity', 0.4)
+            .attr('stroke', 'white');
+          appendPath(price, priceLine)
+            .attr('id', 'price')
+            .attr('opacity', 0.4)
+            .attr('stroke', 'royalblue');
+          appendPath(buyFlow, flowLine)
+            .attr('id', 'buy-flow')
+            .attr('stroke', 'lime');
+          appendPath(sellFlow, flowLine)
+            .attr('id', 'sell-flow')
+            .attr('stroke', '#b33');
 
-              // TODO these O(n) shifts are a burden on my soul
-              const next_x = new Date(buyFlow[last].x.getTime() + REFRESH_RATE);
-              buyFlow.push({ x: next_x, y: 1 + lastBuyFlow });
-              buyFlow.shift();
-              sellFlow.push({ x: next_x, y: 1 + lastSellFlow });
-              sellFlow.shift();
-              price.push({ x: next_x, y: lastPrice });
-              price.shift();
-              openInterest.push({ x: next_x, y: lastOpenInterest });
-              openInterest.shift();
+          // Update chart
+          const update = () =>
+            Promise.all(
+              [
+                `${DATA_URI}/data/buy-flow.txt`,
+                `${DATA_URI}/data/sell-flow.txt`,
+                `${DATA_URI}/data/price.txt`,
+                `${DATA_URI}/data/open-interest.txt`,
+              ].map((uri) => fetch(uri).then((r) => r.text()))
+            )
+              .then((data) => data.map(parseFloat))
 
-              if (isDrawing) {
-                const svg = select(d3svg.current);
+              // Process new data
+              .then((data) => {
+                let [
+                  lastBuyFlow,
+                  lastSellFlow,
+                  lastPrice,
+                  lastOpenInterest,
+                ] = data;
 
-                // Update bottom axis
-                x.domain([buyFlow[0].x, next_x]);
-                svg.select('g.x-axis').call(xAxis);
+                // TODO temporary patch until I rewire the back-end
+                if (isNaN(lastBuyFlow)) {
+                  lastBuyFlow = buyFlow[last].y;
+                }
+                if (isNaN(lastSellFlow)) {
+                  lastSellFlow = sellFlow[last].y;
+                }
+                if (isNaN(lastPrice)) {
+                  lastPrice = price[last].y;
+                }
+                if (isNaN(lastOpenInterest)) {
+                  lastOpenInterest = openInterest[last].y;
+                }
 
-                // Update flow axis
-                flowScale.domain([
-                  MIN_FLOW,
-                  Math.max(
-                    MAX_FLOW,
-                    max(buyFlow, (d) => d.y),
-                    max(sellFlow, (d) => d.y)
-                  ),
-                ]);
-                svg.select('g.flow-axis').call(flowAxis);
+                // Firstly sound any alarm
+                alarm(beepUpId, lastBuyFlow, lastPrice);
+                alarm(beepDownId, lastSellFlow, lastPrice);
 
-                // Update price axis
-                priceScale.domain(stretchLinear(extent(price, (d) => d.y)));
-                svg.select('g.price-axis').call(priceAxis);
+                // Set page title
+                document.title = lastPrice;
 
-                // Update open interest axis
-                openInterestScale.domain(
-                  stretchLinear(extent(openInterest, (d) => d.y))
+                // Update the divs
+                document.getElementById(
+                  openInterestId
+                ).innerText = lastOpenInterest.toLocaleString();
+                document.getElementById(
+                  priceId
+                ).innerText = lastPrice.toLocaleString();
+                document.getElementById(
+                  buyFlowId
+                ).innerText = lastBuyFlow.toLocaleString();
+                document.getElementById(
+                  sellFlowId
+                ).innerText = lastSellFlow.toLocaleString();
+
+                // TODO these O(n) shifts are a burden on my soul
+                const next_x = new Date(
+                  buyFlow[last].x.getTime() + REFRESH_RATE
                 );
-                svg.select('g.open-interest-axis').call(openInterestAxis);
+                buyFlow.push({ x: next_x, y: 1 + lastBuyFlow });
+                buyFlow.shift();
+                sellFlow.push({ x: next_x, y: 1 + lastSellFlow });
+                sellFlow.shift();
+                price.push({ x: next_x, y: lastPrice });
+                price.shift();
+                openInterest.push({ x: next_x, y: lastOpenInterest });
+                openInterest.shift();
 
-                // Update paths
-                svg
-                  .select('path#open-interest')
-                  .attr('d', openInterestLine(openInterest));
-                svg.select('path#price').attr('d', priceLine(price));
-                svg.select('path#buy-flow').attr('d', flowLine(buyFlow));
-                svg.select('path#sell-flow').attr('d', flowLine(sellFlow));
-              }
-            })
+                if (isDrawing) {
+                  const svg = select(d3svg.current);
 
-            // Skip failed updates
-            .catch(console.error);
+                  // Update bottom axis
+                  x.domain([buyFlow[0].x, next_x]);
+                  svg.select('g.x-axis').call(xAxis);
 
-        // Start update loop
-        handle = setInterval(update, REFRESH_RATE);
-      });
+                  // Update flow axis
+                  flowScale.domain([
+                    MIN_FLOW,
+                    Math.max(
+                      MAX_FLOW,
+                      max(buyFlow, (d) => d.y),
+                      max(sellFlow, (d) => d.y)
+                    ),
+                  ]);
+                  svg.select('g.flow-axis').call(flowAxis);
 
+                  // Update price axis
+                  priceScale.domain(stretchLinear(extent(price, (d) => d.y)));
+                  svg.select('g.price-axis').call(priceAxis);
+
+                  // Update open interest axis
+                  openInterestScale.domain(
+                    stretchLinear(extent(openInterest, (d) => d.y))
+                  );
+                  svg.select('g.open-interest-axis').call(openInterestAxis);
+
+                  // Update paths
+                  svg
+                    .select('path#open-interest')
+                    .attr('d', openInterestLine(openInterest));
+                  svg.select('path#price').attr('d', priceLine(price));
+                  svg.select('path#buy-flow').attr('d', flowLine(buyFlow));
+                  svg.select('path#sell-flow').attr('d', flowLine(sellFlow));
+                }
+              })
+
+              // Skip failed updates
+              .catch(console.error);
+
+          // Start update loop
+          handle = setInterval(update, REFRESH_RATE);
+        }),
+      { tries: 10, delay: 100 }
+    );
     // Clean up on dismount
     return () => clearInterval(handle);
   });
