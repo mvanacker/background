@@ -1,7 +1,10 @@
 // Jaromanda X https://stackoverflow.com/questions/42429590/retry-on-javascript-promise-reject-a-limited-number-of-times-or-until-success
 export const wait = (time) =>
   new Promise((resolve) => setTimeout(resolve, time || 0));
-export const retry = (tries, promise, delay, handler) =>
+export const retry = (
+  promise,
+  { tries = Infinity, delay = 1000, handler = console.error } = {}
+) =>
   promise.catch((err) => {
     if (!handler) {
       handler = console.error;

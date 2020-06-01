@@ -240,10 +240,14 @@ const update = async ({ columns, limit }) => {
 
   // Effectively retry forever
   const tries = Math.floor(REFRESH_RATE / RETRY_DELAY) - 1;
-  return retry(tries, attempt, RETRY_DELAY, (err) => {
-    console.error(err);
-    console.error(err.responses);
-    console.error(`Retry in ${RETRY_DELAY} ms...`);
+  return retry(attempt, {
+    tries,
+    delay: RETRY_DELAY,
+    handler: (err) => {
+      console.error(err);
+      console.error(err.responses);
+      console.error(`Retry in ${RETRY_DELAY} ms...`);
+    },
   });
 };
 
