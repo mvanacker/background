@@ -1,13 +1,24 @@
 import { useState, useEffect } from 'react';
 
-export const get = (id) => localStorage.getItem(id);
-export const set = (id, val) => localStorage.setItem(id, val);
-export const remove = (id) => localStorage.removeItem(id);
+export const useLocal = (id, options) =>
+  useStorage(id, options, {
+    get: (id) => localStorage.getItem(id),
+    set: (id, val) => localStorage.setItem(id, val),
+    remove: (id) => localStorage.removeItem(id),
+  });
 
-export default function useStorage(
+export const useSession = (id, options) =>
+  useStorage(id, options, {
+    get: (id) => sessionStorage.getItem(id),
+    set: (id, val) => sessionStorage.setItem(id, val),
+    remove: (id) => sessionStorage.removeItem(id),
+  });
+
+const useStorage = (
   id,
-  { initialValue = '', stateOnly = false } = {}
-) {
+  { initialValue = '', stateOnly = false } = {},
+  { get, set, remove }
+) => {
   // Retrieve initial value from storage
   if (!stateOnly) {
     const storedValue = get(id);
@@ -27,8 +38,8 @@ export default function useStorage(
   }, [id, value, stateOnly]);
 
   // Define function to remove a value
-  const removeValue = () => localStorage.removeItem(id);
+  const removeValue = () => remove(id);
 
   // Provide similar interface to useState
   return [value, setValue, removeValue];
-}
+};
