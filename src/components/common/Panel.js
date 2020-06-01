@@ -17,7 +17,7 @@ export default ({
       w3-padding-large
       ${theme}
       my-round
-      ${className}`}
+      ${className ? className : ''}`}
       {...props}
     >
       {title && <h4 className="w3-center my-panel-title">{title}</h4>}
