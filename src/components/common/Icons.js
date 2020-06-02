@@ -24,75 +24,83 @@ const lime = {
   filter:
     'invert(100%) sepia(78%) saturate(4813%) hue-rotate(18deg) brightness(103%) contrast(112%)',
 };
+
 const red = {
   filter:
     'invert(15%) sepia(96%) saturate(6773%) hue-rotate(6deg) brightness(104%) contrast(120%)',
 };
+
 const gold = {
   filter:
     'invert(85%) sepia(36%) saturate(526%) hue-rotate(355deg) brightness(85%) contrast(97%)',
 };
+
 const green = {
   filter:
     'invert(48%) sepia(41%) saturate(3401%) hue-rotate(87deg) brightness(129%) contrast(117%)',
 };
+
 const white = {
   filter:
     'invert(99%) sepia(4%) saturate(2%) hue-rotate(190deg) brightness(118%) contrast(100%)',
 };
 
-export const Up = ({ title, ...props }) => (
+
+export const Up = ({ title, style, ...props }) => (
   <img
     src={up}
     title={title}
     alt={title}
     width="16px"
-    style={lime}
+    style={{ ...lime, ...style }}
     {...props}
   />
 );
-export const Down = ({ title, ...props }) => (
+
+export const Down = ({ title, style, ...props }) => (
   <img
     src={down}
     title={title}
     alt={title}
     width="16px"
-    style={red}
+    style={{ ...red, ...style }}
     {...props}
   />
 );
 
-export const Gold = ({ title, ...props }) => (
+export const Gold = ({ title, style, ...props }) => (
   <img
     src={cross}
     title={title}
     alt={title}
     width="16px"
-    style={gold}
+    style={{ ...gold, ...style }}
     {...props}
   />
 );
-export const Death = ({ title, ...props }) => (
+
+export const Death = ({ title, style, ...props }) => (
   <img src={cross} title={title} alt={title} width="16px" {...props} />
 );
 
-export const SplayUp = ({ title, ...props }) => (
+export const SplayUp = ({ title, style, ...props }) => (
   <img
     src={lines}
     title={title}
     alt={title}
     width="16px"
-    style={green}
+    style={{ ...green, ...style }}
     {...props}
   />
 );
-export const SplayDown = ({ title, ...props }) => (
+
+export const SplayDown = ({ title, style, ...props }) => (
   <img
     src={lines}
     title={title}
     alt={title}
     width="16px"
-    style={red}
+    style={{ ...red, ...style }}
     {...props}
   />
 );
@@ -100,66 +108,67 @@ export const SplayDown = ({ title, ...props }) => (
 export const Alert = ({ title, ...props }) => (
   <img src={alert} title={title} alt={title} width="16px" {...props} />
 );
+
 export const Alarm = ({ title, ...props }) => (
   <img src={alarm} title={title} alt={title} width="16px" {...props} />
 );
 
-export const DoubleLeft = ({ title, ...props }) => (
+export const DoubleLeft = ({ title, style, ...props }) => (
   <img
     src={doubleLeft}
     title={title}
     alt={title}
     width="32px"
-    style={white}
+    style={{ ...white, ...style }}
     {...props}
   />
 );
 
-export const DoubleRight = ({ title, ...props }) => (
+export const DoubleRight = ({ title, style, ...props }) => (
   <img
     src={doubleRight}
     title={title}
     alt={title}
     width="32px"
-    style={white}
+    style={{ ...white, ...style }}
     {...props}
   />
 );
 
-export const Loading32 = () => (
-  <img src={loading32} title="Loading..." alt="Loading..." />
+export const Loading32 = (props) => (
+  <img src={loading32} title="Loading..." alt="Loading..." {...props} />
 );
 
-export const Loading64 = () => (
-  <img src={loading64} title="Loading..." alt="Loading..." />
+export const Loading64 = (props) => (
+  <img src={loading64} title="Loading..." alt="Loading..." {...props} />
 );
 
-export const Loading128 = () => (
-  <img src={loading128} title="Loading..." alt="Loading..." />
+export const Loading128 = (props) => (
+  <img src={loading128} title="Loading..." alt="Loading..." {...props} />
 );
 
-export const Loading256 = () => (
-  <img src={loading256} title="Loading..." alt="Loading..." />
+export const Loading256 = (props) => (
+  <img src={loading256} title="Loading..." alt="Loading..." {...props} />
 );
 
-export const Lock = ({ title, ...props }) => (
+export const Lock = ({ title, style, ...props }) => (
   <img
     src={lock}
     title={title}
     alt={title}
     width="14px"
-    style={{ margin: '0 1px 2px', ...white }}
+    style={{ margin: '0 1px 2px', ...white, ...style }}
     {...props}
   />
 );
 
-export const Unlock = ({ title, ...props }) => (
+export const Unlock = ({ title, style, ...props }) => (
   <img
     src={unlock}
     title={title}
     alt={title}
     width="14px"
-    style={{ margin: '0 1px 2px', ...white }}
+    style={{ margin: '0 1px 2px', ...white, ...style }}
     {...props}
   />
 );
