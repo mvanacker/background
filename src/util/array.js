@@ -6,6 +6,10 @@ export function mean(array) {
   return sum(array) / array.length;
 }
 
+export function floats(array) {
+  return array.map(parseFloat).filter(n => !isNaN(n));
+}
+
 export function zip(array1, array2) {
   if (array1.length > array2.length) {
     return array2.map((e, i) => [array1[i], e]);
