@@ -56,11 +56,11 @@ export default function VolumeFlowChart() {
     }
   };
 
-  // Stretch linear domains a bit
+  // Stretch linear domains a bit - also place them in the upper half
   const STRETCH_LIN = 0.1;
   const stretchLinear = ([lower, upper]) => {
     const extra = (upper - lower) * STRETCH_LIN;
-    return [lower - extra, upper + extra];
+    return [2 * lower - upper - 3 * extra, upper + extra];
   };
 
   // Draw after render
@@ -270,11 +270,11 @@ export default function VolumeFlowChart() {
 
           appendPath(openInterest, openInterestLine)
             .attr('id', 'open-interest')
-            .attr('opacity', 0.4)
+            .attr('opacity', 0.5)
             .attr('stroke', 'white');
           appendPath(price, priceLine)
             .attr('id', 'price')
-            .attr('opacity', 0.4)
+            .attr('opacity', 0.7)
             .attr('stroke', 'royalblue');
           appendPath(buyFlow, flowLine)
             .attr('id', 'buy-flow')
