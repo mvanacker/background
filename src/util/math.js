@@ -94,14 +94,6 @@ export function round_to(n, to = 1, base = 10) {
   return Math.round((n + Number.EPSILON) * foo) / foo;
 }
 
-export function sum(array) {
-  return array.reduce((a, b) => a + b, 0);
-}
-
-export function mean(array) {
-  return sum(array) / array.length;
-}
-
 // https://www.w3resource.com/javascript-exercises/javascript-math-exercise-10.php
 export function lcm(x, y) {
   if ((typeof x !== 'number') || (typeof y !== 'number'))

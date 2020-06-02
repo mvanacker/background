@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { DATA_URI } from "../../config";
-import { mean } from '../../util/math';
+import { mean } from '../../util/array';
 import moment from 'moment';
 
 class TradeJournal extends Component {

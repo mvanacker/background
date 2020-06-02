@@ -1,3 +1,11 @@
+export function sum(array) {
+  return array.reduce((a, b) => a + b, 0);
+}
+
+export function mean(array) {
+  return sum(array) / array.length;
+}
+
 export function zip(array1, array2) {
   if (array1.length > array2.length) {
     return array2.map((e, i) => [array1[i], e]);
