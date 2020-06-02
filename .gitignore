@@ -34,3 +34,4 @@ yarn.lock
 # Ignore sandbox files
 /src/sandbox
 *[Tt]est.*
+*[Dd]raft.*
