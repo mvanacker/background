@@ -12,10 +12,12 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { CookiesProvider } from "react-cookie";
 import { withResizeDetector } from 'react-resize-detector';
 
+import Disclaimer from './Disclaimer';
+
 // Components
 import Content from './components/Content';
 import App from './components/App';
-import Trade from './components/Trade';
+import Trade from './components/trade/Trade';
 import Options from './components/Options';
 
 // Puzzle pieces
@@ -98,9 +100,11 @@ const Right = withResizeDetector(() => <div>
 ReactDOM.render(
   <CookiesProvider>
     <div className="w3-theme-dark w3-text-white">
-      <Router>
-        <Content left={<App/>} right={<Right/>}/>
-      </Router>
+      <Disclaimer>
+        <Router>
+          <Content left={<App/>} right={<Right/>}/>
+        </Router>
+      </Disclaimer>
     </div>
   </CookiesProvider>,
   document.getElementById('root')

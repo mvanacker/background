@@ -1,12 +1,14 @@
-html, body, div#root {
+html,
+body,
+div#root {
   min-height: 100%;
   height: 100%;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Roboto',
-    'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Segoe UI',
+    sans-serif;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -15,6 +17,34 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+input.my-check,
+input.my-radio {
+  width: 17px;
+  height: 17px;
+  top: 3px;
+  margin-right: 2px;
+  position: relative;
+}
+
+input.my-small-input {
+  padding: 0 10px;
+  margin: 0 8px 0 0;
+  width: 100px;
+}
+
+.my-shadow {
+  text-shadow: 1px 1px 0 black;
+}
+
+.my-fader {
+  opacity: 0.6;
+  transition: 0.3s;
+}
+
+.my-fader:hover {
+  opacity: 1;
 }
 
 .my-panel-title {
@@ -33,12 +63,41 @@ code {
   border-radius: 0 8px 8px 0;
 }
 
+.my-round-top {
+  border-radius: 8px 8px 0 0;
+}
+
 .my-round-bottom {
   border-radius: 0 0 8px 8px;
 }
 
+.my-text-button {
+  color: white;
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0 8px;
+  margin: 0 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.my-text-button:hover {
+  color: orange;
+  border: 1px solid orange;
+  outline: 0;
+}
+
+.my-text-button:active,
+.my-text-button:focus {
+  color: white;
+  border: 1px solid white;
+  outline: 0;
+}
+
 .monospace {
-  font-family: 'Roboto Mono', 'PT Mono', Monaco, Menlo, Consolas, "Courier New", monospace;
+  font-family: 'Roboto Mono', 'PT Mono', Monaco, Menlo, Consolas, 'Courier New',
+    monospace;
 }
 
 div#title {
@@ -144,19 +203,24 @@ nav.my-nav {
   width: 25%;
 }
 
+.my-small-range {
+  width: 91px;
+  display: block;
+}
+
 /* Adapted from https://www.w3schools.com/howto/howto_js_rangeslider.asp */
 /* May need -moz- properties to work in Firefox */
 
 .my-range {
-  -webkit-appearance: none;  /* Override default CSS styles */
+  -webkit-appearance: none; /* Override default CSS styles */
   appearance: none;
   width: 100%; /* Full-width */
   height: 30px; /* Specified height */
   background: white;
   outline: none; /* Remove outline */
   opacity: 1; /* Set transparency (for mouse-over effects on hover) */
-  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
-  transition: opacity .2s;
+  -webkit-transition: 0.2s; /* 0.2 seconds transition on hover */
+  transition: opacity 0.2s;
 }
 
 .my-range::-webkit-slider-thumb {
