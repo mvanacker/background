@@ -43,7 +43,10 @@ class Deribit extends WebSocket {
     // Debug version of message handler
     this.onmessage = ({ data }) => {
       const message = JSON.parse(data);
-      if ('id' in message) {
+      if (
+        'id' in message &&
+        this.messages[message.id].method !== 'public/test'
+      ) {
         console.log('Received from Deribit: ', message);
       }
       this.receive(message);
@@ -88,10 +91,11 @@ class Deribit extends WebSocket {
 
         if (error) {
           reject(new DeribitError(id, this.messages[id], error));
-        } else if (result) {
+        } else if (result || result === 0) {
           resolve(response);
         } else {
           // TODO will this ever happen in production?
+          // Update: warning triggered once but when result === 0
           console.warn(
             `Response ${id} contained no error nor result.`,
             response
@@ -146,8 +150,7 @@ class Deribit extends WebSocket {
           this.callbacks[channel.toLowerCase()](params);
           break;
 
-        // Usually this path is reached only when I'm adding new stuff, but I'm
-        // leaning towards ultimately just leaving it in. [TODO decide]
+        // Warn about messages which weren't recognized
         default:
           console.warn('Failed to categorize message: ', message);
           break;
@@ -241,7 +244,6 @@ const useDeribit = ({ test }) => {
     const _setReadyState = () => setReadyState(deribit.current.readyState);
     const _setAuthState = () => setAuthState(deribit.current.authState);
     const setup = () => {
-      console.log('hi');
       deribit.current = new Deribit({ test });
 
       // Track connectivity in state, so changes update the DOM
@@ -363,12 +365,16 @@ const DeribitAuth = ({ deribit, test, setTest, ...props }) => {
   const [secret, setSecret, removeSecret] = useLocal('deribit-secret', {
     stateOnly: !remember,
   });
+  const [error, setError] = useState(null);
 
   // Attempt to authenticate automatically (once)
   const attemptedAutoAuth = useRef(false);
   useEffect(() => {
     if (!attemptedAutoAuth.current && remember && key && secret) {
-      const autoAuth = () => deribit.auth({ key, secret }).catch(console.error);
+      const autoAuth = () =>
+        deribit
+          .auth({ key, secret })
+          .catch(() => console.warn('Automatic authentication failed.'));
       if (deribit.readyState === ReadyState.CONNECTED) {
         autoAuth();
       } else {
@@ -380,11 +386,12 @@ const DeribitAuth = ({ deribit, test, setTest, ...props }) => {
 
   return (
     <div className="w3-center" {...props}>
+      {error && <div className="w3-padding">{error.toString()}</div>}
       <form
         className="w3-container"
         onSubmit={(e) => {
           e.preventDefault();
-          deribit.auth({ key, secret });
+          deribit.auth({ key, secret }).catch(setError);
         }}
       >
         <div className="w3-padding-small">
@@ -1054,14 +1061,8 @@ const Order = ({
         <div className="w3-padding-large">
           <ul className="w3-ul w3-hover-theme">
             {errors.map((error, i) => {
-              const {
-                id,
-                code,
-                request: { params } = {},
-                response: { message, data: { reason, param } = {} },
-              } = error;
               return (
-                <li key={id}>
+                <li key={error.id}>
                   <div style={{ width: '5%', display: 'inline-block' }}>
                     <TextButton
                       onClick={() =>
@@ -1076,12 +1077,7 @@ const Order = ({
                     </TextButton>
                   </div>
                   <div style={{ width: '95%', display: 'inline-block' }}>
-                    [{code}] {message}
-                    {reason &&
-                      `: ${reason}${
-                        param &&
-                        `: ${param} was ${JSON.stringify(params[param])}`
-                      }`}
+                    {error.toString()}
                   </div>
                 </li>
               );
@@ -1405,7 +1401,7 @@ class DeribitError extends Error {
     super(
       `Response ID ${id}, code ${code}: ${message}${
         data ? ` ${JSON.stringify(data)}` : ''
-      }. Original request: ${request}`
+      }. Original request: ${JSON.stringify(request)}`
     );
     this.name = 'DeribitError';
     this.id = id;
@@ -1413,4 +1409,17 @@ class DeribitError extends Error {
     this.response = { message, data, code };
     this.code = code;
   }
+
+  toString = () => {
+    const {
+      code,
+      request: { params } = {},
+      response: { message, data: { reason, param } = {} },
+    } = this;
+    return `[${code}] ${message}
+    ${
+      reason &&
+      `: ${reason}${param && `: ${param} was ${JSON.stringify(params[param])}`}`
+    }`;
+  };
 }
