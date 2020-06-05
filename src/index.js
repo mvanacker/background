@@ -9,10 +9,11 @@ import './index.css';
 
 import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
-import { CookiesProvider } from "react-cookie";
-import { withResizeDetector } from 'react-resize-detector';
+import { CookiesProvider } from 'react-cookie';
 
-import Disclaimer from './Disclaimer';
+// Legal
+import FinancialDisclaimer from './Disclaimer';
+import CookieDisclaimer from './Cookie';
 
 // Components
 import Content from './components/Content';
@@ -51,60 +52,63 @@ import Test from './sandbox/Test.js';
 document.body.classList.add('w3-theme-dark');
 
 // Right-hand side of the application
-// A note on resize detection: it forces rerenders on resizes, if the left-hand
-// side of the application (or any future hideable component) is hidden, the
-// charts on the right-hand side won't change into an overlapping mess.
-// Changing charting libraries might alleviate this necessity in the future.
-const Right = withResizeDetector(() => <div>
-  <Navigation
-    items={[{
-      title: 'Home',
-      path:  '/',
-    }, {
-      title: 'Trade',
-      path:  '/trade',
-    }, {
-      title: 'Options',
-      path:  '/options',
-    }]}
-  />
+const Right = () => (
+  <>
+    <Navigation
+      items={[
+        {
+          title: 'Home',
+          path: '/',
+        },
+        {
+          title: 'Trade',
+          path: '/trade',
+        },
+        {
+          title: 'Options',
+          path: '/options',
+        },
+      ]}
+    />
 
-  {/* Top-level pages */}
-  <Route path='/' component={Puzzle}/>
-  <Route exact path='/' component={MovingAverages}/>
-  <Route path='/trade' component={Trade}/>
-  <Route path='/options' component={Options}/>
+    {/* Top-level pages */}
+    <Route path="/" component={Puzzle} />
+    <Route exact path="/" component={MovingAverages} />
+    <Route path="/trade" component={Trade} />
+    <Route path="/options" component={Options} />
 
-  {/* Puzzle pieces */}
-  <Route path='/confluence' component={Confluence}/>
-  <Route path='/moving-averages' component={MovingAverages}/>
-  <Route path='/stochs' component={Stochs}/>
-  <Route path='/rsi' component={Rsi}/>
-  <Route path='/volatility' component={Hvp}/>
+    {/* Puzzle pieces */}
+    <Route path="/confluence" component={Confluence} />
+    <Route path="/moving-averages" component={MovingAverages} />
+    <Route path="/stochs" component={Stochs} />
+    <Route path="/rsi" component={Rsi} />
+    <Route path="/volatility" component={Hvp} />
 
-  {/* Easter eggs */}
-  <Route path='/probs' component={Probs}/>
-  <Route path='/futures' component={Futures}/>
-  <Route path='/simulation' component={Simulation}/>
+    {/* Easter eggs */}
+    <Route path="/probs" component={Probs} />
+    <Route path="/futures" component={Futures} />
+    <Route path="/simulation" component={Simulation} />
 
-  {/* Deprecated features */}
-  <Route path='/iv' component={IV}/>
-  <Route path='/giv' component={GIV}/>
-  <Route path='/journal' component={TradeJournal}/>
+    {/* Deprecated features */}
+    <Route path="/iv" component={IV} />
+    <Route path="/giv" component={GIV} />
+    <Route path="/journal" component={TradeJournal} />
 
-  {/* Testing */}
-  <Route path='/test' component={Test}/>
-</div>);
+    {/* Testing */}
+    <Route path="/test" component={Test} />
+  </>
+);
 
 // Render application
 ReactDOM.render(
   <CookiesProvider>
     <div className="w3-theme-dark w3-text-white">
-      <Disclaimer>
+      <FinancialDisclaimer>
         <Router>
-          <Content left={<App/>} right={<Right/>}/>
+          <Content left={<App />} right={<Right />} />
         </Router>
-      </Disclaimer>
+        <CookieDisclaimer />
+      </FinancialDisclaimer>
     </div>
   </CookiesProvider>,
   document.getElementById('root')
