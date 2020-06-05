@@ -235,55 +235,58 @@ class Deribit extends WebSocket {
 
 // Wrap Deribit WebSocket in a Hook
 const useDeribit = ({ test }) => {
-  const setReadyState = useState(0)[1];
-  const setAuthState = useState(0)[1];
-  const deribit = useRef(null);
+  const [readyState, setReadyState] = useState(0);
+  const [authState, setAuthState] = useState(0);
+  const [deribit, setDeribit] = useState(null);
 
   // WebSocket setup & cleanup
   useEffect(() => {
-    const _setReadyState = () => setReadyState(deribit.current.readyState);
-    const _setAuthState = () => setAuthState(deribit.current.authState);
+    let newDeribit, onReadyState, onAuthState;
     const setup = () => {
-      deribit.current = new Deribit({ test });
-
+      newDeribit = new Deribit({ test });
+      onReadyState = () => setReadyState(newDeribit.readyState);
+      onAuthState = () => setAuthState(newDeribit.authState);
+      
       // Track connectivity in state, so changes update the DOM
-      deribit.current.addEventListener('open', _setReadyState);
-      deribit.current.addEventListener('close', _setReadyState);
-      deribit.current.addEventListener('error', _setReadyState);
+      newDeribit.addEventListener('open', onReadyState);
+      newDeribit.addEventListener('close', onReadyState);
+      newDeribit.addEventListener('error', onReadyState);
 
       // Track authentication in state, so changes update the DOM
-      deribit.current.addEventListener('authenticating', _setAuthState);
-      deribit.current.addEventListener('authenticated', _setAuthState);
-      deribit.current.addEventListener('loggingOut', _setAuthState);
+      newDeribit.addEventListener('authenticating', onAuthState);
+      newDeribit.addEventListener('authenticated', onAuthState);
+      newDeribit.addEventListener('loggingOut', onAuthState);
 
       // Reinitialize WebSocket on logout
-      deribit.current.addEventListener('close', (e) => {
+      newDeribit.addEventListener('close', (e) => {
         if (e.reason === 'logout') {
           setup();
         }
       });
+
+      setDeribit(newDeribit);
     };
     setup();
 
     // Cleanup
-    const close = () => deribit.current.close();
+    const close = () => newDeribit.close();
     window.addEventListener('beforeunload', close);
     return () => {
       window.removeEventListener('beforeunload', close);
-      deribit.current.removeEventListener('close', _setReadyState);
-      deribit.current.removeEventListener('error', _setReadyState);
+      newDeribit.removeEventListener('close', onReadyState);
+      newDeribit.removeEventListener('error', onReadyState);
       close();
     };
-  }, [test, setReadyState, setAuthState]);
+  }, [test]);
 
-  return deribit.current;
+  return [deribit, readyState, authState];
 };
 
 // Define Deribit panel
 const DeribitPanel = (props) => {
   const [test, setTest] = useLocal('deribit-test', { initialValue: true });
 
-  const deribit = useDeribit({ test });
+  const [deribit, readyState, authState] = useDeribit({ test });
   if (deribit === null) {
     return null;
   }
@@ -296,7 +299,7 @@ const DeribitPanel = (props) => {
 
   // Give feedback on connection status with Deribit
   let readyString;
-  switch (deribit.readyState) {
+  switch (readyState) {
     case ReadyState.CONNECTING:
       readyString = 'connecting';
       break;
@@ -315,7 +318,7 @@ const DeribitPanel = (props) => {
 
   // Give feedback on authentication status with Deribit
   let authString;
-  switch (deribit.authState) {
+  switch (authState) {
     case AuthState.NOT_AUTHENTICATED:
       authString = 'not authenticated';
       break;
@@ -792,18 +795,18 @@ const TextButton = ({ children, ...props }) => (
   </button>
 );
 
-// Row with 2 columns; 20% and 80% wide (auxiliary component)
+// Row with 2 columns; 25% and 75% wide (auxiliary component)
 const Row = ({ label, children, ...props }) => (
   <div className="w3-row-padding w3-container" {...props}>
     <div
       className="w3-col w3-padding-small w3-left-align w3-mobile"
-      style={{ width: '20%', maxWidth: '150px' }}
+      style={{ width: '25%', maxWidth: '150px' }}
     >
       {label ? label : ''}
     </div>
     <div
       className="w3-col w3-padding-small w3-left-align w3-mobile"
-      style={{ width: '80%' }}
+      style={{ width: '75%' }}
     >
       {children}
     </div>
