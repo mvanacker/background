@@ -483,13 +483,9 @@ const DeribitInterface = ({ deribit, ...props }) => {
         // Subscribe to futures' tickers
         const pubSubs = {};
         futures.forEach((future) => {
-          const ticker = `ticker.${future}.100ms`;
-          pubSubs[ticker] = ({ data }) =>
-            setFutures((futures) => {
-              const newFutures = { ...futures };
-              newFutures[future] = data;
-              return newFutures;
-            });
+          const channel = `ticker.${future}.100ms`;
+          pubSubs[channel] = ({ data }) =>
+            setFutures((futures) => ({ ...futures, [future]: data }));
         });
         deribit.publicSubscribe(pubSubs);
 
