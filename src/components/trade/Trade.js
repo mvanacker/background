@@ -246,7 +246,7 @@ const useDeribit = ({ test }) => {
       newDeribit = new Deribit({ test });
       onReadyState = () => setReadyState(newDeribit.readyState);
       onAuthState = () => setAuthState(newDeribit.authState);
-      
+
       // Track connectivity in state, so changes update the DOM
       newDeribit.addEventListener('open', onReadyState);
       newDeribit.addEventListener('close', onReadyState);
@@ -1290,16 +1290,8 @@ const NumericalInput = forwardRef((props, ref) => (
   />
 ));
 
-// Convenience wrapper
-const NumericalDynamicInputs = (props) => (
-  <DynamicInputs
-    component={(props) => <NumericalInput {...props} />}
-    {...props}
-  />
-);
-
 // Generalized dynamic inputs
-const DynamicInputs = ({ locked, values, setValues, component, ...props }) => {
+const withDynamism = (Input) => ({ locked, values, setValues, ...props }) => {
   // Focusing the last (real) input must be done *after* the render
   const last = useRef(null);
   const [focusLast, setFocusLast] = useState(false);
@@ -1316,9 +1308,9 @@ const DynamicInputs = ({ locked, values, setValues, component, ...props }) => {
 
   // If the amount of inputs is locked, i.e. static, we can save a lot of effort
   if (locked) {
-    return values.map((value, i) =>
-      component({ value, onChange: setValue(i), key: i, ...props })
-    );
+    return values.map((value, i) => (
+      <Input value={value} onChange={setValue(i)} key={i} {...props} />
+    ));
   }
 
   // Otherwise render dynamic inputs
@@ -1329,50 +1321,55 @@ const DynamicInputs = ({ locked, values, setValues, component, ...props }) => {
 
         // Leave a reference on the very last (real) input
         if (i === values.length - 1) {
-          return component({ ref: last, ...commonProps });
+          return <Input ref={last} {...commonProps} />;
         }
 
         // Clean up trailing empty values when focusing non-last input
         else {
-          return component({
-            onFocus: () => {
-              if (!last.current.value) {
-                // Count how many trailing values are empty
-                let c = 0;
-                while (
-                  !values[values.length - 1 - c] &&
-                  c < values.length - 1 - i
-                ) {
-                  c++;
-                }
+          return (
+            <Input
+              onFocus={() => {
+                if (!last.current.value) {
+                  // Count how many trailing values are empty
+                  let c = 0;
+                  while (
+                    !values[values.length - 1 - c] &&
+                    c < values.length - 1 - i
+                  ) {
+                    c++;
+                  }
 
-                // Slice them off
-                setValues(values.slice(0, values.length - c));
+                  // Slice them off
+                  setValues(values.slice(0, values.length - c));
 
-                // Correct focus if necessary
-                if (i >= values.length - c) {
-                  setFocusLast(true);
+                  // Correct focus if necessary
+                  if (i >= values.length - c) {
+                    setFocusLast(true);
+                  }
                 }
-              }
-            },
-            ...commonProps,
-          });
+              }}
+              {...commonProps}
+            />
+          );
         }
       })}
 
       {/* Fake input that spawns new inputs when focused */}
-      {component({
-        value: '',
-        readOnly: true,
-        onFocus: () => {
+      <Input
+        value=""
+        readonly={true}
+        onFocus={() => {
           setValues(values.concat(['']));
           setFocusLast(true);
-        },
-        ...props,
-      })}
+        }}
+        {...props}
+      />
     </>
   );
 };
+
+// Convenience wrapper
+const NumericalDynamicInputs = withDynamism(NumericalInput);
 
 const ReadyState = {
   CONNECTING: 0,
