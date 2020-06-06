@@ -11,6 +11,10 @@ import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { CookiesProvider } from 'react-cookie';
 
+// Redux
+import { Provider } from 'react-redux';
+import store from './store';
+
 // Legal
 import FinancialDisclaimer from './Disclaimer';
 import CookieDisclaimer from './Cookie';
@@ -102,14 +106,16 @@ const Right = () => (
 // Render application
 ReactDOM.render(
   <CookiesProvider>
-    <div className="w3-theme-dark w3-text-white">
-      <FinancialDisclaimer>
-        <Router>
-          <Content left={<App />} right={<Right />} />
-        </Router>
-        <CookieDisclaimer />
-      </FinancialDisclaimer>
-    </div>
+    <Provider store={store}>
+      <div className="w3-theme-dark w3-text-white">
+        <FinancialDisclaimer>
+          <Router>
+            <Content left={<App />} right={<Right />} />
+          </Router>
+          <CookieDisclaimer />
+        </FinancialDisclaimer>
+      </div>
+    </Provider>
   </CookiesProvider>,
   document.getElementById('root')
 );
