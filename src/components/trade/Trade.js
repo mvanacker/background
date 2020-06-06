@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, forwardRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useContext,
+  forwardRef,
+} from 'react';
 
 import Panel from '../common/Panel';
 import Lock from '../common/Lock';
@@ -7,286 +13,17 @@ import { mean, floats } from '../../util/array';
 import { lcm, round_to } from '../../util/math';
 import { percent } from '../../util/format';
 import { useLocal } from '../../hooks/useStorage';
-import { APP_NAME, APP_VERSION } from '../../config';
+import { DeribitContext } from '../../contexts/Deribit';
+import { AuthState, ReadyState } from '../../sources/DeribitWebSocket';
 
 // Define the Trade component
 export default () => <DeribitPanel />;
 
-// Wrapper for the Deribit WebSocket API
-class Deribit extends WebSocket {
-  constructor({ test = true } = {}) {
-    if (test) {
-      super('wss://test.deribit.com/ws/api/v2');
-    } else {
-      super('wss://www.deribit.com/ws/api/v2');
-    }
-
-    // Handle the usual events
-    this.onopen = (e) => {
-      console.log("Connected to Deribit's WebSocket.", e);
-
-      // Start heartbeat
-      this.send({
-        method: 'public/set_heartbeat',
-        params: { interval: 30 },
-      });
-
-      // Introduce ourselves to Deribit
-      this.send({
-        method: 'public/hello',
-        params: {
-          client_name: APP_NAME,
-          client_version: APP_VERSION,
-        },
-      });
-    };
-    // Debug version of message handler
-    this.onmessage = ({ data }) => {
-      const message = JSON.parse(data);
-      if (
-        'id' in message &&
-        this.messages[message.id].method !== 'public/test'
-      ) {
-        console.log('Received from Deribit: ', message);
-      }
-      this.receive(message);
-    };
-    // this.onmessage = ({ data }) => this.receive(JSON.parse(data));
-    this.onclose = (e) => console.log('Disconnected from Deribit', e);
-
-    // Handle error
-    this.errorOccurred = false;
-    this.onerror = (e) => {
-      console.error(
-        'An error occured while trying to communicate with Deribit.',
-        e
-      );
-      this.errorOccurred = true;
-    };
-
-    // General fields
-    this.id = 0;
-    this.messages = [];
-    this.promises = [];
-
-    // Authentication field(s)
-    this.authState = AuthState.NOT_AUTHENTICATED;
-    this.authentication = null;
-
-    // Subscription
-    this.callbacks = {};
-  }
-
-  // Send message to Deribit
-  send = ({ method, params = {} }) => {
-    // Add access_token to private methods
-    if (/^\/?private/i.test(method)) {
-      params.access_token = this.authentication.access_token;
-    }
-
-    // Promise which resolves to Deribit's response
-    const promise = new Promise((resolve, reject) => {
-      this.promises[this.id] = (response) => {
-        const { id, error, result } = response;
-
-        if (error) {
-          reject(new DeribitError(id, this.messages[id], error));
-        } else if (result || result === 0) {
-          resolve(response);
-        } else {
-          // TODO will this ever happen in production?
-          // Update: warning triggered once but when result === 0
-          console.warn(
-            `Response ${id} contained no error nor result.`,
-            response
-          );
-        }
-      };
-    });
-
-    // Construct and send message
-    const message = {
-      jsonrpc: '2.0',
-      id: this.id,
-      method,
-      params,
-    };
-    this.messages[this.id] = message;
-    super.send(JSON.stringify(message));
-
-    // TODO debug
-    if (method !== 'public/test') {
-      console.log(`Sent request ${this.id} to deribit: `, message);
-    }
-
-    // Increment id
-    this.id++;
-
-    return promise;
-  };
-
-  // Receive message from Deribit
-  receive = (message) => {
-    const { id, method, params } = message;
-
-    // Resolve associated promise
-    if (id || id === 0) {
-      this.promises[id](message);
-    }
-
-    // Handle unidentified messages
-    else {
-      switch (method) {
-        // Respond to heartbeats
-        case 'heartbeat':
-          if (params.type === 'test_request') {
-            this.send({ method: 'public/test' });
-          }
-          break;
-
-        // Execute appropriate callback on messages from subscribed channels
-        case 'subscription':
-          const { channel } = params;
-          this.callbacks[channel.toLowerCase()](params);
-          break;
-
-        // Warn about messages which weren't recognized
-        default:
-          console.warn('Failed to categorize message: ', message);
-          break;
-      }
-    }
-  };
-
-  // Authenticate with Deribit
-  auth = async ({ key, secret }) => {
-    this.authState = AuthState.AUTHENTICATING;
-    this.dispatchEvent(new Event('authenticating'));
-
-    // Authenticate, save the tokens and other information
-    return this.send({
-      method: 'public/auth',
-      params: {
-        grant_type: 'client_credentials',
-        client_id: key,
-        client_secret: secret,
-      },
-    }).then(({ result }) => {
-      this.authState = AuthState.AUTHENTICATED;
-      this.authentication = result;
-      this.dispatchEvent(new Event('authenticated'));
-
-      // Reauthenticate with Deribit; note this is a bit of an academic exercise
-      // since Deribit authentications last a year at a time at time of writing
-      const reauth = () => {
-        const handle = setTimeout(() => {
-          this.authState = AuthState.AUTHENTICATING;
-          this.dispatchEvent(new Event('authenticating'));
-          this.send({
-            method: 'public/auth',
-            params: {
-              grant_type: 'refresh_token',
-              refresh_token: this.authentication.refresh_token,
-            },
-          }).then(({ result }) => {
-            this.authState = AuthState.AUTHENTICATED;
-            this.authentication = result;
-            this.dispatchEvent(new Event('authenticated'));
-
-            // Loop
-            reauth();
-          });
-        }, this.authentication.expires_in * 1000);
-        this.addEventListener('close', () => clearTimeout(handle));
-      };
-
-      // Start reauthentication loop
-      reauth();
-    });
-  };
-
-  // Log out from Deribit
-  logout = async () => {
-    this.authState = AuthState.LOGGING_OUT;
-    this.dispatchEvent(new Event('loggingOut'));
-    return this.send({
-      method: 'private/logout',
-    });
-  };
-
-  // Subscribe to channels, register callbacks
-  subscribe = async (method, callbacks) => {
-    // Make callbacks' keys case-insensitive
-    for (const key in callbacks) {
-      this.callbacks[key.toLowerCase()] = callbacks[key];
-    }
-
-    // Request subscription
-    const channels = Object.keys(callbacks);
-    this.send({ method, params: { channels } });
-  };
-  publicSubscribe = async (callbacks) => {
-    this.subscribe('public/subscribe', callbacks);
-  };
-  privateSubscribe = async (callbacks) => {
-    this.subscribe('private/subscribe', callbacks);
-  };
-}
-
-// Wrap Deribit WebSocket in a Hook
-const useDeribit = ({ test }) => {
-  const [readyState, setReadyState] = useState(0);
-  const [authState, setAuthState] = useState(0);
-  const [deribit, setDeribit] = useState(null);
-
-  // WebSocket setup & cleanup
-  useEffect(() => {
-    let newDeribit, onReadyState, onAuthState;
-    const setup = () => {
-      newDeribit = new Deribit({ test });
-      onReadyState = () => setReadyState(newDeribit.readyState);
-      onAuthState = () => setAuthState(newDeribit.authState);
-
-      // Track connectivity in state, so changes update the DOM
-      newDeribit.addEventListener('open', onReadyState);
-      newDeribit.addEventListener('close', onReadyState);
-      newDeribit.addEventListener('error', onReadyState);
-
-      // Track authentication in state, so changes update the DOM
-      newDeribit.addEventListener('authenticating', onAuthState);
-      newDeribit.addEventListener('authenticated', onAuthState);
-      newDeribit.addEventListener('loggingOut', onAuthState);
-
-      // Reinitialize WebSocket on logout
-      newDeribit.addEventListener('close', (e) => {
-        if (e.reason === 'logout') {
-          setup();
-        }
-      });
-
-      setDeribit(newDeribit);
-    };
-    setup();
-
-    // Cleanup
-    const close = () => newDeribit.close();
-    window.addEventListener('beforeunload', close);
-    return () => {
-      window.removeEventListener('beforeunload', close);
-      newDeribit.removeEventListener('close', onReadyState);
-      newDeribit.removeEventListener('error', onReadyState);
-      close();
-    };
-  }, [test]);
-
-  return [deribit, readyState, authState];
-};
-
 // Define Deribit panel
 const DeribitPanel = (props) => {
-  const [test, setTest] = useLocal('deribit-test', { initialValue: true });
-
-  const [deribit, readyState, authState] = useDeribit({ test });
+  const { deribit, readyState, authState, test, setTest } = useContext(
+    DeribitContext
+  );
   if (deribit === null) {
     return null;
   }
@@ -334,7 +71,7 @@ const DeribitPanel = (props) => {
 
   return (
     <div className="w3-container w3-section">
-      {deribit.errorOccurred ? (
+      {deribit.maybeDown ? (
         <Panel title={`Deribit down?`} {...commonProps}>
           <div className="w3-center w3-padding-large">
             <p>We encountered an error while trying to connect to Deribit.</p>
@@ -413,11 +150,20 @@ const DeribitAuth = ({ deribit, test, setTest, ...props }) => {
 
 // Define Deribit trading interface
 const DeribitInterface = ({ deribit, ...props }) => {
-  // Setup information retrieval needed to provide a trading interface
   const [futures, setFutures] = useState({});
   const [orders, setOrders] = useState({});
   const [portfolio, setPortfolio] = useState({});
+
+  // Setup information retrieval needed to provide a trading interface
   useEffect(() => {
+    // We won't actually be subscribing until the end of this hook
+    // Instead we'll be accumulating channels and their callbacks
+    const pubSubs = {};
+    const privSubs = {};
+
+    // Subscribe to portfolio
+    privSubs['user.portfolio.btc'] = ({ data }) => setPortfolio(data);
+
     // Fetch futures
     deribit
       .send({
@@ -433,13 +179,11 @@ const DeribitInterface = ({ deribit, ...props }) => {
         setOrders(orders);
 
         // Subscribe to futures' tickers
-        const pubSubs = {};
         futures.forEach((future) => {
           const channel = `ticker.${future}.100ms`;
           pubSubs[channel] = ({ data }) =>
             setFutures((futures) => ({ ...futures, [future]: data }));
         });
-        deribit.publicSubscribe(pubSubs);
 
         // Fetch user's open orders on futures
         deribit
@@ -447,13 +191,18 @@ const DeribitInterface = ({ deribit, ...props }) => {
             method: 'private/get_open_orders_by_currency',
             params: { currency: 'btc', kind: 'future' },
           })
+
+          // The private subscription will have a key named data
           .then(({ result: data }) => {
             const updateOrders = ({ data }) => {
+              // Perform functional update on orders
               setOrders((orders) => {
                 const newOrders = { ...orders };
                 data.forEach((datum) => {
+                  // Add or update order
                   const { instrument_name, order_id } = datum;
                   newOrders[instrument_name][order_id] = datum;
+                  // Delete orders which are no longer open
                   if (
                     datum.order_state === 'cancelled' ||
                     datum.order_state === 'filled'
@@ -464,22 +213,30 @@ const DeribitInterface = ({ deribit, ...props }) => {
                 return newOrders;
               });
             };
+
+            // First update with data (i.e. open orders) from initial fetch
             updateOrders({ data });
 
             // Subscribe to user's futures' orders
-            const privSubs = {};
             futures.forEach((future) => {
               const orders = `user.orders.${future}.100ms`;
-              privSubs[orders] = updateOrders;
+              privSubs[orders] = updateOrders; // notice subsequent updates
             });
+          })
+
+          // AFTER all of this...
+          .then(() => {
+            // Do actual subscribing
+            deribit.publicSubscribe(pubSubs);
             deribit.privateSubscribe(privSubs);
           });
       });
 
-    // Subscribe to portfolio
-    deribit.privateSubscribe({
-      'user.portfolio.btc': ({ data }) => setPortfolio(data),
-    });
+    // Unsubscribe when done
+    return () => {
+      deribit.publicUnsubscribe(Object.keys(pubSubs));
+      deribit.privateUnsubscribe(Object.keys(privSubs));
+    };
   }, [deribit]);
 
   // Store application state locally
@@ -793,7 +550,7 @@ const Entries = ({ entryMethod, entries, setEntries, ...props }) => {
 };
 
 // Splayed entries component
-const SplayedEntries = ({ setEntries, ...props }) => {
+const SplayedEntries = ({ setEntries, locked, ...props }) => {
   const [center, setCenter] = useLocal('deribit-center');
   const [spread, setSpread] = useLocal('deribit-spread', { initialValue: 5 });
   const [orders, setOrders] = useLocal('deribit-orders', { initialValue: 9 });
@@ -1333,20 +1090,6 @@ const withDynamism = (Input) => ({ locked, values, setValues, ...props }) => {
 // Convenience wrapper
 const NumericalDynamicInputs = withDynamism(NumericalInput);
 
-const ReadyState = {
-  CONNECTING: 0,
-  CONNECTED: 1,
-  CLOSING: 2,
-  CLOSED: 3,
-};
-
-const AuthState = {
-  NOT_AUTHENTICATED: 0,
-  AUTHENTICATING: 1,
-  AUTHENTICATED: 2,
-  LOGGING_OUT: 3,
-};
-
 const EntryMethod = {
   MANUAL: 0,
   SPLAY: 1,
@@ -1356,32 +1099,3 @@ const RiskMethod = {
   CLASSIC: 0,
   RISK: 1,
 };
-
-// To be thrown when receiving a response containing an error from Deribit
-class DeribitError extends Error {
-  constructor(id, request, { message, data, code }) {
-    super(
-      `Response ID ${id}, code ${code}: ${message}${
-        data ? ` ${JSON.stringify(data)}` : ''
-      }. Original request: ${JSON.stringify(request)}`
-    );
-    this.name = 'DeribitError';
-    this.id = id;
-    this.request = request;
-    this.response = { message, data, code };
-    this.code = code;
-  }
-
-  toString = () => {
-    const {
-      code,
-      request: { params } = {},
-      response: { message, data: { reason, param } = {} },
-    } = this;
-    return `[${code}] ${message}
-    ${
-      reason &&
-      `: ${reason}${param && `: ${param} was ${JSON.stringify(params[param])}`}`
-    }`;
-  };
-}

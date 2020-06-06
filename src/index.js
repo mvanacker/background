@@ -15,6 +15,9 @@ import { CookiesProvider } from 'react-cookie';
 import { Provider } from 'react-redux';
 import store from './store';
 
+// Context(s)
+import Deribit from './contexts/Deribit';
+
 // Legal
 import FinancialDisclaimer from './components/disclaimers/Financial';
 import CookieDisclaimer from './components/disclaimers/Cookie';
@@ -110,7 +113,9 @@ ReactDOM.render(
       <div className="w3-theme-dark w3-text-white">
         <FinancialDisclaimer>
           <Router>
-            <Content left={<App />} right={<Right />} />
+            <Deribit>
+              <Content left={<App />} right={<Right />} />
+            </Deribit>
           </Router>
           <CookieDisclaimer />
         </FinancialDisclaimer>
