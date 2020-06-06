@@ -1,6 +1,6 @@
 import React from 'react';
-import Panel from './components/common/Panel';
-import { useSession, useLocal } from './hooks/useStorage';
+import Panel from '../common/Panel';
+import { useSession, useLocal } from '../../hooks/useStorage';
 
 const DISCLAIMER_WIDTH = '580px';
 

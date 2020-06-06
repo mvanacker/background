@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocal } from './hooks/useStorage';
+import { useLocal } from '../../hooks/useStorage';
 
 export default () => {
   const [okay, setOkay] = useLocal('hide-storage-disclaimer', {

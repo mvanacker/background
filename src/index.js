@@ -16,8 +16,8 @@ import { Provider } from 'react-redux';
 import store from './store';
 
 // Legal
-import FinancialDisclaimer from './Disclaimer';
-import CookieDisclaimer from './Cookie';
+import FinancialDisclaimer from './components/disclaimers/Financial';
+import CookieDisclaimer from './components/disclaimers/Cookie';
 
 // Components
 import Content from './components/Content';
