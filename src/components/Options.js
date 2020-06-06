@@ -789,7 +789,7 @@ function Analysis(props) {
   const {
     analysis, onAnalysisChange, minVolatilityChange, maxHoursPassed
   } = props;
-  return <Panel title="Analysis" padding={true}>
+  return <Panel title="Analysis">
     <ListBlock>
       <li>
         <LabeledRow label="Volatility change">
@@ -830,7 +830,7 @@ function Analysis(props) {
 
 function Debug(props) {
   const { debug, onDebugChange } = props;
-  return <Panel title="Debug" padding={true}>
+  return <Panel title="Debug">
     <ListBlock>
       <li>
         <LabeledRow label="Chart resolution">
