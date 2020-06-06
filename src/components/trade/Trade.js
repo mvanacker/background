@@ -956,7 +956,15 @@ const Order = ({
   const addError = (error) => setErrors((errors) => [...errors, error]);
 
   //
-  quantity = round_to(quantity, -1, 10 * lcm(entries.length, stops.length));
+  let base = 10;
+  if (entriesEnabled && stopsEnabled) {
+    base *= lcm(entries.length, stops.length);
+  } else if (entriesEnabled) {
+    base *= entries.length;
+  } else if (stopsEnabled) {
+    base *= stops.length;
+  }
+  quantity = round_to(quantity, -1, base);
   const entryQuantity = quantity / entries.length;
   const stopQuantity = quantity / stops.length;
 
