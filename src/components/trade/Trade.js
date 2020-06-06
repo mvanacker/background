@@ -359,33 +359,9 @@ const DeribitPanel = (props) => {
 
 // Define Deribit authentication form
 const DeribitAuth = ({ deribit, test, setTest, ...props }) => {
-  const [remember, setRemember] = useLocal('deribit-remember', {
-    initialValue: false,
-  });
-  const [key, setKey, removeKey] = useLocal('deribit-key', {
-    stateOnly: !remember,
-  });
-  const [secret, setSecret, removeSecret] = useLocal('deribit-secret', {
-    stateOnly: !remember,
-  });
+  const [key, setKey] = useState('');
+  const [secret, setSecret] = useState('');
   const [error, setError] = useState(null);
-
-  // Attempt to authenticate automatically (once)
-  const attemptedAutoAuth = useRef(false);
-  useEffect(() => {
-    if (!attemptedAutoAuth.current && remember && key && secret) {
-      const autoAuth = () =>
-        deribit
-          .auth({ key, secret })
-          .catch(() => console.warn('Automatic authentication failed.'));
-      if (deribit.readyState === ReadyState.CONNECTED) {
-        autoAuth();
-      } else {
-        deribit.addEventListener('open', autoAuth);
-      }
-    }
-    attemptedAutoAuth.current = true;
-  }, [deribit, remember, key, secret]);
 
   return (
     <div className="w3-center" {...props}>
@@ -416,30 +392,6 @@ const DeribitAuth = ({ deribit, test, setTest, ...props }) => {
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
         />
-        <div className="w3-margin">
-          <label>
-            <input
-              type="checkbox"
-              className="my-check"
-              checked={remember}
-              onChange={(e) => {
-                setRemember(e.target.checked);
-
-                // Setting remember activates storage use
-                if (e.target.checked) {
-                  setKey(key);
-                  setSecret(secret);
-                }
-                // Forget
-                else {
-                  removeKey();
-                  removeSecret();
-                }
-              }}
-            />{' '}
-            Remember
-          </label>
-        </div>
         <div className="w3-margin">
           <label>
             <input
