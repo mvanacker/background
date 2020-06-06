@@ -779,7 +779,7 @@ const RadioGroup = ({ options, value: checked, setValue }) =>
 const Entries = ({ entryMethod, entries, setEntries, ...props }) => {
   switch (entryMethod) {
     case EntryMethod.SPLAY:
-      return <SplayedEntries setEntries={setEntries} />;
+      return <SplayedEntries setEntries={setEntries} {...props} />;
     case EntryMethod.MANUAL:
     default:
       return (
@@ -827,6 +827,7 @@ const SplayedEntries = ({ setEntries, ...props }) => {
           min={1}
           max={10}
           step={1}
+          {...props}
         />
       </Row>
       <Row label="Orders">
@@ -836,10 +837,15 @@ const SplayedEntries = ({ setEntries, ...props }) => {
           min={1}
           max={21}
           step={2}
+          {...props}
         />
       </Row>
-      <Row label="Min">{aggregates.min}</Row>
-      <Row label="Max">{aggregates.max}</Row>
+      <Row label="Min">
+        <span {...props}>{aggregates.min}</span>
+      </Row>
+      <Row label="Max">
+        <span {...props}>{aggregates.max}</span>
+      </Row>
     </>
   );
 };
