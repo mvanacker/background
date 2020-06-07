@@ -910,67 +910,73 @@ const Orders = ({ deribit, orders, ...props }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {Object.values(orders[future]).map(
-                        ({
-                          order_id,
-                          label,
-                          direction,
-                          order_type,
-                          stop_price,
-                          price,
-                          filled_amount,
-                          amount,
-                          reduce_only,
-                        }) => (
-                          <tr key={order_id}>
-                            <td>
-                              {label}
-                              <TextButton
-                                onClick={() =>
-                                  deribit.send({
-                                    method: 'private/cancel_by_label',
-                                    params: { label },
-                                  })
-                                }
-                              >
-                                🗑
-                              </TextButton>
-                            </td>
-                            <td>{direction}</td>
-                            {order_type === 'stop_market' ? (
-                              <>
-                                <td>stop</td>
-                                <td>{stop_price}</td>
-                                <td>{amount}</td>
-                              </>
-                            ) : (
-                              <>
-                                <td>{order_type}</td>
-                                <td>{price}</td>
-                                <td>
-                                  {filled_amount} / {amount}
-                                </td>
-                              </>
-                            )}
-                            <td>{reduce_only ? '✓' : '✕'}</td>
-                            {/* <td className="w3-center">
+                      {Object.values(orders[future])
+                        .sort((a, b) => {
+                          const price = (o) =>
+                            o.order_type === 'limit' ? o.price : o.stop_price;
+                          return price(b) - price(a);
+                        })
+                        .map(
+                          ({
+                            order_id,
+                            label,
+                            direction,
+                            order_type,
+                            stop_price,
+                            price,
+                            filled_amount,
+                            amount,
+                            reduce_only,
+                          }) => (
+                            <tr key={order_id}>
+                              <td>
+                                {label}
+                                <TextButton
+                                  onClick={() =>
+                                    deribit.send({
+                                      method: 'private/cancel_by_label',
+                                      params: { label },
+                                    })
+                                  }
+                                >
+                                  🗑
+                                </TextButton>
+                              </td>
+                              <td>{direction}</td>
+                              {order_type === 'stop_market' ? (
+                                <>
+                                  <td>stop</td>
+                                  <td>{stop_price}</td>
+                                  <td>{amount}</td>
+                                </>
+                              ) : (
+                                <>
+                                  <td>{order_type}</td>
+                                  <td>{price}</td>
+                                  <td>
+                                    {filled_amount} / {amount}
+                                  </td>
+                                </>
+                              )}
+                              <td>{reduce_only ? '✓' : '✕'}</td>
+                              {/* <td className="w3-center">
                               <TextButton>🖉</TextButton>
                             </td> */}
-                            <td>
-                              <TextButton
-                                onClick={() =>
-                                  deribit.send({
-                                    method: 'private/cancel',
-                                    params: { order_id },
-                                  })
-                                }
-                              >
-                                🗑
-                              </TextButton>
-                            </td>
-                          </tr>
-                        )
-                      )}
+                              <td>
+                                <TextButton
+                                  onClick={() =>
+                                    deribit.send({
+                                      method: 'private/cancel',
+                                      params: { order_id },
+                                    })
+                                  }
+                                >
+                                  🗑
+                                </TextButton>
+                              </td>
+                            </tr>
+                          )
+                        )}
                     </tbody>
                   </table>
                 }
