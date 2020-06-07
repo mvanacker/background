@@ -26,6 +26,8 @@ export default ({ children }) => {
       // Track authentication in state, so changes update the DOM
       newDeribit.addEventListener('authenticating', onAuthState);
       newDeribit.addEventListener('authenticated', onAuthState);
+      newDeribit.addEventListener('reauthenticating', onAuthState);
+      newDeribit.addEventListener('reauthenticated', onAuthState);
       newDeribit.addEventListener('loggingOut', onAuthState);
 
       // Reinitialize WebSocket on logout

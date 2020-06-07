@@ -72,6 +72,20 @@ export default class extends WebSocket {
 
   // Send message to Deribit
   send = ({ method, params = {} }) => {
+    // Generally work around early calls
+    if (
+      this.readyState === ReadyState.CONNECTING ||
+      this.authState === AuthState.REAUTHENTICATING
+    ) {
+      const event =
+        this.readyState === ReadyState.CONNECTING ? 'open' : 'reauthenticated';
+      return new Promise((resolve, reject) => {
+        this.addEventListener(event, () => {
+          this.send({ method, params }).then(resolve).catch(reject);
+        });
+      });
+    }
+
     // Add access_token to private methods
     if (/^\/?private/i.test(method)) {
       params.access_token = this.authentication.access_token;
@@ -176,33 +190,40 @@ export default class extends WebSocket {
       this.authentication = result;
       this.dispatchEvent(new Event('authenticated'));
 
-      // Reauthenticate with Deribit; note this is a bit of an academic exercise
-      // since Deribit authentications last a year at a time at time of writing
-      const reauth = () => {
-        const handle = setTimeout(() => {
-          this.authState = AuthState.AUTHENTICATING;
-          this.dispatchEvent(new Event('authenticating'));
-          this.send({
-            method: 'public/auth',
-            params: {
-              grant_type: 'refresh_token',
-              refresh_token: this.authentication.refresh_token,
-            },
-          }).then(({ result }) => {
-            this.authState = AuthState.AUTHENTICATED;
-            this.authentication = result;
-            this.dispatchEvent(new Event('authenticated'));
-
-            // Loop
-            reauth();
-          });
-        }, this.authentication.expires_in * 1000);
-        this.addEventListener('close', () => clearTimeout(handle));
-      };
-
       // Start reauthentication loop
-      reauth();
+      this.reauthLoop();
     });
+  };
+
+  // Reauthenticate with Deribit; note this is a bit of an academic exercise
+  // since Deribit authentications last a year at a time at time of writing
+  reauthLoop = () => {
+    const reauth = () => {
+      this.send({
+        method: 'public/auth',
+        params: {
+          grant_type: 'refresh_token',
+          refresh_token: this.authentication.refresh_token,
+        },
+      }).then(({ result }) => {
+        this.authState = AuthState.AUTHENTICATED;
+        this.authentication = result;
+        this.dispatchEvent(new Event('reauthenticated'));
+  
+        // Loop
+        this.reauthLoop();
+      });
+      this.authState = AuthState.REAUTHENTICATING;
+      this.dispatchEvent(new Event('reauthenticating'));
+    };
+  
+    // Set delay to half the expiration time
+    let delay = (this.authentication.expires_in * 1000) / 2;
+    // But actually the delay can't be larger than a 32-bit integer max value
+    // either because otherwise the callback will fire immediately
+    delay = Math.min(2147483647, delay);
+    const handle = setTimeout(reauth, delay);
+    this.addEventListener('close', () => clearTimeout(handle));
   };
 
   // Log out from Deribit
@@ -293,4 +314,5 @@ export const AuthState = {
   AUTHENTICATING: 1,
   AUTHENTICATED: 2,
   LOGGING_OUT: 3,
+  REAUTHENTICATING: 4,
 };

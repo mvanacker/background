@@ -60,6 +60,7 @@ const DeribitPanel = (props) => {
       authString = 'not authenticated';
       break;
     case AuthState.AUTHENTICATING:
+    case AuthState.REAUTHENTICATING:
       authString = 'authenticating';
       break;
     case AuthState.AUTHENTICATED:
@@ -165,7 +166,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
     privSubs['user.portfolio.btc'] = ({ data }) => setPortfolio(data);
 
     // Fetch futures
-    deribit
+    const setup = deribit
       .send({
         method: 'public/get_instruments',
         params: { currency: 'btc', kind: 'future' },
@@ -232,11 +233,12 @@ const DeribitInterface = ({ deribit, ...props }) => {
           });
       });
 
-    // Unsubscribe when done
-    return () => {
-      deribit.publicUnsubscribe(Object.keys(pubSubs));
-      deribit.privateUnsubscribe(Object.keys(privSubs));
-    };
+    // Unsubscribe when done, making sure setup ran first
+    return () =>
+      setup.then(() => {
+        deribit.publicUnsubscribe(Object.keys(pubSubs));
+        deribit.privateUnsubscribe(Object.keys(privSubs));
+      });
   }, [deribit]);
 
   // Store application state locally
@@ -338,8 +340,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
               ))}
             </select>
           </div>
-          {/* {showOptions && ( */}
-          {true && (
+          {showOptions && (
             <div style={{ margin: '4px 0 0 8px' }}>
               <label>
                 <input
@@ -781,25 +782,30 @@ const Order = ({
     <>
       {errors && (
         <div className="w3-padding-large">
-          <ul className="w3-ul w3-hover-theme">
+          <ul className="w3-ul">
             {errors.map((error, i) => {
               return (
-                <li key={error.id}>
-                  <div style={{ width: '5%', display: 'inline-block' }}>
-                    <TextButton
-                      onClick={() =>
-                        setErrors((errors) => {
-                          const newErrors = [...errors];
-                          newErrors.splice(i, 1);
-                          return newErrors;
-                        })
-                      }
+                <li key={error.id} className="w3-hover-theme">
+                  <div className="w3-cell-row">
+                    <div className="w3-cell w3-center" style={{ width: '15%' }}>
+                      <TextButton
+                        onClick={() =>
+                          setErrors((errors) => {
+                            const newErrors = [...errors];
+                            newErrors.splice(i, 1);
+                            return newErrors;
+                          })
+                        }
+                      >
+                        ✕
+                      </TextButton>
+                    </div>
+                    <div
+                      className="w3-cell w3-padding-small"
+                      style={{ width: '85%' }}
                     >
-                      ✕
-                    </TextButton>
-                  </div>
-                  <div style={{ width: '95%', display: 'inline-block' }}>
-                    {error.toString()}
+                      {error.toString()}
+                    </div>
                   </div>
                 </li>
               );
@@ -1010,7 +1016,7 @@ const NumericalInput = forwardRef((props, ref) => (
 ));
 
 // Generalized dynamic inputs
-const withDynamism = (Input) => ({ locked, values, setValues, ...props }) => {
+const dynamize = (Input) => ({ locked, values, setValues, ...props }) => {
   // Focusing the last (real) input must be done *after* the render
   const last = useRef(null);
   const [focusLast, setFocusLast] = useState(false);
@@ -1076,7 +1082,7 @@ const withDynamism = (Input) => ({ locked, values, setValues, ...props }) => {
       {/* Fake input that spawns new inputs when focused */}
       <Input
         value=""
-        readonly={true}
+        readOnly={true}
         onFocus={() => {
           setValues(values.concat(['']));
           setFocusLast(true);
@@ -1088,7 +1094,7 @@ const withDynamism = (Input) => ({ locked, values, setValues, ...props }) => {
 };
 
 // Convenience wrapper
-const NumericalDynamicInputs = withDynamism(NumericalInput);
+const NumericalDynamicInputs = dynamize(NumericalInput);
 
 const EntryMethod = {
   MANUAL: 0,
