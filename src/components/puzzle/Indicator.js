@@ -10,7 +10,6 @@ import Loading from '../Loading';
 import Panel from '../common/Panel';
 
 import useInterval from '../../hooks/useInterval';
-import ReactResizeDetector from 'react-resize-detector';
 
 // Local refresh rate; note that too short a duration will cause a crash
 const REFRESH_RATE = 60000; // milliseconds
@@ -264,17 +263,9 @@ export function Overview({ chart, data: { history, forecast } }) {
     <Panel title={term.title} key={term.title}>
       <div className="w3-cell-row w3-center">
         {Object.entries(term.timeframes).map(([tf, title]) => (
-          <ReactResizeDetector key={title} handleWidth>
-            {({ width }) =>
-              chart({
-                title,
-                history: history[tf],
-                forecast: forecast[tf],
-                width: width / 4,
-                height: 175,
-              })
-            }
-          </ReactResizeDetector>
+          <div className="w3-cell w3-cell-middle my-fourth" key={title}>
+            {chart({ title, history: history[tf], forecast: forecast[tf] })}
+          </div>
         ))}
       </div>
     </Panel>

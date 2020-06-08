@@ -3,6 +3,8 @@ import React from 'react';
 import CanvasJSReact from '../../canvasjs.react';
 import Indicator from './Indicator.js';
 
+// DEPRECATED
+
 export default () => <Indicator
   options={{
     limit:   40,

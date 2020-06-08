@@ -59,52 +59,72 @@ import Test from './sandbox/Test.js';
 document.body.classList.add('w3-theme-dark');
 
 // Right-hand side of the application
-const Right = () => (
-  <>
-    <Navigation
-      items={[
-        {
-          title: 'Home',
-          path: '/',
-        },
-        {
-          title: 'Trade',
-          path: '/trade',
-        },
-        {
-          title: 'Options',
-          path: '/options',
-        },
-      ]}
-    />
+const Right = ({ width }) => {
+  console.log(width);
+  const indicatorProps = {
+    width: width / 4 - 32,
+    height: 155,
+  };
+  console.log(indicatorProps);
+  return (
+    <>
+      <Navigation
+        items={[
+          {
+            title: 'Home',
+            path: '/',
+          },
+          {
+            title: 'Trade',
+            path: '/trade',
+          },
+          {
+            title: 'Options',
+            path: '/options',
+          },
+        ]}
+      />
 
-    {/* Top-level pages */}
-    <Route path="/" component={Puzzle} />
-    <Route exact path="/" component={MovingAverages} />
-    <Route path="/trade" component={Trade} />
-    <Route path="/options" component={Options} />
+      {/* Top-level pages */}
+      <Route path="/" component={Puzzle} />
+      <Route exact path="/" component={MovingAverages} />
+      <Route path="/trade" component={Trade} />
+      <Route path="/options" component={Options} />
 
-    {/* Puzzle pieces */}
-    <Route path="/confluence" component={Confluence} />
-    <Route path="/moving-averages" component={MovingAverages} />
-    <Route path="/stochs" component={Stochs} />
-    <Route path="/rsi" component={Rsi} />
-    <Route path="/volatility" component={Hvp} />
+      {/* Puzzle pieces */}
+      <Route path="/confluence" component={Confluence} />
+      <Route
+        path="/moving-averages"
+        component={(props) => <MovingAverages {...indicatorProps} {...props} />}
+      />
+      <Route
+        path="/stochs"
+        component={(props) => <Stochs {...indicatorProps} {...props} />}
+      />
+      <Route
+        path="/rsi"
+        component={(props) => <Rsi {...indicatorProps} {...props} />}
+      />
+      <Route
+        path="/volatility"
+        component={(props) => <Hvp {...indicatorProps} {...props} />}
+      />
 
-    {/* Easter eggs */}
-    <Route path="/probs" component={Probs} />
-    <Route path="/futures" component={Futures} />
-    <Route path="/simulation" component={Simulation} />
+      {/* Easter eggs */}
+      <Route path="/probs" component={Probs} />
+      <Route path="/futures" component={Futures} />
+      <Route path="/simulation" component={Simulation} />
 
-    {/* Deprecated features */}
-    <Route path="/iv" component={IV} />
-    <Route path="/giv" component={GIV} />
-    <Route path="/journal" component={TradeJournal} />
+      {/* Deprecated features */}
+      <Route path="/iv" component={IV} />
+      <Route path="/giv" component={GIV} />
+      <Route path="/journal" component={TradeJournal} />
 
-    {/* Testing */}
-    <Route path="/test" component={Test} />
-  </>
-);
+      {/* Testing */}
+      <Route path="/test" component={Test} />
+    </>
+  );
+};
 
 // Render application
 ReactDOM.render(
@@ -114,7 +134,7 @@ ReactDOM.render(
         <FinancialDisclaimer>
           <Router>
             <Deribit>
-              <Content left={<App />} right={<Right />} />
+              <Content left={<App />} right={Right} />
             </Deribit>
           </Router>
           <CookieDisclaimer />
