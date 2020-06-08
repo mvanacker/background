@@ -1,3 +1,5 @@
+import hmacSHA256 from 'crypto-js/hmac-sha256';
+import cryptoRandomString from 'crypto-random-string';
 import { APP_NAME, APP_VERSION } from '../config';
 
 export default class extends WebSocket {
@@ -181,18 +183,30 @@ export default class extends WebSocket {
     return this.send({
       method: 'public/auth',
       params: {
-        grant_type: 'client_credentials',
+        grant_type: 'client_signature',
         client_id: key,
-        client_secret: secret,
+        ...this.sign(secret),
       },
-    }).then(({ result }) => {
+    }).then((response) => {
       this.authState = AuthState.AUTHENTICATED;
-      this.authentication = result;
+      this.authentication = response.result;
       this.dispatchEvent(new Event('authenticated'));
 
       // Start reauthentication loop
       this.reauthLoop();
+
+      return response;
     });
+  };
+
+  // Generate a signature
+  sign = (secret) => {
+    const timestamp = Date.now();
+    const nonce = cryptoRandomString({ length: 64 });
+    const data = cryptoRandomString({ length: 64 });
+    const message = `${timestamp}\n${nonce}\n${data}`;
+    const signature = hmacSHA256(message, secret).toString();
+    return { timestamp, nonce, data, signature };
   };
 
   // Reauthenticate with Deribit; note this is a bit of an academic exercise
