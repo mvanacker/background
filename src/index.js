@@ -60,12 +60,9 @@ document.body.classList.add('w3-theme-dark');
 
 // Right-hand side of the application
 const Right = ({ width }) => {
-  console.log(width);
-  const indicatorProps = {
-    width: width / 4 - 32,
-    height: 155,
-  };
-  console.log(indicatorProps);
+  const withDimensions = (Component) => (props) => (
+    <Component width={width / 4 - 32} height={155} {...props} />
+  );
   return (
     <>
       <Navigation
@@ -87,7 +84,7 @@ const Right = ({ width }) => {
 
       {/* Top-level pages */}
       <Route path="/" component={Puzzle} />
-      <Route exact path="/" component={MovingAverages} />
+      <Route exact path="/" component={withDimensions(MovingAverages)} />
       <Route path="/trade" component={Trade} />
       <Route path="/options" component={Options} />
 
@@ -95,20 +92,11 @@ const Right = ({ width }) => {
       <Route path="/confluence" component={Confluence} />
       <Route
         path="/moving-averages"
-        component={(props) => <MovingAverages {...indicatorProps} {...props} />}
+        component={withDimensions(MovingAverages)}
       />
-      <Route
-        path="/stochs"
-        component={(props) => <Stochs {...indicatorProps} {...props} />}
-      />
-      <Route
-        path="/rsi"
-        component={(props) => <Rsi {...indicatorProps} {...props} />}
-      />
-      <Route
-        path="/volatility"
-        component={(props) => <Hvp {...indicatorProps} {...props} />}
-      />
+      <Route path="/stochs" component={withDimensions(Stochs)} />
+      <Route path="/rsi" component={withDimensions(Rsi)} />
+      <Route path="/volatility" component={withDimensions(Hvp)} />
 
       {/* Easter eggs */}
       <Route path="/probs" component={Probs} />
