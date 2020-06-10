@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSession } from '../hooks/useStorage';
 import { DoubleLeft, DoubleRight } from './common/Icons';
 
@@ -15,8 +15,13 @@ export default ({ left, right }) => {
   // Disable left sidebar on smaller screens
   const isWindowLarge = () => window.innerWidth >= LAPTOP_WIDTH;
   const [enabled, setEnabled] = useState(isWindowLarge());
-  const rightWidth = () =>
-    window.innerWidth - SCROLLBAR_WIDTH - (enabled && visible ? LEFT_WIDTH : 0);
+  const rightWidth = useCallback(
+    () =>
+      window.innerWidth -
+      SCROLLBAR_WIDTH -
+      (enabled && visible ? LEFT_WIDTH : 0),
+    [enabled, visible]
+  );
   const [width, setWidth] = useState(rightWidth());
   useEffect(() => {
     const callback = () => {
@@ -25,11 +30,11 @@ export default ({ left, right }) => {
     };
     window.addEventListener('resize', callback);
     return () => window.removeEventListener('resize', callback);
-  });
+  }, [rightWidth]);
 
   useEffect(() => {
     setWidth(rightWidth());
-  }, [visible, enabled]);
+  }, [visible, enabled, rightWidth]);
 
   return (
     <>
