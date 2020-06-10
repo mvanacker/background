@@ -1,24 +1,29 @@
 .my-range::-webkit-slider-thumb {
-  background-color:#20295b !important
+  background-color: #20295b !important;
 }
 
 body::-webkit-scrollbar {
   width: 15px;
 }
-body::-webkit-scrollbar-track {
+div::-webkit-scrollbar {
+  height: 9px;
+  width: 9px;
+}
+::-webkit-scrollbar-track {
   /* Theme's d4 */
   background: #26316d;
 }
-body::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   /* Theme's l3 */
   background-color: #b1b8e3;
 }
 
-body {
+body,
+div {
   scrollbar-width: auto;
   scrollbar-color: #26316d #b1b8e3;
 }
 
-.w3-hover-theme:hover {
-  transition: 0.3s;
+.w3-hover-theme {
+  transition: 0.4s;
 }
