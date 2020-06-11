@@ -223,14 +223,14 @@ export default class extends WebSocket {
         this.authState = AuthState.AUTHENTICATED;
         this.authentication = result;
         this.dispatchEvent(new Event('reauthenticated'));
-  
+
         // Loop
         this.reauthLoop();
       });
       this.authState = AuthState.REAUTHENTICATING;
       this.dispatchEvent(new Event('reauthenticating'));
     };
-  
+
     // Set delay to half the expiration time
     let delay = (this.authentication.expires_in * 1000) / 2;
     // But actually the delay can't be larger than a 32-bit integer max value
@@ -251,6 +251,11 @@ export default class extends WebSocket {
 
   // Subscribe to channels, register callbacks
   subscribe = async (method, newCallbacks, callbacks) => {
+    if (!newCallbacks || !Object.keys(newCallbacks).length) {
+      console.warn('No channels were passed to subscribe to.');
+      return;
+    }
+
     for (const channel in newCallbacks) {
       // Warn for now; TODO perhaps throw an error or ignore or do something
       if (channel.toLowerCase() in callbacks) {
@@ -274,6 +279,10 @@ export default class extends WebSocket {
 
   // Unsubscribe from channels, unregister callbacks
   unsubscribe = async (method, channels, callbacks) => {
+    if (!channels || !channels.length) {
+      console.warn('No channels were passed to unsubscribe from.');
+      return;
+    }
     this.send({ method, params: { channels } });
     channels.forEach((channel) => delete callbacks[channel.toLowerCase()]);
   };
