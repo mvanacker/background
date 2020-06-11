@@ -24,6 +24,57 @@ div {
   scrollbar-color: #26316d #b1b8e3;
 }
 
-.w3-hover-theme {
+.w3-hover-theme,
+.w3-hover-l5,
+.w3-hover-l4,
+.w3-hover-l3,
+.w3-hover-l2,
+.w3-hover-l1,
+.w3-hover-d1,
+.w3-hover-d2,
+.w3-hover-d3,
+.w3-hover-d4,
+.w3-hover-d5 {
   transition: 0.4s;
+}
+
+.w3-hover-l5:hover {
+  color: #000 !important;
+  background-color: #f3f4fb !important;
+}
+.w3-hover-l4:hover {
+  color: #000 !important;
+  background-color: #d8dcf1 !important;
+}
+.w3-hover-l3:hover {
+  color: #000 !important;
+  background-color: #b1b8e3 !important;
+}
+.w3-hover-l2:hover {
+  color: #fff !important;
+  background-color: #8995d6 !important;
+}
+.w3-hover-l1:hover {
+  color: #fff !important;
+  background-color: #6271c8 !important;
+}
+.w3-hover-d1:hover {
+  color: #fff !important;
+  background-color: #3949a3 !important;
+}
+.w3-hover-d2:hover {
+  color: #fff !important;
+  background-color: #334191 !important;
+}
+.w3-hover-d3:hover {
+  color: #fff !important;
+  background-color: #2d397f !important;
+}
+.w3-hover-d4:hover {
+  color: #fff !important;
+  background-color: #26316d !important;
+}
+.w3-hover-d5:hover {
+  color: #fff !important;
+  background-color: #20295b !important;
 }
