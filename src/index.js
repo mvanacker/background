@@ -15,6 +15,9 @@ import { CookiesProvider } from 'react-cookie';
 import { Provider } from 'react-redux';
 import store from './store';
 
+// Scroll restoration
+import { ScrollToTopOnNav } from './components/common/ScrollToTop';
+
 // Context(s)
 import Deribit from './contexts/Deribit';
 
@@ -121,6 +124,7 @@ ReactDOM.render(
       <div className="w3-theme-dark w3-text-white">
         <FinancialDisclaimer>
           <Router>
+            <ScrollToTopOnNav />
             <Deribit>
               <Content left={<App />} right={Right} />
             </Deribit>
