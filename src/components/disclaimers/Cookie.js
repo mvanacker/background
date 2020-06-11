@@ -2,11 +2,11 @@ import React from 'react';
 import { useLocal } from '../../hooks/useStorage';
 
 export default () => {
-  const [okay, setOkay] = useLocal('hide-storage-disclaimer', {
+  const [hide, setHide] = useLocal('hide-storage-disclaimer', {
     initialValue: false,
   });
   return (
-    !okay && (
+    !hide && (
       <div style={{ width: '100%', position: 'fixed', bottom: 0 }}>
         <div
           className="
@@ -22,14 +22,13 @@ export default () => {
           <p>
             This website stores your preferences, notes, marked checkboxes and
             so on in your <b>local storage</b>. It's similar to using cookies,
-            except that cookies are accessible by other websites. Information
-            stored on your device through use of this website was never meant by
-            this website's creator te be used for anything else but to customize
-            this website only.
+            but neither are great. This application's creator allowed use of
+            this application to store information on your device with the sole
+            purpose of customizing this application and nothing else.
           </p>
           <button
             className="w3-btn w3-theme-d1 my-round w3-border"
-            onClick={() => setOkay(true)}
+            onClick={() => setHide(true)}
           >
             Okay!
           </button>
