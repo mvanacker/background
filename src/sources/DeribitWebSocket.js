@@ -3,16 +3,19 @@ import cryptoRandomString from 'crypto-random-string';
 import { APP_NAME, APP_VERSION } from '../config';
 
 export default class extends WebSocket {
-  constructor({ test = true } = {}) {
+  constructor({ test = true, verbose = false } = {}) {
     if (test) {
       super('wss://test.deribit.com/ws/api/v2');
     } else {
       super('wss://www.deribit.com/ws/api/v2');
     }
+    this.verbose = verbose;
 
     // Handle open
     this.onopen = (e) => {
-      console.log("Connected to Deribit's WebSocket.", e);
+      if (verbose) {
+        console.log("Connected to Deribit's WebSocket.", e);
+      }
 
       // Start heartbeat
       this.send({
@@ -30,23 +33,30 @@ export default class extends WebSocket {
       });
     };
 
-    // Debug version of message handler
-    this.onmessage = ({ data }) => {
-      const message = JSON.parse(data);
-      if (
-        // Only log responses to our requests
-        'id' in message &&
-        // But ignore responses to heartbeats
-        this.messages[message.id].method !== 'public/test'
-      ) {
-        console.log('Received from Deribit: ', message);
-      }
-      this.receive(message);
-    };
-    // this.onmessage = ({ data }) => this.receive(JSON.parse(data));
+    // Handle message
+    if (verbose) {
+      this.onmessage = ({ data }) => {
+        const message = JSON.parse(data);
+        if (
+          // Only log responses to our requests
+          'id' in message &&
+          // But ignore responses to heartbeats
+          this.messages[message.id].method !== 'public/test'
+        ) {
+          console.log('Received from Deribit: ', message);
+        }
+        this.receive(message);
+      };
+    } else {
+      this.onmessage = ({ data }) => this.receive(JSON.parse(data));
+    }
 
     // Handle close
-    this.onclose = (e) => console.log('Disconnected from Deribit', e);
+    this.onclose = (e) => {
+      if (verbose) {
+        console.log('Disconnected from Deribit', e);
+      }
+    };
 
     // Handle error
     this.maybeDown = false;
@@ -123,8 +133,8 @@ export default class extends WebSocket {
     this.messages[this.id] = message;
     super.send(JSON.stringify(message));
 
-    // TODO debug
-    if (method !== 'public/test') {
+    // Log message if in verbose mode
+    if (this.verbose && method !== 'public/test') {
       console.log(`Sent request ${this.id} to deribit: `, message);
     }
 
