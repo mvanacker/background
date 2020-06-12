@@ -24,6 +24,10 @@ div {
   scrollbar-color: #26316d #b1b8e3;
 }
 
+table.w3-striped-d2 tr:nth-child(even) {
+  background-color: #334191;
+}
+
 .w3-hover-theme,
 .w3-hover-l5,
 .w3-hover-l4,
