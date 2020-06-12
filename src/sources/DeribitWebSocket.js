@@ -167,11 +167,15 @@ export default class extends WebSocket {
         case 'subscription':
           const channel = params.channel.toLowerCase();
           if (channel in this.publicSubscriptions) {
-            this.publicSubscriptions[channel](params);
+            this.publicSubscriptions[channel].forEach((callback) =>
+              callback(params)
+            );
           } else if (channel in this.privateSubscriptions) {
-            this.privateSubscriptions[channel](params);
+            this.privateSubscriptions[channel].forEach((callback) =>
+              callback(params)
+            );
           } else {
-            console.warn(`Could not find callback for channel: ${channel}`);
+            console.warn(`Could not find any callback for channel: ${channel}`);
           }
           break;
 
@@ -265,13 +269,14 @@ export default class extends WebSocket {
       return;
     }
 
-    for (const channel in newSubscriptions) {
-      // Warn for now; TODO perhaps throw an error or ignore or do something
-      if (channel.toLowerCase() in subscriptions) {
-        console.warn(`Duplicate subscription to ${channel}`);
+    // Save callback
+    Object.entries(newSubscriptions).forEach(([channel, callback]) => {
+      const channelLC = channel.toLowerCase();
+      if (!(channelLC in subscriptions)) {
+        subscriptions[channelLC] = new Set();
       }
-      subscriptions[channel.toLowerCase()] = newSubscriptions[channel];
-    }
+      subscriptions[channelLC].add(callback);
+    });
 
     // Request subscription
     const channels = Object.keys(newSubscriptions);
@@ -291,23 +296,38 @@ export default class extends WebSocket {
   };
 
   // Unsubscribe from channels, unregister callbacks
-  unsubscribe = async (method, channels, callbacks) => {
-    if (!channels || !channels.length) {
+  unsubscribe = async (method, oldSubscriptions, subscriptions) => {
+    if (!oldSubscriptions || !Object.keys(oldSubscriptions).length) {
       console.warn('No channels were passed to unsubscribe from.');
       return;
     }
+
+    // Request unsubscription
+    const channels = Object.keys(oldSubscriptions);
     this.send({ method, params: { channels } });
-    channels.forEach((channel) => delete callbacks[channel.toLowerCase()]);
+
+    // Delete callback
+    Object.entries(oldSubscriptions).forEach(([channel, callback]) => {
+      const channelLC = channel.toLowerCase();
+      subscriptions[channelLC].delete(callback);
+      if (subscriptions[channelLC].size === 0) {
+        delete subscriptions[channelLC];
+      }
+    });
   };
 
-  publicUnsubscribe = async (channels) => {
-    this.unsubscribe('public/unsubscribe', channels, this.publicSubscriptions);
+  publicUnsubscribe = async (subscriptions) => {
+    this.unsubscribe(
+      'public/unsubscribe',
+      subscriptions,
+      this.publicSubscriptions
+    );
   };
 
-  privateUnsubscribe = async (channels) => {
+  privateUnsubscribe = async (subscriptions) => {
     this.unsubscribe(
       'private/unsubscribe',
-      channels,
+      subscriptions,
       this.privateSubscriptions
     );
   };
