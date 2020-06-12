@@ -6,8 +6,7 @@ const localFuncs = {
   remove: (id) => localStorage.removeItem(id),
 };
 
-export const useLocal = (id, options) =>
-  useStorage(id, options, localFuncs);
+export const useLocal = (id, options) => useStorage(id, options, localFuncs);
 
 const sessionFuncs = {
   get: (id) => sessionStorage.getItem(id),
@@ -20,14 +19,19 @@ export const useSession = (id, options) =>
 
 const useStorage = (
   id,
-  { initialValue = '', stateOnly = false } = {},
+  {
+    initialValue = '',
+    stateOnly = false,
+    stringify = JSON.stringify,
+    parse = JSON.parse,
+  } = {},
   { get, set, remove }
 ) => {
   // Retrieve initial value from storage
   if (!stateOnly) {
     const storedValue = get(id);
     if (storedValue) {
-      initialValue = JSON.parse(storedValue);
+      initialValue = parse(storedValue);
     }
   }
 
@@ -37,9 +41,9 @@ const useStorage = (
   // Update storage after render
   useEffect(() => {
     if (!stateOnly) {
-      set(id, JSON.stringify(value));
+      set(id, stringify(value));
     }
-  }, [id, value, stateOnly, set]);
+  }, [id, value, stateOnly, stringify, set]);
 
   // Define function to remove a value
   const removeValue = () => remove(id);
