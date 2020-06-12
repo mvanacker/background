@@ -68,8 +68,8 @@ export default class extends WebSocket {
     this.authentication = null;
 
     // Subscription
-    this.publicCallbacks = {};
-    this.privateCallbacks = {};
+    this.publicSubscriptions = {};
+    this.privateSubscriptions = {};
   }
 
   // Send message to Deribit
@@ -155,14 +155,13 @@ export default class extends WebSocket {
 
         // Execute appropriate callback on messages from subscribed channels
         case 'subscription':
-          const { channel } = params;
-          const _channel = channel.toLowerCase();
-          if (_channel in this.publicCallbacks) {
-            this.publicCallbacks[_channel](params);
-          } else if (_channel in this.privateCallbacks) {
-            this.privateCallbacks[_channel](params);
+          const channel = params.channel.toLowerCase();
+          if (channel in this.publicSubscriptions) {
+            this.publicSubscriptions[channel](params);
+          } else if (channel in this.privateSubscriptions) {
+            this.privateSubscriptions[channel](params);
           } else {
-            console.warn(`Could not find callback for channel: ${_channel}`);
+            console.warn(`Could not find callback for channel: ${channel}`);
           }
           break;
 
@@ -270,11 +269,11 @@ export default class extends WebSocket {
   };
 
   publicSubscribe = async (callbacks) => {
-    this.subscribe('public/subscribe', callbacks, this.publicCallbacks);
+    this.subscribe('public/subscribe', callbacks, this.publicSubscriptions);
   };
 
   privateSubscribe = async (callbacks) => {
-    this.subscribe('private/subscribe', callbacks, this.privateCallbacks);
+    this.subscribe('private/subscribe', callbacks, this.privateSubscriptions);
   };
 
   // Unsubscribe from channels, unregister callbacks
@@ -288,11 +287,15 @@ export default class extends WebSocket {
   };
 
   publicUnsubscribe = async (channels) => {
-    this.unsubscribe('public/unsubscribe', channels, this.publicCallbacks);
+    this.unsubscribe('public/unsubscribe', channels, this.publicSubscriptions);
   };
 
   privateUnsubscribe = async (channels) => {
-    this.unsubscribe('private/unsubscribe', channels, this.privateCallbacks);
+    this.unsubscribe(
+      'private/unsubscribe',
+      channels,
+      this.privateSubscriptions
+    );
   };
 }
 
