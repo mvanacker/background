@@ -249,31 +249,35 @@ export default class extends WebSocket {
   };
 
   // Subscribe to channels, register callbacks
-  subscribe = async (method, newCallbacks, callbacks) => {
-    if (!newCallbacks || !Object.keys(newCallbacks).length) {
+  subscribe = async (method, newSubscriptions, subscriptions) => {
+    if (!newSubscriptions || !Object.keys(newSubscriptions).length) {
       console.warn('No channels were passed to subscribe to.');
       return;
     }
 
-    for (const channel in newCallbacks) {
+    for (const channel in newSubscriptions) {
       // Warn for now; TODO perhaps throw an error or ignore or do something
-      if (channel.toLowerCase() in callbacks) {
+      if (channel.toLowerCase() in subscriptions) {
         console.warn(`Duplicate subscription to ${channel}`);
       }
-      callbacks[channel.toLowerCase()] = newCallbacks[channel];
+      subscriptions[channel.toLowerCase()] = newSubscriptions[channel];
     }
 
     // Request subscription
-    const channels = Object.keys(newCallbacks);
+    const channels = Object.keys(newSubscriptions);
     this.send({ method, params: { channels } });
   };
 
-  publicSubscribe = async (callbacks) => {
-    this.subscribe('public/subscribe', callbacks, this.publicSubscriptions);
+  publicSubscribe = async (subscriptions) => {
+    this.subscribe('public/subscribe', subscriptions, this.publicSubscriptions);
   };
 
-  privateSubscribe = async (callbacks) => {
-    this.subscribe('private/subscribe', callbacks, this.privateSubscriptions);
+  privateSubscribe = async (subscriptions) => {
+    this.subscribe(
+      'private/subscribe',
+      subscriptions,
+      this.privateSubscriptions
+    );
   };
 
   // Unsubscribe from channels, unregister callbacks
