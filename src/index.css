@@ -34,10 +34,6 @@ input.my-small-input {
   width: 100px;
 }
 
-.my-shadow {
-  text-shadow: 1px 1px 0 black;
-}
-
 .my-fader {
   opacity: 0.6;
   transition: 0.3s;
@@ -71,6 +67,10 @@ input.my-small-input {
   border-radius: 0 0 8px 8px;
 }
 
+.my-round-bottom-left {
+  border-radius: 0 0 0 8px;
+}
+
 .my-text-button {
   color: white;
   background: none;
@@ -98,6 +98,83 @@ input.my-small-input {
 .monospace {
   font-family: 'Roboto Mono', 'PT Mono', Monaco, Menlo, Consolas, 'Courier New',
     monospace;
+}
+
+div.my-greeks {
+  display: flex;
+  justify-content: space-around;
+}
+
+div.my-expirations {
+  display: inline-flex;
+  overflow-x: auto;
+}
+
+div.my-expiration {
+  flex-shrink: 0;
+}
+
+div.my-option-chain {
+  display: flex;
+  flex-flow: row wrap;
+}
+
+div.my-half-option-chain {
+  flex-grow: 1;
+}
+
+div.my-options-inner-container {
+  height: 250px;
+  overflow-y: auto;
+}
+
+div.my-options-inner-container table thead tr th {
+  top: 0;
+  position: sticky;
+  z-index: 1;
+}
+
+div.my-options-inner-container table thead tr.w3-theme-d1 th {
+  background: inherit;
+}
+
+div.my-options-inner-container table th:last-child,
+div.my-options-inner-container table td:last-child {
+  padding-right: 25px;
+}
+
+div.my-options-basket-container-container {
+  position: sticky;
+  bottom: -16px;
+  width: 100%;
+  padding-bottom: 8px !important;
+  z-index: 3;
+}
+
+div.my-options-basket-container {
+  box-shadow: 0 2px 5px 0px rgba(255, 255, 255, 0.16),
+    0 2px 10px 0px rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding-bottom: 8px !important;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+div.my-options-basket-container > table.my-options-basket {
+  width: auto;
+}
+
+table.my-options-basket td,
+table.my-options-basket th {
+  vertical-align: middle;
+}
+
+.my-no-wrap {
+  white-space: nowrap;
+}
+
+.my-transition {
+  transition: 0.4s;
 }
 
 div#title {
@@ -154,9 +231,9 @@ svg#confluence-detector g.unlump-name-axis text {
   bottom: 20px;
   cursor: pointer;
   padding: 8px 8px 8px 15px;
-  opacity: 0.6;
+  opacity: 0.4;
   transition: 0.3s;
-  z-index: 1;
+  z-index: 4;
 }
 
 .toggle-handle:hover {
@@ -165,8 +242,16 @@ svg#confluence-detector g.unlump-name-axis text {
 
 nav.my-nav {
   position: sticky;
-  top: 0;
-  z-index: 1;
+  z-index: 5;
+  font-weight: 500;
+}
+
+nav.my-nav a.w3-bar-item {
+  padding: 8px 16px;
+}
+
+nav.my-nav a.w3-bar-item:first-child {
+  padding-left: 20px;
 }
 
 .my-column {
@@ -178,12 +263,20 @@ nav.my-nav {
   width: 70px;
 }
 
+.my-label-input {
+  width: 200px;
+}
+
 .my-borderless {
   border-width: 0px;
 }
 
 .my-pointer:hover {
   cursor: pointer;
+}
+
+.my-default-cursor:hover {
+  cursor: default;
 }
 
 .my-italic {
@@ -230,4 +323,10 @@ nav.my-nav {
   height: 30px; /* Slider handle height */
   background: black;
   cursor: pointer; /* Cursor on hover */
+}
+
+.clearfix::after {
+  content: '';
+  clear: both;
+  display: table;
 }

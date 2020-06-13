@@ -6,14 +6,20 @@ import React, {
   forwardRef,
 } from 'react';
 
+import moment from 'moment';
+
+import ScrollToTop from '../common/ScrollToTop';
 import Panel from '../common/Panel';
 import Lock from '../common/Lock';
 import BTC from '../common/Bitcoin';
+
 import { mean, floats } from '../../util/array';
 import { lcm, round_to } from '../../util/math';
 import { percent } from '../../util/format';
+
 import { useLocal } from '../../hooks/useStorage';
 import { DeribitContext } from '../../contexts/Deribit';
+
 import { AuthState, ReadyState } from '../../sources/DeribitWebSocket';
 
 // Define the Trade component
@@ -24,15 +30,59 @@ const DeribitPanel = (props) => {
   const { deribit, readyState, authState, test, setTest } = useContext(
     DeribitContext
   );
-  if (deribit === null) {
+  if (!deribit) {
     return null;
   }
 
   const commonProps = {
-    style: { width: '100%', maxWidth: '710px', margin: 'auto' },
-    margin: false,
+    style: { width: '100%', maxWidth: '650px' },
+    margin: 'w3-content',
     ...props,
   };
+
+  return (
+    <div className="w3-container w3-section">
+      {deribit.maybeDown ? (
+        <>
+          <ScrollToTop />
+          <Panel title="Deribit down?" {...commonProps}>
+            <div className="w3-center w3-padding-large">
+              <p>We encountered an error while trying to connect to Deribit.</p>
+              <p>You may refresh this page to try again.</p>
+            </div>
+          </Panel>
+        </>
+      ) : deribit.authState !== AuthState.AUTHENTICATED ? (
+        <>
+          <ScrollToTop />
+          <DeribitAuth
+            deribit={deribit}
+            test={test}
+            setTest={setTest}
+            readyState={readyState}
+            authState={authState}
+            {...commonProps}
+          />
+        </>
+      ) : (
+        <DeribitInterface deribit={deribit} {...props} />
+      )}
+    </div>
+  );
+};
+
+// Define Deribit authentication form
+const DeribitAuth = ({
+  deribit,
+  test,
+  setTest,
+  readyState,
+  authState,
+  ...props
+}) => {
+  const [key, setKey] = useState('');
+  const [secret, setSecret] = useState('');
+  const [error, setError] = useState(null);
 
   // Give feedback on connection status with Deribit
   let readyString;
@@ -71,87 +121,62 @@ const DeribitPanel = (props) => {
   }
 
   return (
-    <div className="w3-container w3-section">
-      {deribit.maybeDown ? (
-        <Panel title={`Deribit down?`} {...commonProps}>
-          <div className="w3-center w3-padding-large">
-            <p>We encountered an error while trying to connect to Deribit.</p>
-            <p>You may refresh this page to try again.</p>
-          </div>
-        </Panel>
-      ) : (
-        <Panel
-          title={`Deribit (${readyString}, ${authString})`}
-          {...commonProps}
+    <Panel title={`Deribit (${readyString}, ${authString})`} {...props}>
+      <div className="w3-center" {...props}>
+        {error && <div className="w3-padding">{error.toString()}</div>}
+        <form
+          className="w3-container"
+          onSubmit={(e) => {
+            e.preventDefault();
+            deribit.auth({ key, secret }).catch(setError);
+          }}
         >
-          {deribit.authState !== AuthState.AUTHENTICATED ? (
-            <DeribitAuth deribit={deribit} test={test} setTest={setTest} />
-          ) : (
-            <DeribitInterface deribit={deribit} />
-          )}
-        </Panel>
-      )}
-    </div>
-  );
-};
-
-// Define Deribit authentication form
-const DeribitAuth = ({ deribit, test, setTest, ...props }) => {
-  const [key, setKey] = useState('');
-  const [secret, setSecret] = useState('');
-  const [error, setError] = useState(null);
-
-  return (
-    <div className="w3-center" {...props}>
-      {error && <div className="w3-padding">{error.toString()}</div>}
-      <form
-        className="w3-container"
-        onSubmit={(e) => {
-          e.preventDefault();
-          deribit.auth({ key, secret }).catch(setError);
-        }}
-      >
-        <div className="w3-padding-small">
-          <label>Key</label>
-        </div>
-        <input
-          autoComplete="username"
-          className="w3-input"
-          value={key}
-          onChange={(e) => setKey(e.target.value)}
-        />
-        <div className="w3-padding-small">
-          <label>Secret</label>
-        </div>
-        <input
-          autoComplete="current-password"
-          className="w3-input"
-          type="password"
-          value={secret}
-          onChange={(e) => setSecret(e.target.value)}
-        />
-        <div className="w3-margin">
-          <label>
-            <input
-              type="checkbox"
-              className="my-check"
-              checked={test}
-              onChange={(e) => setTest(e.target.checked)}
-            />{' '}
-            Testnet
-          </label>
-        </div>
-        <button className="w3-btn w3-theme-l2 w3-margin my-round" type="submit">
-          Authenticate
-        </button>
-      </form>
-    </div>
+          <div className="w3-padding-small">
+            <label>Key</label>
+          </div>
+          <input
+            autoComplete="username"
+            className="w3-input"
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+          />
+          <div className="w3-padding-small">
+            <label>Secret</label>
+          </div>
+          <input
+            autoComplete="current-password"
+            className="w3-input"
+            type="password"
+            value={secret}
+            onChange={(e) => setSecret(e.target.value)}
+          />
+          <div className="w3-margin">
+            <label>
+              <input
+                type="checkbox"
+                className="my-check"
+                checked={test}
+                onChange={(e) => setTest(e.target.checked)}
+              />{' '}
+              Testnet
+            </label>
+          </div>
+          <button
+            className="w3-card w3-btn w3-theme-l2 w3-margin my-round"
+            type="submit"
+          >
+            Authenticate
+          </button>
+        </form>
+      </div>
+    </Panel>
   );
 };
 
 // Define Deribit trading interface
 const DeribitInterface = ({ deribit, ...props }) => {
-  const [futures, setFutures] = useState({});
+  const [futuresTickers, setFuturesTickers] = useState({});
+  const [options, setOptions] = useState([]);
   const [orders, setOrders] = useState({});
   const [portfolio, setPortfolio] = useState({});
 
@@ -169,31 +194,39 @@ const DeribitInterface = ({ deribit, ...props }) => {
     const setup = deribit
       .send({
         method: 'public/get_instruments',
-        params: { currency: 'btc', kind: 'future' },
+        params: { currency: 'btc' },
       })
-      .then(({ result: futures }) => {
-        futures = futures.map((r) => r.instrument_name);
+      .then(({ result }) => {
+        // Separate futures and options
+        const futures = result.filter((r) => r.kind === 'future');
+        const options = result.filter((r) => r.kind === 'option');
+        // setFutures(futures);
+        setOptions(options);
+
+        // Subscribe to instruments' tickers
+        const addTickerSubscription = (set) => ({ instrument_name }) => {
+          const channel = toTickerChannel(instrument_name);
+          pubSubs[channel] = ({ data }) => {
+            // console.log(instrument_name, data);
+            set((tickers) => ({ ...tickers, [instrument_name]: data }));
+          };
+        };
+        futures.forEach(addTickerSubscription(setFuturesTickers));
+        // options.forEach(addTickerSubscription(setOptions));
 
         // Set up orders object
         const orders = {};
-        futures.forEach((future) => (orders[future] = {}));
+        result.forEach(({ instrument_name }) => (orders[instrument_name] = {}));
         setOrders(orders);
 
-        // Subscribe to futures' tickers
-        futures.forEach((future) => {
-          const channel = `ticker.${future}.100ms`;
-          pubSubs[channel] = ({ data }) =>
-            setFutures((futures) => ({ ...futures, [future]: data }));
-        });
-
-        // Fetch user's open orders on futures
+        // Fetch user's open orders
         deribit
           .send({
             method: 'private/get_open_orders_by_currency',
-            params: { currency: 'btc', kind: 'future' },
+            params: { currency: 'btc' },
           })
 
-          // The private subscription will have a key named data
+          // The private subscription will have a key named data (*)
           .then(({ result: data }) => {
             const updateOrders = ({ data }) => {
               // Perform functional update on orders
@@ -218,10 +251,10 @@ const DeribitInterface = ({ deribit, ...props }) => {
             // First update with data (i.e. open orders) from initial fetch
             updateOrders({ data });
 
-            // Subscribe to user's futures' orders
-            futures.forEach((future) => {
-              const orders = `user.orders.${future}.100ms`;
-              privSubs[orders] = updateOrders; // notice subsequent updates
+            // Subscribe to user's orders
+            result.forEach(({ instrument_name }) => {
+              const channel = toOrdersChannel(instrument_name);
+              privSubs[channel] = updateOrders; // (*) relevant here
             });
           })
 
@@ -236,13 +269,623 @@ const DeribitInterface = ({ deribit, ...props }) => {
     // Unsubscribe when done, making sure setup ran first
     return () =>
       setup.then(() => {
-        deribit.publicUnsubscribe(Object.keys(pubSubs));
-        deribit.privateUnsubscribe(Object.keys(privSubs));
+        deribit.publicUnsubscribe(pubSubs);
+        deribit.privateUnsubscribe(privSubs);
       });
   }, [deribit]);
 
-  // Store application state locally
-  const [showOptions, setShowOptions] = useLocal('deribit-show-methods', {
+  // Map option's instrument name to its metadata
+  const optionsMap = useRef({});
+  useEffect(() => {
+    optionsMap.current = {};
+    options.forEach((option) => {
+      optionsMap.current[option.instrument_name] = option;
+    });
+  }, [options]);
+
+  // These are really managed by the Options Order component
+  // They reside here because they're also used by the Options Basket
+  const [callTickers, setCallTickers] = useState({});
+  const [putTickers, setPutTickers] = useState({});
+  // TODO multiple chains
+  const [selectedExpiration, setSelectedExpiration] = useLocal(
+    'deribit-selected-expiration'
+  );
+
+  // Used by the Options basket
+  const [selectedOptions, setSelectedOptions] = useLocal(
+    'deribit-selected-options',
+    {
+      initialValue: new Set(),
+      stringify: (set) => JSON.stringify(Array.from(set)),
+      parse: (string) => new Set(JSON.parse(string)),
+    }
+  );
+
+  // Render panels
+  const columnProps = { style: { flexGrow: 1 } };
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'flex-start',
+        width: '100%',
+      }}
+      {...props}
+    >
+      <Panel title="Order Options" {...columnProps}>
+        <OrderOptions
+          deribit={deribit}
+          options={options}
+          optionInstruments={optionsMap.current}
+          callTickers={callTickers}
+          setCallTickers={setCallTickers}
+          putTickers={putTickers}
+          setPutTickers={setPutTickers}
+          selectedOptions={selectedOptions}
+          setSelectedOptions={setSelectedOptions}
+          selectedExpiration={selectedExpiration}
+          setSelectedExpiration={setSelectedExpiration}
+        />
+      </Panel>
+      <Panel title="Position" {...columnProps}>
+        <Position portfolio={portfolio} />
+      </Panel>
+      <Panel title="Order Futures" {...columnProps}>
+        <OrderFutures
+          deribit={deribit}
+          tickers={futuresTickers}
+          portfolio={portfolio}
+        />
+      </Panel>
+      <Panel title="Open Orders" {...columnProps}>
+        <Orders deribit={deribit} orders={orders} />
+      </Panel>
+      {selectedOptions.size > 0 &&
+        Object.keys(optionsMap.current).length > 0 && (
+          <OptionBasket
+            deribit={deribit}
+            selectedOptions={selectedOptions}
+            selectedExpiration={selectedExpiration}
+            setSelectedOptions={setSelectedOptions}
+            optionInstruments={optionsMap.current}
+          />
+        )}
+    </div>
+  );
+};
+
+const Position = ({ deribit, portfolio, ...props }) => {
+  return (
+    <div className="w3-padding my-greeks" {...props}>
+      <Greek>Δ {portfolio.options_delta}</Greek>
+      <Greek>Γ {portfolio.options_gamma}</Greek>
+      <Greek>ϴ {portfolio.options_theta}</Greek>
+      <Greek>𝜈 {portfolio.options_vega}</Greek>
+    </div>
+  );
+};
+
+const Greek = ({ children, ...props }) => (
+  <div className="w3-theme-l1 w3-padding my-round" {...props}>
+    {children}
+  </div>
+);
+
+const OrderOptions = ({
+  deribit,
+  options,
+  portfolio,
+  optionInstruments,
+  callTickers,
+  setCallTickers,
+  putTickers,
+  setPutTickers,
+  selectedOptions,
+  setSelectedOptions,
+  selectedExpiration,
+  setSelectedExpiration,
+  ...props
+}) => {
+  const callNames = useRef(new Set());
+  const putNames = useRef(new Set());
+  const [expirations, setExpirations] = useState([]);
+
+  // Filter (unique) expirations
+  useEffect(() => {
+    setExpirations(
+      Array.from(
+        new Set(options.map((option) => option.expiration_timestamp))
+      ).sort((a, b) => a - b)
+    );
+  }, [options]);
+
+  // Separate calls and puts [instruments]
+  useEffect(() => {
+    callNames.current.clear();
+    putNames.current.clear();
+    options.forEach((option) => {
+      if (option.option_type === 'call') {
+        callNames.current.add(option.instrument_name);
+      } else {
+        putNames.current.add(option.instrument_name);
+      }
+    });
+  }, [options]);
+
+  // Subscribe to selected expiration(s) [plural TODO]
+  useEffect(() => {
+    // Any expiration date will have a chain of options associated with it
+    // Select those relevant to us; also (re)select options in basket
+    const relevantOptions = options.filter(
+      (option) => option.expiration_timestamp === selectedExpiration
+    );
+
+    // Subscribe
+    const subs = {};
+    const addTickerSubscriptions = (instrument_names, set) => {
+      instrument_names.forEach((instrument_name) => {
+        const channel = toTickerChannel(instrument_name);
+        subs[channel] = ({ data }) => {
+          set((tickers) => ({ ...tickers, [instrument_name]: data }));
+        };
+      });
+    };
+    const names = relevantOptions.map((o) => o.instrument_name);
+    addTickerSubscriptions(
+      names.filter((name) => callNames.current.has(name)),
+      setCallTickers
+    );
+    addTickerSubscriptions(
+      names.filter((name) => putNames.current.has(name)),
+      setPutTickers
+    );
+    deribit.publicSubscribe(subs);
+
+    // Cleanup
+    return () => {
+      deribit.publicUnsubscribe(subs);
+
+      // Remove unsubbed options from the ticker objects
+      const cleanTickers = (tickers) => {
+        const newTickers = { ...tickers };
+        names.forEach((name) => delete newTickers[name]);
+        return newTickers;
+      };
+      setCallTickers(cleanTickers);
+      setPutTickers(cleanTickers);
+    };
+  }, [deribit, options, setCallTickers, setPutTickers, selectedExpiration]);
+
+  return (
+    <div {...props}>
+      <div className="w3-center">
+        <div className="w3-card w3-section w3-theme-l1 my-expirations my-round my-scrollbars">
+          {expirations.map((expiration) => (
+            <div
+              key={expiration}
+              className={`w3-padding-large my-expiration ${
+                expiration === selectedExpiration
+                  ? 'w3-theme my-default-cursor'
+                  : 'w3-hover-theme my-pointer'
+              }`}
+              onClick={() => setSelectedExpiration(expiration)}
+            >
+              {moment(expiration).format('MMM Do, YYYY')}
+            </div>
+          ))}
+        </div>
+        <div className="w3-section">
+          <OptionChain
+            optionInstruments={optionInstruments}
+            callTickers={callTickers}
+            putTickers={putTickers}
+            selectedOptions={selectedOptions}
+            setSelectedOptions={setSelectedOptions}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const toTickerChannel = (instrument_name) => `ticker.${instrument_name}.100ms`;
+const toOrdersChannel = (instrument_name) =>
+  `user.orders.${instrument_name}.100ms`;
+
+const OptionChain = ({
+  optionInstruments,
+  callTickers,
+  putTickers,
+  selectedOptions,
+  setSelectedOptions,
+  ...props
+}) => {
+  return (
+    <div className="my-option-chain" {...props}>
+      <HalfOptionChain
+        tickers={callTickers}
+        title="Calls"
+        optionInstruments={optionInstruments}
+        className="my-half-option-chain"
+        callSide={false}
+        selectedOptions={selectedOptions}
+        setSelectedOptions={setSelectedOptions}
+      />
+      <HalfOptionChain
+        tickers={putTickers}
+        title="Puts"
+        optionInstruments={optionInstruments}
+        className="my-half-option-chain"
+        callSide={true}
+        selectedOptions={selectedOptions}
+        setSelectedOptions={setSelectedOptions}
+      />
+    </div>
+  );
+};
+
+const HalfOptionChain = ({
+  title,
+  tickers,
+  optionInstruments,
+  callSide,
+  selectedOptions,
+  setSelectedOptions,
+  ...props
+}) => {
+  // Sort tickers in ascending order
+  tickers = Object.values(tickers).sort((a, b) => {
+    const strike = (ticker) => optionInstruments[ticker.instrument_name].strike;
+    return strike(a) - strike(b);
+  });
+
+  // Columns which are mirrored between call and put side
+  const mirrorHeaders = [<th key="strike">Strike</th>, <th key="itm">ITM</th>];
+  const mirrorColumns = ({ strike, delta }) => [
+    <td key="strike">{strike}</td>,
+    <td key="itm">{round_to(100 * Math.abs(delta), 2)}%</td>,
+  ];
+
+  // Handle click on a row (= on an option)
+  const toggleSelection = (instrument_name) => () => {
+    setSelectedOptions((selection) => {
+      const newSelection = new Set(selection);
+      if (selection.has(instrument_name)) {
+        newSelection.delete(instrument_name);
+      } else {
+        newSelection.add(instrument_name);
+      }
+      return newSelection;
+    });
+  };
+
+  return (
+    <TableContainer {...props}>
+      <div
+        className="w3-theme-l1 my-round w3-padding"
+        style={{ margin: '4px 0 12px' }}
+      >
+        <b>{title}</b>
+      </div>
+      <div
+        className="my-options-inner-container"
+        style={{ marginBottom: '12px' }}
+      >
+        <InnerTable className="w3-striped-d2">
+          <thead>
+            <tr className="w3-theme-d1">
+              {callSide && mirrorHeaders}
+              {/* <th>Size</th> */}
+              <th>IV</th>
+              <th>Bid</th>
+              <th>Ask</th>
+              <th>IV</th>
+              {/* <th>Size</th> */}
+              {!callSide && mirrorHeaders.reverse()}
+            </tr>
+          </thead>
+          <tbody>
+            {tickers.map(
+              ({
+                instrument_name,
+                // best_bid_amount,
+                bid_iv,
+                best_bid_price,
+                best_ask_price,
+                ask_iv,
+                greeks: { delta },
+                // best_ask_amount,
+                underlying_price,
+              }) => {
+                const strike = optionInstruments[instrument_name].strike;
+                const mirrorColumns0 = mirrorColumns({ strike, delta });
+                return (
+                  <tr
+                    key={instrument_name}
+                    className="w3-hover-l1 my-pointer"
+                    onClick={toggleSelection(instrument_name)}
+                  >
+                    {callSide && mirrorColumns0}
+                    {/* <td>{best_bid_amount}</td> */}
+                    <td>{bid_iv}%</td>
+                    <td>
+                      <OptionPrice
+                        price={best_bid_price}
+                        underlying_price={underlying_price}
+                      />
+                    </td>
+                    <td>
+                      <OptionPrice
+                        price={best_ask_price}
+                        underlying_price={underlying_price}
+                      />
+                    </td>
+                    <td>{ask_iv}%</td>
+                    {/* <td>{best_ask_amount}</td> */}
+                    {!callSide && mirrorColumns0.reverse()}
+                  </tr>
+                );
+              }
+            )}
+          </tbody>
+        </InnerTable>
+      </div>
+    </TableContainer>
+  );
+};
+
+const OptionPrice = ({ price, underlying_price }) => (
+  <>
+    <div className="my-no-wrap">
+      <BTC />
+      {price.toFixed(4)}
+    </div>
+    {underlying_price && (
+      <div>
+        <small>(${round_to(price * underlying_price, 2)})</small>
+      </div>
+    )}
+  </>
+);
+
+const OptionBasket = ({
+  deribit,
+  selectedOptions,
+  setSelectedOptions,
+  optionInstruments,
+}) => {
+  // Delete option from the basket
+  const deleteOption = (instrument_name) => () => {
+    setSelectedOptions((selection) => {
+      const newSelection = new Set(selection);
+      newSelection.delete(instrument_name);
+      return newSelection;
+    });
+  };
+
+  // Basket items state
+  const prefix = 'deribit-option-basket';
+  const [quantities, setQuantities] = useLocal(`${prefix}-quantities`, {
+    initialValue: {},
+  });
+  const [prices, setPrices] = useLocal(`${prefix}-prices`, {
+    initialValue: {},
+  });
+  const [sides, setSides] = useLocal(`${prefix}-sides`, { initialValue: {} });
+  const [labels, setLabels] = useLocal(`${prefix}-labels`, {
+    initialValue: {},
+  });
+
+  // Setters [TODO redux?]
+  const immutate = (setter) => (instrument_name) => (value) => {
+    setter((object) => {
+      const newObject = { ...object };
+      newObject[instrument_name] = value;
+      return newObject;
+    });
+  };
+  const setQuantity = immutate(setQuantities);
+  const setPrice = immutate(setPrices);
+  const setSide = immutate(setSides);
+  const setLabel = immutate(setLabels);
+
+  // Order
+  const requestOrder = (instrument_name) => {
+    const side = sides[instrument_name] === 0 ? 'buy' : 'sell';
+    deribit.send({
+      method: `private/${side}`,
+      params: {
+        instrument_name,
+        amount: quantities[instrument_name],
+        price: prices[instrument_name],
+        label: labels[instrument_name],
+        post_only: true,
+        post_only_reject: true,
+      },
+    });
+  };
+
+  const order = (instrument_name) => () => {
+    deleteOption(instrument_name)();
+    requestOrder(instrument_name);
+  };
+
+  const orderAll = () => {
+    const names = new Set(selectedOptions);
+    setSelectedOptions(new Set());
+    names.forEach(requestOrder);
+  };
+
+  // Render basket
+  return (
+    <div className="my-options-basket-container-container">
+      <div className="w3-padding-small w3-card w3-theme-l1 my-round my-options-basket-container">
+        <table className="w3-table w3-centered my-options-basket">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Expiration</th>
+              <th>Strike</th>
+              <th>Type</th>
+              <th>Bid</th>
+              <th>Ask</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Side</th>
+              <th>Label</th>
+              <th>
+                <OrderAllOptionsButton onClick={() => {}}>
+                  Analyze all
+                </OrderAllOptionsButton>
+              </th>
+              <th>
+                <OrderAllOptionsButton onClick={orderAll}>
+                  Order all
+                </OrderAllOptionsButton>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from(selectedOptions).map((instrument_name) => (
+              <OptionBasketRow
+                deribit={deribit}
+                key={instrument_name}
+                instrument={optionInstruments[instrument_name]}
+                deleteOption={deleteOption}
+                quantity={quantities[instrument_name]}
+                setQuantity={setQuantity(instrument_name)}
+                price={prices[instrument_name]}
+                setPrice={setPrice(instrument_name)}
+                side={sides[instrument_name]}
+                setSide={setSide(instrument_name)}
+                label={labels[instrument_name]}
+                setLabel={setLabel(instrument_name)}
+                order={order(instrument_name)}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const OptionBasketRow = ({
+  deribit,
+  instrument: {
+    instrument_name,
+    expiration_timestamp,
+    strike,
+    option_type,
+    min_trade_amount,
+    tick_size,
+  },
+  deleteOption,
+  quantity,
+  setQuantity,
+  price,
+  setPrice,
+  side,
+  setSide,
+  label,
+  setLabel,
+  order,
+  ...props
+}) => {
+  // Subscribe to this option's ticker
+  const [ticker, setTicker] = useState(null);
+  useEffect(() => {
+    const sub = {
+      [toTickerChannel(instrument_name)]: ({ data }) => setTicker(data),
+    };
+    deribit.publicSubscribe(sub);
+    return () => deribit.publicUnsubscribe(sub);
+  }, [deribit, instrument_name]);
+
+  if (!ticker) return null;
+  const { best_bid_price, best_ask_price } = ticker;
+
+  return (
+    <tr className="w3-hover-l2" {...props}>
+      <td>
+        <TextButton onClick={deleteOption(instrument_name)}>🗑</TextButton>
+      </td>
+      <td>{moment(expiration_timestamp).format('MMMM Do, YYYY')}</td>
+      <td>{strike}</td>
+      <td>{option_type}</td>
+      <td>
+        <OptionPrice price={best_bid_price} />
+      </td>
+      <td>
+        <OptionPrice price={best_ask_price} />
+      </td>
+      <td>
+        <NumericalInput
+          min={min_trade_amount}
+          step={min_trade_amount}
+          value={quantity ? quantity : ''}
+          onChange={(e) => setQuantity(e.target.value)}
+          style={{ width: '75px' }}
+        />
+      </td>
+      <td>
+        <NumericalInput
+          min={tick_size}
+          step={tick_size}
+          value={price ? price : ''}
+          onChange={(e) => setPrice(e.target.value)}
+          style={{ width: '95px' }}
+        />
+      </td>
+      <td>
+        <RadioGroup
+          options={{ LONG: 0, SHORT: 1 }}
+          value={side ? side : 1}
+          setValue={setSide}
+        />
+      </td>
+      <td>
+        <input
+          className="my-small-input my-label-input"
+          value={label ? label : ''}
+          onChange={(e) => setLabel(e.target.value)}
+          maxLength={64}
+        />
+      </td>
+      <td>
+        <OrderSingleOptionButton onClick={() => {}}>
+          Analyze
+        </OrderSingleOptionButton>
+      </td>
+      <td>
+        <OrderSingleOptionButton onClick={order}>Order</OrderSingleOptionButton>
+      </td>
+    </tr>
+  );
+};
+
+const OrderOptionButton = ({ children, className = '', ...props }) => (
+  <button className={`w3-btn w3-card my-round ${className}`} {...props}>
+    {children}
+  </button>
+);
+
+const OrderSingleOptionButton = ({ children, className = '', ...props }) => (
+  <OrderOptionButton className={`w3-theme-d3 ${className}`} {...props}>
+    {children}
+  </OrderOptionButton>
+);
+
+const OrderAllOptionsButton = ({ children, className = '', ...props }) => (
+  <OrderOptionButton className={`w3-theme-d5 ${className}`} {...props}>
+    {children}
+  </OrderOptionButton>
+);
+
+const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
+  const [showConfig, setShowConfig] = useLocal('deribit-show-futures-config', {
     initialValue: false,
   });
 
@@ -290,27 +933,33 @@ const DeribitInterface = ({ deribit, ...props }) => {
 
   // Add premium feature
   const addPremium = (array) => {
-    if (autoPremium && futures['BTC-PERPETUAL'] && futures[selectedFuture]) {
-      const source = futures['BTC-PERPETUAL'].last_price;
-      const future = futures[selectedFuture].last_price;
-      return array.map((target) => (future * target) / source);
+    if (autoPremium && tickers['BTC-PERPETUAL'] && tickers[selectedFuture]) {
+      const source = tickers['BTC-PERPETUAL'].last_price;
+      const future = tickers[selectedFuture].last_price;
+      return floats(array).map((target) => (future * target) / source);
     } else return array;
   };
 
-  // Render form
   const opacity = (enabled) => ({ opacity: enabled ? 1 : 0.3 });
   const entryOpacity = opacity(entriesEnabled);
   const riskOpacity = opacity(stopsEnabled);
   return (
     <div {...props}>
-      <div className="w3-right-align" style={{ padding: '8px 24px 0' }}>
+      <div
+        className="w3-right-align"
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          padding: '8px 24px 16px',
+        }}
+      >
         <TopRightButton
           onClick={() => deribit.send({ method: 'private/cancel_all' })}
         >
           Cancel all
         </TopRightButton>
-        <TopRightButton onClick={() => setShowOptions(!showOptions)}>
-          {showOptions ? 'Hide options' : 'Show options'}
+        <TopRightButton onClick={() => setShowConfig(!showConfig)}>
+          {showConfig ? 'Hide config' : 'Show config'}
         </TopRightButton>
         <TopRightButton onClick={() => deribit.logout()}>
           Log out
@@ -333,14 +982,14 @@ const DeribitInterface = ({ deribit, ...props }) => {
               value={selectedFuture}
               onChange={(e) => setSelectedFuture(e.target.value)}
             >
-              {Object.values(futures).map(({ instrument_name, last_price }) => (
+              {Object.values(tickers).map(({ instrument_name, last_price }) => (
                 <option key={instrument_name} value={instrument_name}>
                   {instrument_name} ${last_price}
                 </option>
               ))}
             </select>
           </div>
-          {showOptions && (
+          {showConfig && (
             <div style={{ margin: '4px 0 0 8px' }}>
               <label>
                 <input
@@ -356,13 +1005,13 @@ const DeribitInterface = ({ deribit, ...props }) => {
           )}
           {autoPremium && !selectedFuture.startsWith('BTC-PERPETUAL') && (
             <div style={{ margin: '4px 0 0 8px' }}>
-              BTC-PERPETUAL ${futures['BTC-PERPETUAL']?.last_price}
+              BTC-PERPETUAL ${tickers['BTC-PERPETUAL']?.last_price}
             </div>
           )}
         </Row>
       </div>
       <div className="w3-padding">
-        {showOptions && (
+        {showConfig && (
           <Row label="Entry method">
             <RadioGroup
               options={EntryMethod}
@@ -381,7 +1030,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
                   checked={entriesEnabled}
                   onChange={(e) => setEntriesEnabled(e.target.checked)}
                 />{' '}
-                <span style={entryOpacity}>Entry</span>{' '}
+                <span style={entryOpacity}>Limit</span>{' '}
               </label>
               {entryMethod === EntryMethod.MANUAL && (
                 <Lock locked={entriesLocked} setLocked={setEntriesLocked} />
@@ -399,7 +1048,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
         </Row>
       </div>
       <div className="w3-padding">
-        {showOptions && (
+        {showConfig && (
           <Row label="Risk method">
             <RadioGroup
               options={RiskMethod}
@@ -418,7 +1067,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
                   checked={stopsEnabled}
                   onChange={(e) => setStopsEnabled(e.target.checked)}
                 />{' '}
-                <span style={riskOpacity}>Stop</span>
+                <span style={riskOpacity}>Stop loss</span>
               </label>{' '}
               <Lock locked={stopsLocked} setLocked={setStopsLocked} />
             </>
@@ -458,15 +1107,15 @@ const DeribitInterface = ({ deribit, ...props }) => {
       <div className="w3-padding">
         <Row label="Label">
           <input
-            className="my-small-input"
-            style={{ width: '200px' }}
-            value={label}
+            className="my-small-input my-label-input"
+            value={label ? label : ''}
             onChange={(e) => setLabel(e.target.value)}
+            maxLength={64}
           />
         </Row>
       </div>
       <div className="w3-padding">
-        <Order
+        <OrderFuturesButtonContainer
           deribit={deribit}
           label={label}
           instrument_name={selectedFuture}
@@ -477,61 +1126,9 @@ const DeribitInterface = ({ deribit, ...props }) => {
           stopsEnabled={stopsEnabled}
         />
       </div>
-      <Orders deribit={deribit} orders={orders} />
     </div>
   );
 };
-
-// Auxiliary component
-const TopRightButton = ({ children, ...props }) => (
-  <button
-    className="w3-mobile w3-btn w3-card w3-theme-l2 my-round my-fader"
-    style={{ margin: '4px' }}
-    type="button"
-    {...props}
-  >
-    {children}
-  </button>
-);
-
-// Auxiliary component
-const TextButton = ({ children, ...props }) => (
-  <button type="text" className="my-text-button my-round" {...props}>
-    {children}
-  </button>
-);
-
-// Row with 2 columns; 25% and 75% wide (auxiliary component)
-const Row = ({ label, children, ...props }) => (
-  <div className="w3-row-padding w3-container" {...props}>
-    <div
-      className="w3-col w3-padding-small w3-left-align w3-mobile"
-      style={{ width: '25%', maxWidth: '150px' }}
-    >
-      {label ? label : ''}
-    </div>
-    <div
-      className="w3-col w3-padding-small w3-left-align w3-mobile"
-      style={{ width: '75%' }}
-    >
-      {children}
-    </div>
-  </div>
-);
-
-//
-const RadioGroup = ({ options, value: checked, setValue }) =>
-  Object.entries(options).map(([name, value]) => (
-    <label style={{ marginRight: '8px' }} key={name} className="w3-mobile">
-      <input
-        checked={checked === value}
-        onChange={() => setValue(value)}
-        type="radio"
-        className="my-radio"
-      />{' '}
-      {name.toLowerCase()}{' '}
-    </label>
-  ));
 
 // Meta-entries component
 const Entries = ({ entryMethod, entries, setEntries, ...props }) => {
@@ -583,7 +1180,7 @@ const SplayedEntries = ({ setEntries, locked, ...props }) => {
           value={spread}
           setValue={setSpread}
           min={1}
-          max={10}
+          max={15}
           step={1}
           {...props}
         />
@@ -696,16 +1293,7 @@ const Risk = ({
   }
 };
 
-const OrderButton = ({ children, className, ...props }) => (
-  <button
-    className={`w3-card w3-section w3-btn w3-large ${className}`}
-    {...props}
-  >
-    {children}
-  </button>
-);
-
-const Order = ({
+const OrderFuturesButtonContainer = ({
   deribit,
   label,
   instrument_name,
@@ -729,8 +1317,8 @@ const Order = ({
     base *= stops.length;
   }
   quantity = round_to(quantity, -1, base);
-  const entryQuantity = quantity / entries.length;
-  const stopQuantity = quantity / stops.length;
+  const entryQuantity = Math.round(quantity / entries.length);
+  const stopQuantity = Math.round(quantity / stops.length);
 
   const commonParams = {
     label,
@@ -815,52 +1403,58 @@ const Order = ({
       )}
       {
         /* neither enabled */ !(entriesEnabled || stopsEnabled) ? (
-          <OrderButton className="w3-block my-round w3-grey">
+          <OrderFuturesButton className="w3-block my-round w3-grey">
             No entries nor stops enabled
-          </OrderButton>
+          </OrderFuturesButton>
         ) : /* both enabled */ entriesEnabled && stopsEnabled ? (
           meanStop === meanEntry ? (
             <div className="w3-cell-row">
-              <OrderButton
+              <OrderFuturesButton
                 className="w3-cell my-round-left w3-green"
                 style={{ width: '50%' }}
                 onClick={buy}
               >
                 Buy
-              </OrderButton>
-              <OrderButton
+              </OrderFuturesButton>
+              <OrderFuturesButton
                 className="w3-cell my-round-right w3-red"
                 style={{ width: '50%' }}
                 onClick={sell}
               >
                 Sell
-              </OrderButton>
+              </OrderFuturesButton>
             </div>
           ) : meanEntry > meanStop ? (
-            <OrderButton className="w3-block my-round w3-green" onClick={buy}>
+            <OrderFuturesButton
+              className="w3-block my-round w3-green"
+              onClick={buy}
+            >
               Buy
-            </OrderButton>
+            </OrderFuturesButton>
           ) : (
-            <OrderButton className="w3-block my-round w3-red" onClick={sell}>
+            <OrderFuturesButton
+              className="w3-block my-round w3-red"
+              onClick={sell}
+            >
               Sell
-            </OrderButton>
+            </OrderFuturesButton>
           )
         ) : (
           <div className="w3-cell-row">
-            <OrderButton
+            <OrderFuturesButton
               className="w3-cell my-round-left w3-green"
               style={{ width: '50%' }}
               onClick={buy}
             >
               {entriesEnabled ? 'Buy' : 'Sell stop'}
-            </OrderButton>
-            <OrderButton
+            </OrderFuturesButton>
+            <OrderFuturesButton
               className="w3-cell my-round-right w3-red"
               style={{ width: '50%' }}
               onClick={sell}
             >
               {entriesEnabled ? 'Sell' : 'Buy stop'}
-            </OrderButton>
+            </OrderFuturesButton>
           </div>
         )
       }
@@ -869,124 +1463,202 @@ const Order = ({
 };
 
 const Orders = ({ deribit, orders, ...props }) => {
-  const len = (future) => Object.keys(orders[future]).length;
+  // Sorting of contracts by amount of orders on them
+  const amount = (future) => Object.keys(orders[future]).length;
+  const byAmount = (a, b) => amount(b) - amount(a);
+
+  // Sorting of orders by price
+  const price = (o) => (o.order_type === 'limit' ? o.price : o.stop_price);
+  const byPrice = (a, b) => price(b) - price(a);
+
+  // Cancellation handlers
+  const cancelByInstrument = (instrument_name) => () => {
+    deribit.send({
+      method: 'private/cancel_all_by_instrument',
+      params: { instrument_name },
+    });
+  };
+
+  const cancelByLabel = (label) => () => {
+    deribit.send({
+      method: 'private/cancel_by_label',
+      params: { label },
+    });
+  };
+
+  const cancel = (order_id) => () => {
+    deribit.send({
+      method: 'private/cancel',
+      params: { order_id },
+    });
+  };
+
   return (
     <div className="w3-center" {...props}>
+      {Object.keys(orders).every((future) => amount(future) === 0) && (
+        <i>No open orders.</i>
+      )}
       {Object.keys(orders)
-        .sort((a, b) => len(b) - len(a))
+        .filter((future) => amount(future) > 0)
+        .sort(byAmount)
         .map((future) => (
           <div key={future}>
             <h4>
               {future}
-              {len(future) > 0 && (
-                <TextButton
-                  onClick={() =>
-                    deribit.send({
-                      method: 'private/cancel_all_by_instrument',
-                      params: { instrument_name: future },
-                    })
-                  }
-                >
-                  🗑
-                </TextButton>
+              {amount(future) > 0 && (
+                <TextButton onClick={cancelByInstrument(future)}>🗑</TextButton>
               )}
             </h4>
-            {Object.keys(orders[future]).length === 0 ? (
-              <div className="w3-margin">
-                <i>No orders.</i>
-              </div>
-            ) : (
-              <div className="w3-margin w3-padding w3-theme-d1 my-round w3-card">
-                {
-                  <table className="w3-table w3-centered">
-                    <thead>
-                      <tr>
-                        <th>label</th>
-                        <th>side</th>
-                        <th>type</th>
-                        <th>price</th>
-                        <th>amount</th>
-                        <th>reduce</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.values(orders[future])
-                        .sort((a, b) => {
-                          const price = (o) =>
-                            o.order_type === 'limit' ? o.price : o.stop_price;
-                          return price(b) - price(a);
-                        })
-                        .map(
-                          ({
-                            order_id,
-                            label,
-                            direction,
-                            order_type,
-                            stop_price,
-                            price,
-                            filled_amount,
-                            amount,
-                            reduce_only,
-                          }) => (
-                            <tr key={order_id}>
-                              <td>
-                                {label}
-                                <TextButton
-                                  onClick={() =>
-                                    deribit.send({
-                                      method: 'private/cancel_by_label',
-                                      params: { label },
-                                    })
-                                  }
-                                >
-                                  🗑
-                                </TextButton>
-                              </td>
-                              <td>{direction}</td>
-                              {order_type === 'stop_market' ? (
-                                <>
-                                  <td>stop</td>
-                                  <td>{stop_price}</td>
-                                  <td>{amount}</td>
-                                </>
-                              ) : (
-                                <>
-                                  <td>{order_type}</td>
-                                  <td>{price}</td>
-                                  <td>
-                                    {filled_amount} / {amount}
-                                  </td>
-                                </>
-                              )}
-                              <td>{reduce_only ? '✓' : '✕'}</td>
-                              {/* <td className="w3-center">
-                              <TextButton>🖉</TextButton>
-                            </td> */}
-                              <td>
-                                <TextButton
-                                  onClick={() =>
-                                    deribit.send({
-                                      method: 'private/cancel',
-                                      params: { order_id },
-                                    })
-                                  }
-                                >
-                                  🗑
-                                </TextButton>
-                              </td>
-                            </tr>
-                          )
+            <Table>
+              <thead>
+                <tr>
+                  <th>label</th>
+                  <th>side</th>
+                  <th>type</th>
+                  <th>price</th>
+                  <th>amount</th>
+                  <th>reduce</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.values(orders[future])
+                  .sort(byPrice)
+                  .map(
+                    ({
+                      order_id,
+                      label,
+                      direction,
+                      order_type,
+                      stop_price,
+                      price,
+                      filled_amount,
+                      amount,
+                      reduce_only,
+                    }) => (
+                      <tr key={order_id}>
+                        <td>
+                          {label}
+                          <TextButton onClick={cancelByLabel(label)}>
+                            🗑
+                          </TextButton>
+                        </td>
+                        <td>{direction}</td>
+                        {order_type === 'stop_market' ? (
+                          <>
+                            <td>stop</td>
+                            <td>{stop_price}</td>
+                            <td>{amount}</td>
+                          </>
+                        ) : (
+                          <>
+                            <td>{order_type}</td>
+                            <td>{price}</td>
+                            <td>
+                              {filled_amount} / {amount}
+                            </td>
+                          </>
                         )}
-                    </tbody>
-                  </table>
-                }
-              </div>
-            )}
+                        <td>{reduce_only ? '✓' : '✕'}</td>
+                        {/* <td className="w3-center">
+                            <TextButton>🖉</TextButton>
+                          </td> */}
+                        <td>
+                          <TextButton onClick={cancel(order_id)}>🗑</TextButton>
+                        </td>
+                      </tr>
+                    )
+                  )}
+              </tbody>
+            </Table>
           </div>
         ))}
     </div>
   );
 };
+
+const Table = ({ children, ...props }) => (
+  <TableContainer {...props}>
+    <InnerTable>{children}</InnerTable>
+  </TableContainer>
+);
+
+const TableContainer = ({ children, className = '', ...props }) => (
+  <div
+    className={`w3-margin w3-padding w3-theme-d1 my-round w3-card ${className}`}
+    {...props}
+  >
+    {children}
+  </div>
+);
+
+const InnerTable = ({ children, className = '', ...props }) => (
+  <table className={`w3-table w3-centered ${className}`} {...props}>
+    {children}
+  </table>
+);
+
+const OrderFuturesButton = ({ children, className, ...props }) => (
+  <button
+    className={`w3-card w3-section w3-btn w3-large ${className}`}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+// Auxiliary component
+const TopRightButton = ({ children, ...props }) => (
+  <button
+    className="w3-mobile w3-btn w3-card w3-theme-l2 my-round my-fader"
+    style={{ margin: '4px', flexGrow: 1 }}
+    type="button"
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+// Auxiliary component
+const TextButton = ({ children, ...props }) => (
+  <button type="text" className="my-text-button my-round" {...props}>
+    {children}
+  </button>
+);
+
+// Row with 2 columns; 25% and 75% wide (auxiliary component)
+const Row = ({ label, children, ...props }) => (
+  <div className="w3-row-padding w3-container" {...props}>
+    <div
+      className="w3-col w3-padding-small w3-left-align w3-mobile"
+      style={{ width: '25%', maxWidth: '150px' }}
+    >
+      {label ? label : ''}
+    </div>
+    <div
+      className="w3-col w3-padding-small w3-left-align w3-mobile"
+      style={{ width: '75%' }}
+    >
+      {children}
+    </div>
+  </div>
+);
+
+//
+const RadioGroup = ({ options, value: checked, setValue, ...props }) =>
+  Object.entries(options).map(([name, value]) => (
+    <label style={{ marginRight: '8px' }} key={name} className="w3-mobile">
+      <span className="my-no-wrap">
+        <input
+          checked={checked === value}
+          onChange={() => setValue(value)}
+          type="radio"
+          className="my-radio"
+          {...props}
+        />{' '}
+        {name.toLowerCase()}{' '}
+      </span>
+    </label>
+  ));
 
 // General numerical slider (auxiliary component)
 const NumericalSlider = ({ value, setValue, ...props }) => {

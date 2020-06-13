@@ -69,7 +69,7 @@ const Right = ({ width }) => {
   return (
     <>
       <Navigation
-        className="w3-theme-d4"
+        className="w3-theme-l2"
         items={[
           {
             title: 'Home',
