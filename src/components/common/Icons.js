@@ -7,8 +7,10 @@ import lines from '../../assets/lines.png';
 import alert from '../../assets/alert.png';
 import alarm from '../../assets/alarm.png';
 
-import doubleLeft from '../../assets/double-left.png';
+import doubleUp from '../../assets/double-up.png';
 import doubleRight from '../../assets/double-right.png';
+import doubleDown from '../../assets/double-down.png';
+import doubleLeft from '../../assets/double-left.png';
 
 import loading32 from '../../assets/loading32.svg';
 import loading64 from '../../assets/loading64.svg';
@@ -45,130 +47,57 @@ const white = {
     'invert(99%) sepia(4%) saturate(2%) hue-rotate(190deg) brightness(118%) contrast(100%)',
 };
 
-
-export const Up = ({ title, style, ...props }) => (
+const icon = ({ title, width = '16px', style: superStyle, ...superProps }) => ({
+  style,
+  ...props
+}) => (
   <img
-    src={up}
+    {...superProps}
     title={title}
     alt={title}
-    width="16px"
-    style={{ ...lime, ...style }}
+    width={width}
+    style={{ ...superStyle, ...style }}
     {...props}
   />
 );
 
-export const Down = ({ title, style, ...props }) => (
-  <img
-    src={down}
-    title={title}
-    alt={title}
-    width="16px"
-    style={{ ...red, ...style }}
-    {...props}
-  />
-);
+// Triangles
+export const Up = icon({ src: up, style: lime });
+export const Down = icon({ src: down, style: red });
 
-export const Gold = ({ title, style, ...props }) => (
-  <img
-    src={cross}
-    title={title}
-    alt={title}
-    width="16px"
-    style={{ ...gold, ...style }}
-    {...props}
-  />
-);
+// Moving averages
+export const Gold = icon({ src: cross, style: gold });
+export const Death = icon({ src: cross });
+export const SplayUp = icon({ src: lines, style: lime });
+export const SplayDown = icon({ src: lines, style: red });
 
-export const Death = ({ title, style, ...props }) => (
-  <img src={cross} title={title} alt={title} width="16px" {...props} />
-);
+// Warnings
+export const Alert = icon({ src: alert });
+export const Alarm = icon({ src: alarm });
 
-export const SplayUp = ({ title, style, ...props }) => (
-  <img
-    src={lines}
-    title={title}
-    alt={title}
-    width="16px"
-    style={{ ...green, ...style }}
-    {...props}
-  />
-);
+// Double arrows
+const doubleArrow = ({ src }) => icon({ src, width: '32px', style: white });
+export const DoubleUp = doubleArrow({ src: doubleUp });
+export const DoubleRight = doubleArrow({ src: doubleRight });
+export const DoubleDown = doubleArrow({ src: doubleDown });
+export const DoubleLeft = doubleArrow({ src: doubleLeft });
 
-export const SplayDown = ({ title, style, ...props }) => (
-  <img
-    src={lines}
-    title={title}
-    alt={title}
-    width="16px"
-    style={{ ...red, ...style }}
-    {...props}
-  />
-);
+// Locks
+const lockIcon = (props) =>
+  icon({
+    width: '14px',
+    style: { margin: '0 1px 2px', ...white },
+    ...props,
+  });
+export const Lock = lockIcon({ src: lock });
+export const Unlock = lockIcon({ src: unlock });
 
-export const Alert = ({ title, ...props }) => (
-  <img src={alert} title={title} alt={title} width="16px" {...props} />
+// Loading
+const loadingAlt = 'Loading...';
+const loading = ({ src }) => (props) => (
+  <img src={src} title={loadingAlt} alt={loadingAlt} {...props} />
 );
-
-export const Alarm = ({ title, ...props }) => (
-  <img src={alarm} title={title} alt={title} width="16px" {...props} />
-);
-
-export const DoubleLeft = ({ title, style, ...props }) => (
-  <img
-    src={doubleLeft}
-    title={title}
-    alt={title}
-    width="32px"
-    style={{ ...white, ...style }}
-    {...props}
-  />
-);
-
-export const DoubleRight = ({ title, style, ...props }) => (
-  <img
-    src={doubleRight}
-    title={title}
-    alt={title}
-    width="32px"
-    style={{ ...white, ...style }}
-    {...props}
-  />
-);
-
-export const Loading32 = (props) => (
-  <img src={loading32} title="Loading..." alt="Loading..." {...props} />
-);
-
-export const Loading64 = (props) => (
-  <img src={loading64} title="Loading..." alt="Loading..." {...props} />
-);
-
-export const Loading128 = (props) => (
-  <img src={loading128} title="Loading..." alt="Loading..." {...props} />
-);
-
-export const Loading256 = (props) => (
-  <img src={loading256} title="Loading..." alt="Loading..." {...props} />
-);
-
-export const Lock = ({ title, style, ...props }) => (
-  <img
-    src={lock}
-    title={title}
-    alt={title}
-    width="14px"
-    style={{ margin: '0 1px 2px', ...white, ...style }}
-    {...props}
-  />
-);
-
-export const Unlock = ({ title, style, ...props }) => (
-  <img
-    src={unlock}
-    title={title}
-    alt={title}
-    width="14px"
-    style={{ margin: '0 1px 2px', ...white, ...style }}
-    {...props}
-  />
-);
+export const Loading32 = loading({ src: loading32 });
+export const Loading64 = loading({ src: loading64 });
+export const Loading128 = loading({ src: loading128 });
+export const Loading256 = loading({ src: loading256 });
