@@ -4,7 +4,7 @@ import Navigation from './common/Navigation';
 export default function Puzzle() {
   return (
     <Navigation
-      className="w3-theme-d3"
+      className="w3-theme-l1"
       level={2}
       items={[
         {
