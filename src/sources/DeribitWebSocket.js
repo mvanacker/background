@@ -309,7 +309,6 @@ export default class extends WebSocket {
     // Delete callback
     Object.entries(oldSubscriptions).forEach(([channel, callback]) => {
       const channelLC = channel.toLowerCase();
-      console.log(channelLC);
       subscriptions[channelLC].delete(callback);
       if (subscriptions[channelLC].size === 0) {
         delete subscriptions[channelLC];
