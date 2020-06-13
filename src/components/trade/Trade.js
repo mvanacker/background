@@ -201,19 +201,16 @@ const DeribitInterface = ({ deribit, ...props }) => {
         // Separate futures and options
         const futures = result.filter((r) => r.kind === 'future');
         const options = result.filter((r) => r.kind === 'option');
-        // setFutures(futures);
         setOptions(options);
 
         // Subscribe to instruments' tickers
         const addTickerSubscription = (set) => ({ instrument_name }) => {
           const channel = toTickerChannel(instrument_name);
           pubSubs[channel] = ({ data }) => {
-            // console.log(instrument_name, data);
             set((tickers) => ({ ...tickers, [instrument_name]: data }));
           };
         };
         futures.forEach(addTickerSubscription(setFuturesTickers));
-        // options.forEach(addTickerSubscription(setOptions));
 
         // Set up orders object
         const orders = {};
@@ -283,15 +280,6 @@ const DeribitInterface = ({ deribit, ...props }) => {
     });
   }, [options]);
 
-  // These are really managed by the Options Order component
-  // They reside here because they're also used by the Options Basket
-  const [callTickers, setCallTickers] = useState({});
-  const [putTickers, setPutTickers] = useState({});
-  // TODO multiple chains
-  const [selectedExpiration, setSelectedExpiration] = useLocal(
-    'deribit-selected-expiration'
-  );
-
   // Used by the Options basket
   const [selectedOptions, setSelectedOptions] = useLocal(
     'deribit-selected-options',
@@ -319,14 +307,8 @@ const DeribitInterface = ({ deribit, ...props }) => {
           deribit={deribit}
           options={options}
           optionInstruments={optionInstruments.current}
-          callTickers={callTickers}
-          setCallTickers={setCallTickers}
-          putTickers={putTickers}
-          setPutTickers={setPutTickers}
           selectedOptions={selectedOptions}
           setSelectedOptions={setSelectedOptions}
-          selectedExpiration={selectedExpiration}
-          setSelectedExpiration={setSelectedExpiration}
         />
       </Panel>
       <Panel title="Position" {...columnProps}>
@@ -347,7 +329,6 @@ const DeribitInterface = ({ deribit, ...props }) => {
           <OptionBasket
             deribit={deribit}
             selectedOptions={selectedOptions}
-            selectedExpiration={selectedExpiration}
             setSelectedOptions={setSelectedOptions}
             optionInstruments={optionInstruments.current}
           />
@@ -378,16 +359,15 @@ const OrderOptions = ({
   options,
   portfolio,
   optionInstruments,
-  callTickers,
-  setCallTickers,
-  putTickers,
-  setPutTickers,
   selectedOptions,
   setSelectedOptions,
-  selectedExpiration,
-  setSelectedExpiration,
   ...props
 }) => {
+  const [selectedExpiration, setSelectedExpiration] = useLocal(
+    'deribit-selected-expiration'
+  );
+  const [callTickers, setCallTickers] = useState({});
+  const [putTickers, setPutTickers] = useState({});
   const callNames = useRef(new Set());
   const putNames = useRef(new Set());
   const [expirations, setExpirations] = useState([]);
