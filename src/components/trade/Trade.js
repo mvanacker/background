@@ -179,6 +179,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
   const [futuresTickers, setFuturesTickers] = useState({});
   const [options, setOptions] = useState([]);
   const [orders, setOrders] = useState({});
+  const [positions, setPositions] = useState({});
   const [portfolio, setPortfolio] = useState({});
 
   // Setup information retrieval needed to provide a trading interface
@@ -191,19 +192,57 @@ const DeribitInterface = ({ deribit, ...props }) => {
     // Subscribe to portfolio
     privSubs['user.portfolio.btc'] = ({ data }) => setPortfolio(data);
 
+    // Set up orders callback
+    const updateOrders = (orders) => {
+      // Perform functional update on orders
+      setOrders((oldOrders) => {
+        const newOrders = { ...oldOrders };
+        orders.forEach((order) => {
+          // Add or update order
+          const { instrument_name, order_id } = order;
+          if (!(instrument_name in newOrders)) {
+            newOrders[instrument_name] = {};
+          }
+          newOrders[instrument_name][order_id] = order;
+          // Delete orders which are no longer open
+          if (
+            order.order_state === 'cancelled' ||
+            order.order_state === 'filled'
+          ) {
+            delete newOrders[instrument_name][order_id];
+          }
+          if (Object.keys(newOrders[instrument_name]) === 0) {
+            delete newOrders[instrument_name];
+          }
+        });
+        return newOrders;
+      });
+    };
+
+    // Set up positions callback
+    const updatePositions = (positions) => {
+      setPositions((oldPositions) => {
+        const newPositions = { ...oldPositions };
+        positions.forEach((position) => {
+          newPositions[position.instrument_name] = position;
+        });
+        return newPositions;
+      });
+    };
+
     // Fetch futures
     const setup = deribit
       .send({
         method: 'public/get_instruments',
         params: { currency: 'btc' },
       })
-      .then(({ result }) => {
+      .then(({ result: instruments }) => {
         // Separate futures and options
-        const futures = result.filter((r) => r.kind === 'future');
-        const options = result.filter((r) => r.kind === 'option');
+        const futures = instruments.filter((r) => r.kind === 'future');
+        const options = instruments.filter((r) => r.kind === 'option');
         setOptions(options);
 
-        // Subscribe to instruments' tickers
+        // Subscribe to futures' tickers
         const addTickerSubscription = (set) => ({ instrument_name }) => {
           const channel = toTickerChannel(instrument_name);
           pubSubs[channel] = ({ data }) => {
@@ -212,51 +251,35 @@ const DeribitInterface = ({ deribit, ...props }) => {
         };
         futures.forEach(addTickerSubscription(setFuturesTickers));
 
-        // Set up orders object
-        const orders = {};
-        result.forEach(({ instrument_name }) => (orders[instrument_name] = {}));
-        setOrders(orders);
+        Promise.all([
+          // Fetch open orders
+          deribit
+            .send({
+              method: 'private/get_open_orders_by_currency',
+              params: { currency: 'btc' },
+            })
+            .then(({ result: orders }) => updateOrders(orders)),
 
-        // Fetch user's open orders
-        deribit
-          .send({
-            method: 'private/get_open_orders_by_currency',
-            params: { currency: 'btc' },
-          })
-          .then(({ result }) => {
-            const updateOrders = (orders) => {
-              // Perform functional update on orders
-              setOrders((oldOrders) => {
-                const newOrders = { ...oldOrders };
-                orders.forEach((datum) => {
-                  // Add or update order
-                  const { instrument_name, order_id } = datum;
-                  newOrders[instrument_name][order_id] = datum;
-                  // Delete orders which are no longer open
-                  if (
-                    datum.order_state === 'cancelled' ||
-                    datum.order_state === 'filled'
-                  ) {
-                    delete newOrders[instrument_name][order_id];
-                  }
-                });
-                return newOrders;
-              });
-            };
+          // Fetch positions
+          deribit
+            .send({
+              method: 'private/get_positions',
+              params: { currency: 'btc' },
+            })
+            .then(({ result: positions }) => updatePositions(positions)),
+        ])
 
-            // First update with data (i.e. open orders) from initial fetch
-            updateOrders(result);
-
-            // Subscribe to user's orders
-            result.forEach(({ instrument_name }) => {
-              const channel = toChangesChannel(instrument_name);
-              privSubs[channel] = ({ data: { orders } }) =>
-                updateOrders(orders);
-            });
-          })
-
-          // AFTER all of this...
+          // After the initial fetches
           .then(() => {
+            // Prepare to subscribe to changes of all instruments
+            instruments.forEach(({ instrument_name }) => {
+              const channel = toChangesChannel(instrument_name);
+              privSubs[channel] = ({ data: { positions, orders } }) => {
+                updateOrders(orders);
+                updatePositions(positions);
+              };
+            });
+
             // Do actual subscribing
             deribit.publicSubscribe(pubSubs);
             deribit.privateSubscribe(privSubs);
@@ -312,7 +335,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
         />
       </Panel>
       <Panel title="Position" {...columnProps}>
-        <Position portfolio={portfolio} />
+        <Position portfolio={portfolio} positions={positions} />
       </Panel>
       <Panel title="Order Futures" {...columnProps}>
         <OrderFutures
@@ -337,14 +360,27 @@ const DeribitInterface = ({ deribit, ...props }) => {
   );
 };
 
-const Position = ({ deribit, portfolio, ...props }) => {
+const Position = ({ deribit, portfolio, positions, ...props }) => {
   return (
-    <div className="w3-padding my-greeks" {...props}>
-      <Greek>Δ {portfolio.options_delta}</Greek>
-      <Greek>Γ {portfolio.options_gamma}</Greek>
-      <Greek>ϴ {portfolio.options_theta}</Greek>
-      <Greek>𝜈 {portfolio.options_vega}</Greek>
-    </div>
+    <>
+      <div className="w3-padding my-greeks" {...props}>
+        <Greek>Δ {portfolio.options_delta}</Greek>
+        <Greek>Γ {portfolio.options_gamma}</Greek>
+        <Greek>ϴ {portfolio.options_theta}</Greek>
+        <Greek>𝜈 {portfolio.options_vega}</Greek>
+      </div>
+      <div>
+        <ul>
+          {Object.values(positions)
+            .filter(({ size }) => size !== 0)
+            .map(({ instrument_name, size }) => (
+              <li key={instrument_name}>
+                {size}x {instrument_name}
+              </li>
+            ))}
+        </ul>
+      </div>
+    </>
   );
 };
 
