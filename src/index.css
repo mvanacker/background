@@ -34,6 +34,10 @@ input.my-small-input {
   width: 100px;
 }
 
+input.my-label-input {
+  width: 200px;
+}
+
 .my-fader {
   opacity: 0.6;
   transition: 0.3s;
@@ -144,6 +148,7 @@ div.my-options-inner-container table td:last-child {
 }
 
 div.my-options-basket-container-container {
+  margin-top: 16px;
   position: sticky;
   bottom: -16px;
   width: 100%;
@@ -164,9 +169,32 @@ div.my-options-basket-container > table.my-options-basket {
   width: auto;
 }
 
+div.my-option-basket-hide {
+  width: 'fit-content';
+  padding: 4px;
+}
+
+div.my-option-basket-show {
+  width: fit-content;
+  margin: 0 auto 7px;
+  padding: 8px 6px 12px 6px;
+  align-self: flex-end;
+}
+
 table.my-options-basket td,
 table.my-options-basket th {
   vertical-align: middle;
+}
+
+.my-white-glow {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  opacity: 0.6;
+}
+
+.my-white-glow:hover {
+  box-shadow: 0 2px 5px 0px rgba(255, 255, 255, 0.16),
+    0 2px 10px 0px rgba(255, 255, 255, 0.12);
+  opacity: 1;
 }
 
 .my-no-wrap {
@@ -228,15 +256,19 @@ svg#confluence-detector g.unlump-name-axis text {
 
 .toggle-handle {
   position: fixed;
+  left: -1px;
   bottom: 20px;
   cursor: pointer;
-  padding: 8px 8px 8px 15px;
-  opacity: 0.4;
+  padding: 6px 8px 6px 12px;
+  opacity: 0.6;
   transition: 0.3s;
   z-index: 4;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .toggle-handle:hover {
+  box-shadow: 0 2px 5px 0px rgba(255, 255, 255, 0.16),
+    0 2px 10px 0px rgba(255, 255, 255, 0.12);
   opacity: 1;
 }
 
@@ -256,15 +288,6 @@ nav.my-nav a.w3-bar-item:first-child {
 
 .my-column {
   width: 180px;
-}
-
-.my-small-input {
-  display: inline-block;
-  width: 70px;
-}
-
-.my-label-input {
-  width: 200px;
 }
 
 .my-borderless {

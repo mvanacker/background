@@ -40,7 +40,7 @@ export default ({ left, right }) => {
     <>
       {enabled && (
         <div
-          className="w3-card w3-theme-l1 toggle-handle my-round-right"
+          className="w3-theme-l1 toggle-handle my-white-glow my-round-right"
           onClick={() => setVisible(!visible)}
         >
           {visible ? <DoubleLeft title="Hide" /> : <DoubleRight title="Show" />}
