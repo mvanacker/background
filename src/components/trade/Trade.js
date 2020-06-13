@@ -226,14 +226,12 @@ const DeribitInterface = ({ deribit, ...props }) => {
             method: 'private/get_open_orders_by_currency',
             params: { currency: 'btc' },
           })
-
-          // The private subscription will have a key named data (*)
-          .then(({ result: data }) => {
-            const updateOrders = ({ data }) => {
+          .then(({ result }) => {
+            const updateOrders = (orders) => {
               // Perform functional update on orders
-              setOrders((orders) => {
-                const newOrders = { ...orders };
-                data.forEach((datum) => {
+              setOrders((oldOrders) => {
+                const newOrders = { ...oldOrders };
+                orders.forEach((datum) => {
                   // Add or update order
                   const { instrument_name, order_id } = datum;
                   newOrders[instrument_name][order_id] = datum;
@@ -250,12 +248,13 @@ const DeribitInterface = ({ deribit, ...props }) => {
             };
 
             // First update with data (i.e. open orders) from initial fetch
-            updateOrders({ data });
+            updateOrders(result);
 
             // Subscribe to user's orders
             result.forEach(({ instrument_name }) => {
-              const channel = toOrdersChannel(instrument_name);
-              privSubs[channel] = updateOrders; // (*) relevant here
+              const channel = toChangesChannel(instrument_name);
+              privSubs[channel] = ({ data: { orders } }) =>
+                updateOrders(orders);
             });
           })
 
@@ -276,11 +275,11 @@ const DeribitInterface = ({ deribit, ...props }) => {
   }, [deribit]);
 
   // Map option's instrument name to its metadata
-  const optionsMap = useRef({});
+  const optionInstruments = useRef({});
   useEffect(() => {
-    optionsMap.current = {};
+    optionInstruments.current = {};
     options.forEach((option) => {
-      optionsMap.current[option.instrument_name] = option;
+      optionInstruments.current[option.instrument_name] = option;
     });
   }, [options]);
 
@@ -319,7 +318,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
         <OrderOptions
           deribit={deribit}
           options={options}
-          optionInstruments={optionsMap.current}
+          optionInstruments={optionInstruments.current}
           callTickers={callTickers}
           setCallTickers={setCallTickers}
           putTickers={putTickers}
@@ -344,13 +343,13 @@ const DeribitInterface = ({ deribit, ...props }) => {
         <Orders deribit={deribit} orders={orders} />
       </Panel>
       {selectedOptions.size > 0 &&
-        Object.keys(optionsMap.current).length > 0 && (
+        Object.keys(optionInstruments.current).length > 0 && (
           <OptionBasket
             deribit={deribit}
             selectedOptions={selectedOptions}
             selectedExpiration={selectedExpiration}
             setSelectedOptions={setSelectedOptions}
-            optionInstruments={optionsMap.current}
+            optionInstruments={optionInstruments.current}
           />
         )}
     </div>
@@ -492,8 +491,8 @@ const OrderOptions = ({
 };
 
 const toTickerChannel = (instrument_name) => `ticker.${instrument_name}.100ms`;
-const toOrdersChannel = (instrument_name) =>
-  `user.orders.${instrument_name}.100ms`;
+const toChangesChannel = (instrument_name) =>
+  `user.changes.${instrument_name}.100ms`;
 
 const OptionChain = ({
   optionInstruments,
@@ -571,7 +570,7 @@ const HalfOptionChain = ({
         <b>{title}</b>
       </div>
       <div
-        className="my-options-inner-container"
+        className="my-option-inner-container"
         style={{ marginBottom: '12px' }}
       >
         <InnerTable className="w3-striped-d2">
@@ -726,7 +725,7 @@ const OptionBasket = ({
 
   // Render basket
   return (
-    <div className="my-options-basket-container-container">
+    <div className="my-option-basket-container-container">
       {!visible ? (
         <div className="w3-theme-l1 my-round-top my-transition my-pointer my-white-glow my-option-basket-show">
           <DoubleUp
@@ -735,8 +734,8 @@ const OptionBasket = ({
           />
         </div>
       ) : (
-        <div className="w3-padding-small w3-card w3-theme-l1 my-round my-options-basket-container">
-          <table className="w3-table w3-centered my-options-basket">
+        <div className="w3-padding-small w3-card w3-theme-l1 my-round my-option-basket-container">
+          <table className="w3-table w3-centered my-option-basket">
             <thead>
               <tr>
                 <th>

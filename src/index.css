@@ -127,27 +127,27 @@ div.my-half-option-chain {
   flex-grow: 1;
 }
 
-div.my-options-inner-container {
+div.my-option-inner-container {
   height: 250px;
   overflow-y: auto;
 }
 
-div.my-options-inner-container table thead tr th {
+div.my-option-inner-container table thead tr th {
   top: 0;
   position: sticky;
   z-index: 1;
 }
 
-div.my-options-inner-container table thead tr.w3-theme-d1 th {
+div.my-option-inner-container table thead tr.w3-theme-d1 th {
   background: inherit;
 }
 
-div.my-options-inner-container table th:last-child,
-div.my-options-inner-container table td:last-child {
+div.my-option-inner-container table th:last-child,
+div.my-option-inner-container table td:last-child {
   padding-right: 25px;
 }
 
-div.my-options-basket-container-container {
+div.my-option-basket-container-container {
   margin-top: 16px;
   position: sticky;
   bottom: -16px;
@@ -156,7 +156,7 @@ div.my-options-basket-container-container {
   z-index: 3;
 }
 
-div.my-options-basket-container {
+div.my-option-basket-container {
   box-shadow: 0 2px 5px 0px rgba(255, 255, 255, 0.16),
     0 2px 10px 0px rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -165,7 +165,7 @@ div.my-options-basket-container {
   margin: 0 auto;
 }
 
-div.my-options-basket-container > table.my-options-basket {
+div.my-option-basket-container > table.my-option-basket {
   width: auto;
 }
 
@@ -181,8 +181,8 @@ div.my-option-basket-show {
   align-self: flex-end;
 }
 
-table.my-options-basket td,
-table.my-options-basket th {
+table.my-option-basket td,
+table.my-option-basket th {
   vertical-align: middle;
 }
 
