@@ -37,36 +37,25 @@ const DeribitPanel = (props) => {
     return null;
   }
 
-  const commonProps = {
-    style: { width: '100%', maxWidth: '650px' },
-    margin: 'w3-content',
-    ...props,
-  };
-
   return (
     <div className="w3-container w3-section">
       {deribit.maybeDown ? (
-        <>
-          <ScrollToTop />
-          <Panel title="Deribit down?" {...commonProps}>
-            <div className="w3-center w3-padding-large">
-              <p>We encountered an error while trying to connect to Deribit.</p>
-              <p>You may refresh this page to try again.</p>
-            </div>
-          </Panel>
-        </>
+        <Panel title="Deribit down?" className="my-auth-panel" {...props}>
+          <div className="w3-center w3-padding-large">
+            <p>We encountered an error while trying to connect to Deribit.</p>
+            <p>You may refresh this page to try again.</p>
+          </div>
+        </Panel>
       ) : deribit.authState !== AuthState.AUTHENTICATED ? (
-        <>
-          <ScrollToTop />
-          <DeribitAuth
-            deribit={deribit}
-            test={test}
-            setTest={setTest}
-            readyState={readyState}
-            authState={authState}
-            {...commonProps}
-          />
-        </>
+        <DeribitAuth
+          deribit={deribit}
+          test={test}
+          setTest={setTest}
+          readyState={readyState}
+          authState={authState}
+          className="my-auth-panel"
+          {...props}
+        />
       ) : (
         <DeribitInterface deribit={deribit} {...props} />
       )}
@@ -316,29 +305,9 @@ const DeribitInterface = ({ deribit, ...props }) => {
   );
 
   // Render panels
-  const columnProps = { style: { flexGrow: 1 } };
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        // alignItems: 'flex-start',
-        alignItems: 'stretch',
-        width: '100%',
-      }}
-      {...props}
-    >
-      <Panel {...columnProps}>
-        <Position portfolio={portfolio} positions={positions} />
-      </Panel>
-      <Panel title="Order Futures" {...columnProps}>
-        <OrderFutures
-          deribit={deribit}
-          tickers={futuresTickers}
-          portfolio={portfolio}
-        />
-      </Panel>
-      <Panel title="Order Options" {...columnProps}>
+    <div className="my-trading-interface" {...props}>
+      <Panel title="Order Options">
         <OrderOptions
           deribit={deribit}
           options={options}
@@ -347,7 +316,17 @@ const DeribitInterface = ({ deribit, ...props }) => {
           setSelectedOptions={setSelectedOptions}
         />
       </Panel>
-      <Panel title="Open Orders" {...columnProps}>
+      <Panel>
+        <Position portfolio={portfolio} positions={positions} />
+      </Panel>
+      <Panel title="Order Futures">
+        <OrderFutures
+          deribit={deribit}
+          tickers={futuresTickers}
+          portfolio={portfolio}
+        />
+      </Panel>
+      <Panel title="Open Orders">
         <Orders deribit={deribit} orders={orders} />
       </Panel>
       {selectedOptions.size > 0 &&

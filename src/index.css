@@ -104,6 +104,24 @@ input.my-label-input {
     monospace;
 }
 
+div.my-trading-interface {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: stretch;
+  width: 100%;
+}
+
+div.my-trading-interface > div {
+  flex-grow: 1;
+}
+
+div.my-auth-panel {
+  width: 100%;
+  max-width: 650px;
+  margin: 16px auto !important;
+  text-align: center;
+}
+
 div.my-expirations {
   display: inline-flex;
   overflow-x: auto;
