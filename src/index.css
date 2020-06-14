@@ -93,6 +93,10 @@ nav.my-nav a.w3-bar-item:first-child {
   opacity: 1;
 }
 
+.my-no-decoration {
+  text-decoration: none;
+}
+
 /* Hover effects */
 
 .my-fader {
@@ -531,10 +535,6 @@ div#title h1 {
   font-size: 80pt;
   text-decoration: none;
   line-height: 1.2;
-}
-
-div#title h1 a {
-  text-decoration: none;
 }
 
 /*** Notes */
