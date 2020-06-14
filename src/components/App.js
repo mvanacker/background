@@ -135,7 +135,7 @@ const Notes = memo(() => {
 function Overview(props) {
   const { dominance, fearAndGreed } = props.state;
   return (
-    <Panel title={false} padding={false}>
+    <Panel title={false}>
       <ListBlock>
         <li>
           <LabeledRow label="Dominance">{dominance}%</LabeledRow>
