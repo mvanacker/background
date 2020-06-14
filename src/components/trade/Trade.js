@@ -9,7 +9,6 @@ import React, {
 import moment from 'moment';
 import { select } from 'd3-selection';
 
-import ScrollToTop from '../common/ScrollToTop';
 import Panel, { PanelTitle } from '../common/Panel';
 import Lock from '../common/Lock';
 import BTC from '../common/Bitcoin';
@@ -25,11 +24,8 @@ import { DeribitContext } from '../../contexts/Deribit';
 
 import { AuthState, ReadyState } from '../../sources/DeribitWebSocket';
 
-// Define the Trade component
-export default () => <DeribitPanel />;
-
-// Define Deribit panel
-const DeribitPanel = (props) => {
+// Only Deribit is implemented right now
+export default (props) => {
   const { deribit, readyState, authState, test, setTest } = useContext(
     DeribitContext
   );
@@ -63,7 +59,7 @@ const DeribitPanel = (props) => {
   );
 };
 
-// Define Deribit authentication form
+// Authentication form
 const DeribitAuth = ({
   deribit,
   test,
@@ -165,7 +161,7 @@ const DeribitAuth = ({
   );
 };
 
-// Define Deribit trading interface
+// Trading interface
 const DeribitInterface = ({ deribit, ...props }) => {
   const [futuresTickers, setFuturesTickers] = useState({});
   const [options, setOptions] = useState([]);
@@ -342,6 +338,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
   );
 };
 
+// Position
 const Position = ({ deribit, portfolio, positions, ...props }) => {
   return (
     <div className="my-position">
@@ -404,6 +401,7 @@ const Greek = ({ children, ...props }) => (
   </div>
 );
 
+// Order options
 const OrderOptions = ({
   deribit,
   options,
@@ -519,10 +517,6 @@ const OrderOptions = ({
     </div>
   );
 };
-
-const toTickerChannel = (instrument_name) => `ticker.${instrument_name}.100ms`;
-const toChangesChannel = (instrument_name) =>
-  `user.changes.${instrument_name}.100ms`;
 
 const OptionChain = ({
   optionInstruments,
@@ -674,6 +668,7 @@ const OptionPrice = ({ price, underlying_price }) => (
   </>
 );
 
+// Option basket
 const OptionBasket = ({
   deribit,
   selectedOptions,
@@ -929,6 +924,7 @@ const OrderAllOptionsButton = ({ children, className = '', ...props }) => (
   </OrderOptionButton>
 );
 
+// Order futures
 const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
   const [showConfig, setShowConfig] = useLocal('deribit-show-futures-config', {
     initialValue: false,
@@ -1161,7 +1157,6 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
   );
 };
 
-// Meta-entries component
 const Entries = ({ entryMethod, entries, setEntries, ...props }) => {
   switch (entryMethod) {
     case EntryMethod.SPLAY:
@@ -1178,7 +1173,6 @@ const Entries = ({ entryMethod, entries, setEntries, ...props }) => {
   }
 };
 
-// Splayed entries component
 const SplayedEntries = ({ setEntries, locked, ...props }) => {
   const [center, setCenter] = useLocal('deribit-center');
   const [spread, setSpread] = useLocal('deribit-spread', { initialValue: 5 });
@@ -1236,7 +1230,6 @@ const SplayedEntries = ({ setEntries, locked, ...props }) => {
   );
 };
 
-// Meta-quantity component
 const Quantity = ({
   riskMethod,
   quantity,
@@ -1280,7 +1273,6 @@ const Quantity = ({
   }
 };
 
-// Meta-risk component
 const Risk = ({
   riskMethod,
   risk,
@@ -1486,6 +1478,7 @@ const OrderFuturesButtonContainer = ({
   );
 };
 
+// Order table
 const Orders = ({ deribit, orders, ...props }) => {
   // Sorting of contracts by amount of orders on them
   const amount = (future) => Object.keys(orders[future]).length;
@@ -1630,6 +1623,11 @@ const OrderFuturesButton = ({ children, className, ...props }) => (
   </button>
 );
 
+// Auxiliary conversions
+const toTickerChannel = (instrument_name) => `ticker.${instrument_name}.100ms`;
+const toChangesChannel = (instrument_name) =>
+  `user.changes.${instrument_name}.100ms`;
+
 // Auxiliary component
 const TopButton = ({ children, ...props }) => (
   <button
@@ -1660,7 +1658,7 @@ const Row = ({ label, children, ...props }) => (
   </div>
 );
 
-//
+// Auxiliary component
 const RadioGroup = ({ options, value: checked, setValue, ...props }) =>
   Object.entries(options).map(([name, value]) => (
     <label key={name} className="w3-mobile my-radio-group-label">
