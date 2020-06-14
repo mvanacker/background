@@ -1,16 +1,9 @@
 import React from 'react';
 
-export default function Bitcoin({ style, ...props }) {
+export default function Bitcoin({ className = '', ...props }) {
   return (
     <svg
-      style={{
-        width: '12px',
-        fill: '#fff',
-        position: 'relative',
-        top: '2px',
-        marginRight: '4px',
-        ...style,
-      }}
+      className={`my-bitcoin ${className}`}
       aria-hidden="true"
       role="img"
       viewBox="0 0 384 512"

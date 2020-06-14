@@ -593,17 +593,11 @@ const HalfOptionChain = ({
 
   return (
     <TableContainer {...props}>
-      <div
-        className="w3-theme-l1 my-round w3-padding"
-        style={{ margin: '4px 0 12px' }}
-      >
+      <div className="w3-theme-l1 my-round w3-padding my-table-container">
         <b>{title}</b>
       </div>
-      <div
-        className="my-option-inner-container"
-        style={{ marginBottom: '12px' }}
-      >
-        <InnerTable className="w3-striped-d2">
+      <div className="my-option-inner-container">
+        <Table className="w3-striped-d2">
           <thead>
             <tr className="w3-theme-d1">
               {callSide && mirrorHeaders}
@@ -660,7 +654,7 @@ const HalfOptionChain = ({
               }
             )}
           </tbody>
-        </InnerTable>
+        </Table>
       </div>
     </TableContainer>
   );
@@ -878,7 +872,7 @@ const OptionBasketRow = ({
           step={min_trade_amount}
           value={quantity ? quantity : ''}
           onChange={(e) => setQuantity(e.target.value)}
-          style={{ width: '75px' }}
+          className="my-option-basket-quantity"
         />
       </td>
       <td>
@@ -887,7 +881,7 @@ const OptionBasketRow = ({
           step={tick_size}
           value={price ? price : ''}
           onChange={(e) => setPrice(e.target.value)}
-          style={{ width: '95px' }}
+          className="my-option-basket-price"
         />
       </td>
       <td>
@@ -991,30 +985,21 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
     } else return array;
   };
 
-  const opacity = (enabled) => ({ opacity: enabled ? 1 : 0.3 });
+  const opacity = (enabled) => (enabled ? 'my-full-opacity' : 'my-low-opacity');
   const entryOpacity = opacity(entriesEnabled);
   const riskOpacity = opacity(stopsEnabled);
   return (
-    <div {...props}>
-      <div
-        className="w3-right-align"
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          padding: '8px 24px 16px',
-        }}
-      >
-        <TopRightButton
+    <form {...props}>
+      <div className="w3-right-align my-top-buttons-container">
+        <TopButton
           onClick={() => deribit.send({ method: 'private/cancel_all' })}
         >
           Cancel all
-        </TopRightButton>
-        <TopRightButton onClick={() => setShowConfig(!showConfig)}>
+        </TopButton>
+        <TopButton onClick={() => setShowConfig(!showConfig)}>
           {showConfig ? 'Hide config' : 'Show config'}
-        </TopRightButton>
-        <TopRightButton onClick={() => deribit.logout()}>
-          Log out
-        </TopRightButton>
+        </TopButton>
+        <TopButton onClick={() => deribit.logout()}>Log out</TopButton>
       </div>
       <div className="w3-padding">
         <Row label="Equity">
@@ -1024,12 +1009,7 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
         <Row label="Futures">
           <div>
             <select
-              className="w3-input"
-              style={{
-                padding: '0 8px 0 4px',
-                width: 'fit-content',
-                display: 'inline',
-              }}
+              className="w3-input my-futures-selector"
               value={selectedFuture}
               onChange={(e) => setSelectedFuture(e.target.value)}
             >
@@ -1041,7 +1021,7 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
             </select>
           </div>
           {showConfig && (
-            <div style={{ margin: '4px 0 0 8px' }}>
+            <div className="my-auto-premium-container">
               <label>
                 <input
                   disabled={selectedFuture.startsWith('BTC-PERPETUAL')}
@@ -1055,7 +1035,7 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
             </div>
           )}
           {autoPremium && !selectedFuture.startsWith('BTC-PERPETUAL') && (
-            <div style={{ margin: '4px 0 0 8px' }}>
+            <div className="my-perpetual-container">
               BTC-PERPETUAL ${tickers['BTC-PERPETUAL']?.last_price}
             </div>
           )}
@@ -1081,7 +1061,7 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
                   checked={entriesEnabled}
                   onChange={(e) => setEntriesEnabled(e.target.checked)}
                 />{' '}
-                <span style={entryOpacity}>Limit</span>{' '}
+                <span className={entryOpacity}>Limit</span>{' '}
               </label>
               {entryMethod === EntryMethod.MANUAL && (
                 <Lock locked={entriesLocked} setLocked={setEntriesLocked} />
@@ -1094,7 +1074,7 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
             entryMethod={entryMethod}
             entries={entries}
             setEntries={setEntries}
-            style={entryOpacity}
+            className={entryOpacity}
           />
         </Row>
       </div>
@@ -1118,7 +1098,7 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
                   checked={stopsEnabled}
                   onChange={(e) => setStopsEnabled(e.target.checked)}
                 />{' '}
-                <span style={riskOpacity}>Stop loss</span>
+                <span className={riskOpacity}>Stop loss</span>
               </label>{' '}
               <Lock locked={stopsLocked} setLocked={setStopsLocked} />
             </>
@@ -1128,7 +1108,7 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
             locked={stopsLocked}
             values={stops}
             setValues={setStops}
-            style={riskOpacity}
+            className={riskOpacity}
           />
         </Row>
         <Row label="Quantity">
@@ -1142,7 +1122,7 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
             risk={risk}
           />
         </Row>
-        <Row label={<span style={riskOpacity}>Risk</span>}>
+        <Row label={<span className={riskOpacity}>Risk</span>}>
           <Risk
             riskMethod={riskMethod}
             risk={risk}
@@ -1151,7 +1131,7 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
             stops={stops}
             equity={portfolio.equity}
             quantity={quantity}
-            style={riskOpacity}
+            className={riskOpacity}
           />
         </Row>
       </div>
@@ -1177,7 +1157,7 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
           stopsEnabled={stopsEnabled}
         />
       </div>
-    </div>
+    </form>
   );
 };
 
@@ -1426,7 +1406,7 @@ const OrderFuturesButtonContainer = ({
               return (
                 <li key={error.id} className="w3-hover-theme">
                   <div className="w3-cell-row">
-                    <div className="w3-cell w3-center" style={{ width: '15%' }}>
+                    <div className="w3-cell w3-center my-future-order-close-error-container">
                       <TextButton
                         onClick={() =>
                           setErrors((errors) => {
@@ -1439,10 +1419,7 @@ const OrderFuturesButtonContainer = ({
                         ✕
                       </TextButton>
                     </div>
-                    <div
-                      className="w3-cell w3-padding-small"
-                      style={{ width: '85%' }}
-                    >
+                    <div className="w3-cell w3-padding-small my-future-order-error-container">
                       {error.toString()}
                     </div>
                   </div>
@@ -1461,15 +1438,13 @@ const OrderFuturesButtonContainer = ({
           meanStop === meanEntry ? (
             <div className="w3-cell-row">
               <OrderFuturesButton
-                className="w3-cell my-round-left w3-green"
-                style={{ width: '50%' }}
+                className="w3-cell my-round-left w3-green w3-half"
                 onClick={buy}
               >
                 Buy
               </OrderFuturesButton>
               <OrderFuturesButton
-                className="w3-cell my-round-right w3-red"
-                style={{ width: '50%' }}
+                className="w3-cell my-round-right w3-red w3-half"
                 onClick={sell}
               >
                 Sell
@@ -1493,15 +1468,13 @@ const OrderFuturesButtonContainer = ({
         ) : (
           <div className="w3-cell-row">
             <OrderFuturesButton
-              className="w3-cell my-round-left w3-green"
-              style={{ width: '50%' }}
+              className="w3-cell my-round-left w3-green w3-half"
               onClick={buy}
             >
               {entriesEnabled ? 'Buy' : 'Sell stop'}
             </OrderFuturesButton>
             <OrderFuturesButton
-              className="w3-cell my-round-right w3-red"
-              style={{ width: '50%' }}
+              className="w3-cell my-round-right w3-red w3-half"
               onClick={sell}
             >
               {entriesEnabled ? 'Sell' : 'Buy stop'}
@@ -1560,7 +1533,7 @@ const Orders = ({ deribit, orders, ...props }) => {
                 <TextButton onClick={cancelByInstrument(future)}>🗑</TextButton>
               )}
             </h4>
-            <Table>
+            <OrderTable>
               <thead>
                 <tr>
                   <th>label</th>
@@ -1620,16 +1593,16 @@ const Orders = ({ deribit, orders, ...props }) => {
                     )
                   )}
               </tbody>
-            </Table>
+            </OrderTable>
           </div>
         ))}
     </div>
   );
 };
 
-const Table = ({ children, ...props }) => (
+const OrderTable = ({ children, ...props }) => (
   <TableContainer {...props}>
-    <InnerTable>{children}</InnerTable>
+    <Table>{children}</Table>
   </TableContainer>
 );
 
@@ -1642,7 +1615,7 @@ const TableContainer = ({ children, className = '', ...props }) => (
   </div>
 );
 
-const InnerTable = ({ children, className = '', ...props }) => (
+const Table = ({ children, className = '', ...props }) => (
   <table className={`w3-table w3-centered ${className}`} {...props}>
     {children}
   </table>
@@ -1658,10 +1631,9 @@ const OrderFuturesButton = ({ children, className, ...props }) => (
 );
 
 // Auxiliary component
-const TopRightButton = ({ children, ...props }) => (
+const TopButton = ({ children, ...props }) => (
   <button
-    className="w3-mobile w3-btn w3-card w3-theme-l2 my-round my-fader"
-    style={{ margin: '4px', flexGrow: 1 }}
+    className="w3-mobile w3-btn w3-card w3-theme-l2 my-round my-fader my-top-button"
     type="button"
     {...props}
   >
@@ -1679,16 +1651,10 @@ const TextButton = ({ children, ...props }) => (
 // Row with 2 columns; 25% and 75% wide (auxiliary component)
 const Row = ({ label, children, ...props }) => (
   <div className="w3-row-padding w3-container" {...props}>
-    <div
-      className="w3-col w3-padding-small w3-left-align w3-mobile"
-      style={{ width: '25%', maxWidth: '150px' }}
-    >
+    <div className="w3-col w3-padding-small w3-left-align w3-mobile my-row-label">
       {label ? label : ''}
     </div>
-    <div
-      className="w3-col w3-padding-small w3-left-align w3-mobile"
-      style={{ width: '75%' }}
-    >
+    <div className="w3-col w3-padding-small w3-left-align w3-mobile my-row-content">
       {children}
     </div>
   </div>
@@ -1697,7 +1663,7 @@ const Row = ({ label, children, ...props }) => (
 //
 const RadioGroup = ({ options, value: checked, setValue, ...props }) =>
   Object.entries(options).map(([name, value]) => (
-    <label style={{ marginRight: '8px' }} key={name} className="w3-mobile">
+    <label key={name} className="w3-mobile my-radio-group-label">
       <span className="my-no-wrap">
         <input
           checked={checked === value}

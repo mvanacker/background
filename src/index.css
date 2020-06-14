@@ -60,6 +60,39 @@ nav.my-nav a.w3-bar-item:first-child {
   font-style: italic;
 }
 
+.my-margin-auto {
+  margin: auto;
+}
+
+.my-display-flex {
+  display: flex;
+}
+
+.my-full-height {
+  height: 100%;
+}
+
+.my-full-width {
+  width: 100%;
+}
+
+.my-full-stretch {
+  height: 100%;
+  width: 100%;
+}
+
+.my-kreon {
+  font-family: 'Kreon', sans-serif;
+}
+
+.my-low-opacity {
+  opacity: 0.3;
+}
+
+.my-full-opacity {
+  opacity: 1;
+}
+
 /* Hover effects */
 
 .my-fader {
@@ -172,6 +205,81 @@ input.my-label-input {
 }
 
 /******************************************************************************/
+/***   DISCLAIMER-SPECIFIC STYLING   ******************************************/
+/******************************************************************************/
+
+div.my-cookie-disclaimer-container {
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+}
+
+div.my-cookie-disclaimer {
+  width: 80%;
+}
+
+/* TODO flexify */
+div.my-financial-disclaimer-container {
+  display: table;
+  height: 100vh;
+  width: 100%;
+}
+
+div.my-financial-disclaimer > div {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+div.my-financial-disclaimer {
+  max-width: 580px;
+  width: 580px;
+}
+
+/******************************************************************************/
+/***   ICON-SPECIFIC STYLING   ************************************************/
+/******************************************************************************/
+
+svg.my-bitcoin {
+  width: 12px;
+  fill: white;
+  position: relative;
+  top: 2px;
+  margin-right: 4px;
+}
+
+img.my-lock {
+  margin: 0 1px 2px;
+}
+
+/* Filters to color images */
+/* filters computation app: https://codepen.io/sosuke/pen/Pjoqqp */
+
+img.my-lime {
+  filter: invert(100%) sepia(78%) saturate(4813%) hue-rotate(18deg)
+    brightness(103%) contrast(112%);
+}
+
+img.my-red {
+  filter: invert(15%) sepia(96%) saturate(6773%) hue-rotate(6deg)
+    brightness(104%) contrast(120%);
+}
+
+img.my-gold {
+  filter: invert(85%) sepia(36%) saturate(526%) hue-rotate(355deg)
+    brightness(85%) contrast(97%);
+}
+
+img.my-green {
+  filter: invert(48%) sepia(41%) saturate(3401%) hue-rotate(87deg)
+    brightness(129%) contrast(117%);
+}
+
+img.my-white {
+  filter: invert(99%) sepia(4%) saturate(2%) hue-rotate(190deg) brightness(118%)
+    contrast(100%);
+}
+
+/******************************************************************************/
 /***   PAGE-SPECIFIC STYLING   ************************************************/
 /******************************************************************************/
 
@@ -195,7 +303,60 @@ div.my-auth-panel {
   text-align: center;
 }
 
-/** Option chain */
+/** Common */
+
+div.my-table-container {
+  margin: 4px 0 12px;
+}
+
+div.my-radio-group-label {
+  margin-right: 8px;
+}
+
+/** Order Futures */
+
+div.my-top-buttons-container {
+  display: flex;
+  flex-flow: row wrap;
+  padding: 8px 24px 16px;
+}
+
+button.my-top-button {
+  margin: 4px;
+  flex-grow: 1;
+}
+
+div.my-row-label {
+  width: 25%;
+  max-width: 150px;
+}
+
+div.my-row-content {
+  width: 75%;
+}
+
+select.my-futures-selector {
+  padding: 0 8px 0 4px;
+  display: inline;
+}
+
+div.my-auto-premium-container {
+  margin: 4px 0 0 8px;
+}
+
+div.my-perpetual-container {
+  margin: 4px 0 0 8px;
+}
+
+div.my-future-order-close-error-container {
+  width: 15%;
+}
+
+div.my-future-order-error-container {
+  width: 85%;
+}
+
+/** Order Options */
 
 div.my-expirations {
   display: inline-flex;
@@ -218,6 +379,7 @@ div.my-half-option-chain {
 div.my-option-inner-container {
   height: 250px;
   overflow-y: auto;
+  margin-bottom: 12px;
 }
 
 div.my-option-inner-container table thead tr th {
@@ -276,6 +438,14 @@ table.my-option-basket th {
   vertical-align: middle;
 }
 
+input.my-option-basket-quantity {
+  width: 75px;
+}
+
+input.my-option-basket-price {
+  width: 95px;
+}
+
 /** Position */
 
 div.my-position {
@@ -313,9 +483,39 @@ div.my-position-foo {
   height: fit-content;
 }
 
-/* App (Left) */
+/* Content */
 
-/** Title */
+div.my-content {
+  display: flex;
+  align-content: stretch;
+  width: '100%';
+}
+
+div.my-right {
+  flex-grow: 1;
+}
+
+/** Left (App) */
+
+.toggle-handle {
+  position: fixed;
+  left: -1px;
+  bottom: 20px;
+  cursor: pointer;
+  padding: 6px 8px 6px 12px;
+  opacity: 0.6;
+  transition: 0.3s;
+  z-index: 4;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.toggle-handle:hover {
+  box-shadow: 0 2px 5px 0px rgba(255, 255, 255, 0.16),
+    0 2px 10px 0px rgba(255, 255, 255, 0.12);
+  opacity: 1;
+}
+
+/*** Title */
 
 div#title {
   top: 0;
@@ -337,7 +537,32 @@ div#title h1 a {
   text-decoration: none;
 }
 
-/** Volume flow chart */
+/*** Notes */
+
+textarea.my-notes {
+  resize: none;
+  overflow: hidden;
+}
+
+/*** Volume flow chart */
+
+div.my-flow-numbers-container {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-around;
+}
+
+div.my-flow-numbers-container > div {
+  flex-grow: 1;
+}
+
+div.my-price-number {
+  color: royalblue;
+}
+
+div.my-sell-flow-number {
+  color: #b33;
+}
 
 svg#volume-flow-chart g {
   font-size: 0.85em;
@@ -349,25 +574,21 @@ svg#volume-flow-chart g.flow-grid line {
   shape-rendering: crispEdges;
 }
 
-.toggle-handle {
-  position: fixed;
-  left: -1px;
-  bottom: 20px;
-  cursor: pointer;
-  padding: 6px 8px 6px 12px;
-  opacity: 0.6;
-  transition: 0.3s;
-  z-index: 4;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.toggle-handle:hover {
-  box-shadow: 0 2px 5px 0px rgba(255, 255, 255, 0.16),
-    0 2px 10px 0px rgba(255, 255, 255, 0.12);
-  opacity: 1;
-}
-
 /* Confluence */
+
+div.my-timeframes-container {
+  width: 175px;
+  min-width: 175px;
+}
+
+div.my-checks {
+  list-style-type: none;
+  line-height: 2;
+}
+
+span.my-check-label {
+  margin: 0 7px 0 5px;
+}
 
 svg#confluence-detector g {
   font-size: 0.95em;

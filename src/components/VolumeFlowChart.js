@@ -420,22 +420,14 @@ export default function VolumeFlowChart() {
       </div>
 
       {/* Price, buy flow and sell flow numbers */}
-      <div className="w3-cell-row w3-section w3-xxlarge">
-        <div
-          className="w3-cell my-third"
-          style={{ color: 'royalblue' }}
-          id={priceId}
-        >
+      <div className="w3-section w3-xxlarge my-flow-numbers-container">
+        <div className="w3-cell my-third my-price-number" id={priceId}>
           <Loading32 />
         </div>
         <div className="w3-cell my-third w3-text-lime" id={buyFlowId}>
           <Loading32 />
         </div>
-        <div
-          className="w3-cell my-third"
-          style={{ color: '#b33' }}
-          id={sellFlowId}
-        >
+        <div className="w3-cell my-third my-sell-flow-number" id={sellFlowId}>
           <Loading32 />
         </div>
       </div>
@@ -447,8 +439,6 @@ export default function VolumeFlowChart() {
         role="img"
         width={width}
         height={height}
-        className=""
-        style={{}}
       />
 
       {/* Draw option; TODO: optimize drawing */}

@@ -2,8 +2,6 @@ import React from 'react';
 import Panel from '../common/Panel';
 import { useSession, useLocal } from '../../hooks/useStorage';
 
-const DISCLAIMER_WIDTH = '580px';
-
 export default ({ children }) => {
   const [agreed, setAgreed] = useSession('hide-disclaimer', {
     initialValue: false,
@@ -17,22 +15,11 @@ export default ({ children }) => {
   return agreed || remember ? (
     children
   ) : (
-    <div
-      style={{
-        display: 'table',
-        height: '100vh',
-        width: '100%',
-      }}
-    >
-      <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
+    <div className="my-financial-disclaimer-container">
+      <div>
         <Panel
           title="Disclaimer"
-          margin={false}
-          className="w3-center w3-mobile w3-content"
-          style={{
-            maxWidth: DISCLAIMER_WIDTH,
-            width: DISCLAIMER_WIDTH,
-          }}
+          className="w3-center w3-mobile w3-content my-financial-disclaimer"
         >
           <div className="w3-padding-large">
             <p>

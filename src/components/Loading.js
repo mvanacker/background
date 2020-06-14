@@ -6,12 +6,12 @@ const defaultOffset = 112;
 
 export default ({ offset }) => (
   <div
+    className="my-display-flex"
     style={{
-      display: 'flex',
       height: `calc(100vh - ${offset ? offset : defaultOffset}px)`,
     }}
   >
-    <div style={{ margin: 'auto' }}>
+    <div className="my-margin-auto">
       <Loading256 />
     </div>
   </div>

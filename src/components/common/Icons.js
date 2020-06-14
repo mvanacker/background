@@ -20,63 +20,39 @@ import loading256 from '../../assets/loading256.svg';
 import lock from '../../assets/lock.png';
 import unlock from '../../assets/unlock.png';
 
-// filters computation app: https://codepen.io/sosuke/pen/Pjoqqp
-
-const lime = {
-  filter:
-    'invert(100%) sepia(78%) saturate(4813%) hue-rotate(18deg) brightness(103%) contrast(112%)',
-};
-
-const red = {
-  filter:
-    'invert(15%) sepia(96%) saturate(6773%) hue-rotate(6deg) brightness(104%) contrast(120%)',
-};
-
-const gold = {
-  filter:
-    'invert(85%) sepia(36%) saturate(526%) hue-rotate(355deg) brightness(85%) contrast(97%)',
-};
-
-const green = {
-  filter:
-    'invert(48%) sepia(41%) saturate(3401%) hue-rotate(87deg) brightness(129%) contrast(117%)',
-};
-
-const white = {
-  filter:
-    'invert(99%) sepia(4%) saturate(2%) hue-rotate(190deg) brightness(118%) contrast(100%)',
-};
-
-const icon = ({ title, width = '16px', style: superStyle, ...superProps }) => ({
-  style,
-  ...props
-}) => (
+const icon = ({
+  title,
+  width = '16px',
+  className: superClassName = '',
+  ...superProps
+}) => ({ className = '', ...props }) => (
   <img
     {...superProps}
     title={title}
     alt={title}
     width={width}
-    style={{ ...superStyle, ...style }}
+    className={`${superClassName} ${className}`}
     {...props}
   />
 );
 
 // Triangles
-export const Up = icon({ src: up, style: lime });
-export const Down = icon({ src: down, style: red });
+export const Up = icon({ src: up, className: 'my-lime' });
+export const Down = icon({ src: down, className: 'my-red' });
 
 // Moving averages
-export const Gold = icon({ src: cross, style: gold });
+export const Gold = icon({ src: cross, className: 'my-gold' });
 export const Death = icon({ src: cross });
-export const SplayUp = icon({ src: lines, style: lime });
-export const SplayDown = icon({ src: lines, style: red });
+export const SplayUp = icon({ src: lines, className: 'my-green' });
+export const SplayDown = icon({ src: lines, className: 'my-red' });
 
 // Warnings
 export const Alert = icon({ src: alert });
 export const Alarm = icon({ src: alarm });
 
 // Double arrows
-const doubleArrow = ({ src }) => icon({ src, width: '32px', style: white });
+const doubleArrow = ({ src }) =>
+  icon({ src, width: '32px', className: 'my-white' });
 export const DoubleUp = doubleArrow({ src: doubleUp });
 export const DoubleRight = doubleArrow({ src: doubleRight });
 export const DoubleDown = doubleArrow({ src: doubleDown });
@@ -84,11 +60,7 @@ export const DoubleLeft = doubleArrow({ src: doubleLeft });
 
 // Locks
 const lockIcon = (props) =>
-  icon({
-    width: '14px',
-    style: { margin: '0 1px 2px', ...white },
-    ...props,
-  });
+  icon({ width: '14px', className: 'my-lock my-white', ...props });
 export const Lock = lockIcon({ src: lock });
 export const Unlock = lockIcon({ src: unlock });
 

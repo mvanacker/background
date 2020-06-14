@@ -81,10 +81,10 @@ export default class App extends Component {
 
   render() {
     return (
-      <div id="app">
+      <div id="app" className="my-full-stretch">
         {isNaN(this.state.dominance) ? (
-          <div className="w3-margin">
-            <Loading128 />
+          <div className="my-display-flex my-full-stretch">
+            <Loading128 className="my-margin-auto" />
           </div>
         ) : (
           <>
@@ -121,12 +121,8 @@ const Notes = memo(() => {
         placeholder="Write notes..."
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
-        className="w3-input w3-theme-l4 w3-round-large"
+        className="w3-input w3-theme-l4 w3-round-large my-notes"
         minRows={2}
-        style={{
-          resize: 'none',
-          overflow: 'hidden',
-        }}
       />
     </Panel>
   );
@@ -178,7 +174,7 @@ function BitmexRecentTrades(props) {
 
   return (
     <Panel>
-      <table className="monospace" style={{ margin: 'auto' }}>
+      <table className="w3-content monospace">
         <tbody>
           {props.data.map((trade, i) => {
             const rowClass = trade.side === 'Buy' ? 'buy' : 'sell';

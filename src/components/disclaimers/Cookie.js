@@ -7,18 +7,8 @@ export default () => {
   });
   return (
     !hide && (
-      <div style={{ width: '100%', position: 'fixed', bottom: 0 }}>
-        <div
-          className="
-            w3-content
-            w3-card
-            w3-theme-l1
-            w3-padding-large
-            w3-center
-            my-round-top
-            w3-border"
-          style={{ width: '80%' }}
-        >
+      <div className="my-cookie-disclaimer-container">
+        <div className="w3-content w3-card w3-theme-l1 w3-padding-large w3-center my-round-top w3-border my-cookie-disclaimer">
           <p>
             This website stores your preferences, notes, marked checkboxes and
             so on in your <b>local storage</b>. It's similar to using cookies,

@@ -46,13 +46,13 @@ export default ({ left, right }) => {
           {visible ? <DoubleLeft title="Hide" /> : <DoubleRight title="Show" />}
         </div>
       )}
-      <div style={{ display: 'flex', alignContent: 'stretch', width: '100%' }}>
+      <div className="my-content">
         {enabled && visible && (
           <div style={{ minWidth: LEFT_WIDTH_PX, width: LEFT_WIDTH_PX }}>
             {left}
           </div>
         )}
-        <div style={{ flexGrow: 1 }}>{right({ width })}</div>
+        <div className="my-right">{right({ width })}</div>
       </div>
     </>
   );
