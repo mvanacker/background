@@ -592,7 +592,7 @@ const HalfOptionChain = ({
       </div>
       <div className="my-option-inner-container">
         <Table className="w3-striped-d2">
-          <thead>
+          <thead className="my-sticky-thead">
             <tr className="w3-theme-d1">
               {callSide && mirrorHeaders}
               {/* <th>Size</th> */}
@@ -744,7 +744,7 @@ const OptionBasket = ({
 
   // Render basket
   return (
-    <div className="my-option-basket-container-container">
+    <div className="my-option-basket-outer-container">
       {!visible ? (
         <div className="w3-theme-l1 my-round-top my-transition my-pointer my-white-glow my-option-basket-show">
           <DoubleUp
@@ -753,10 +753,10 @@ const OptionBasket = ({
           />
         </div>
       ) : (
-        <div className="w3-padding-small w3-card w3-theme-l1 my-round my-option-basket-container">
-          <table className="w3-table w3-centered my-option-basket">
-            <thead>
-              <tr>
+        <div className="w3-card w3-theme-l1 my-round my-option-basket-inner-container">
+          <table className="w3-table w3-centered w3-striped-l2 my-option-basket">
+            <thead className="my-sticky-thead">
+              <tr className="w3-theme-l1">
                 <th>
                   <div
                     className="w3-theme-l2 my-round my-transition my-pointer my-white-glow my-option-basket-hide"
@@ -848,7 +848,7 @@ const OptionBasketRow = ({
   const { best_bid_price, best_ask_price } = ticker;
 
   return (
-    <tr className="w3-hover-l2" {...props}>
+    <tr className="w3-hover-theme" {...props}>
       <td>
         <TextButton onClick={deleteOption(instrument_name)}>🗑</TextButton>
       </td>

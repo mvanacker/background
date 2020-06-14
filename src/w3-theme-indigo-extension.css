@@ -28,6 +28,10 @@ table.w3-striped-d2 tr:nth-child(even) {
   background-color: #334191;
 }
 
+table.w3-striped-l2 tr:nth-child(even) {
+  background-color: #8995d6;
+}
+
 .w3-hover-theme,
 .w3-hover-l5,
 .w3-hover-l4,
