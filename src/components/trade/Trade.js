@@ -7,9 +7,10 @@ import React, {
 } from 'react';
 
 import moment from 'moment';
+import { select } from 'd3-selection';
 
 import ScrollToTop from '../common/ScrollToTop';
-import Panel from '../common/Panel';
+import Panel, { PanelTitle } from '../common/Panel';
 import Lock from '../common/Lock';
 import BTC from '../common/Bitcoin';
 import { DoubleDown, DoubleUp } from '../common/Icons';
@@ -17,6 +18,7 @@ import { DoubleDown, DoubleUp } from '../common/Icons';
 import { mean, floats } from '../../util/array';
 import { lcm, round_to } from '../../util/math';
 import { percent } from '../../util/format';
+import { appendRect } from '../../util/svg';
 
 import { useLocal } from '../../hooks/useStorage';
 import { DeribitContext } from '../../contexts/Deribit';
@@ -320,21 +322,13 @@ const DeribitInterface = ({ deribit, ...props }) => {
       style={{
         display: 'flex',
         flexWrap: 'wrap',
-        alignItems: 'flex-start',
+        // alignItems: 'flex-start',
+        alignItems: 'stretch',
         width: '100%',
       }}
       {...props}
     >
-      <Panel title="Order Options" {...columnProps}>
-        <OrderOptions
-          deribit={deribit}
-          options={options}
-          optionInstruments={optionInstruments.current}
-          selectedOptions={selectedOptions}
-          setSelectedOptions={setSelectedOptions}
-        />
-      </Panel>
-      <Panel title="Position" {...columnProps}>
+      <Panel {...columnProps}>
         <Position portfolio={portfolio} positions={positions} />
       </Panel>
       <Panel title="Order Futures" {...columnProps}>
@@ -342,6 +336,15 @@ const DeribitInterface = ({ deribit, ...props }) => {
           deribit={deribit}
           tickers={futuresTickers}
           portfolio={portfolio}
+        />
+      </Panel>
+      <Panel title="Order Options" {...columnProps}>
+        <OrderOptions
+          deribit={deribit}
+          options={options}
+          optionInstruments={optionInstruments.current}
+          selectedOptions={selectedOptions}
+          setSelectedOptions={setSelectedOptions}
         />
       </Panel>
       <Panel title="Open Orders" {...columnProps}>
@@ -362,24 +365,56 @@ const DeribitInterface = ({ deribit, ...props }) => {
 
 const Position = ({ deribit, portfolio, positions, ...props }) => {
   return (
-    <>
+    <div className="my-position">
+      <PanelTitle className="my-position-title">Position</PanelTitle>
       <div className="w3-padding my-greeks" {...props}>
         <Greek>Δ {portfolio.options_delta}</Greek>
         <Greek>Γ {portfolio.options_gamma}</Greek>
         <Greek>ϴ {portfolio.options_theta}</Greek>
         <Greek>𝜈 {portfolio.options_vega}</Greek>
       </div>
-      <div>
+      <div className="my-pnl-chart-container">
+        <PnlChart positions={positions} />
+      </div>
+      <div className="my-position-foo">
         <ul>
           {Object.values(positions)
             .filter(({ size }) => size !== 0)
-            .map(({ instrument_name, size }) => (
+            .map(({ instrument_name, size, kind }) => (
               <li key={instrument_name}>
-                {size}x {instrument_name}
+                {size}x {instrument_name} ({kind})
               </li>
             ))}
         </ul>
       </div>
+    </div>
+  );
+};
+
+const PnlChart = ({ positions, ...props }) => {
+  const chartRef = useRef();
+
+  useEffect(() => {
+    // draw here
+    const chart = select(chartRef.current);
+    appendRect(chart)(0, 0, '100%', '100%').attr('class', 'my-pnl-test-rect');
+    console.log('redraw rect', positions);
+    return () => {
+      // undraw here
+    };
+  }, [positions]);
+
+  // every individually updateable part of the chart
+  // should be a separate component
+
+  const filterPositions = (kind) =>
+    Object.values(positions).filter((position) => position.kind === kind);
+  const futuresPositions = filterPositions('future');
+  const optionsPositions = filterPositions('option');
+
+  return (
+    <>
+      <svg ref={chartRef} className="my-pnl-chart" {...props} />
     </>
   );
 };
