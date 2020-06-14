@@ -1,3 +1,5 @@
+/* General style */
+
 html,
 body,
 div#root {
@@ -19,6 +21,79 @@ code {
     monospace;
 }
 
+svg g {
+  font-family: 'Kreon', sans-serif;
+}
+
+/* Navigation styling */
+
+nav.my-nav {
+  position: sticky;
+  z-index: 5;
+  font-weight: 500;
+}
+
+nav.my-nav a.w3-bar-item {
+  padding: 8px 16px;
+}
+
+nav.my-nav a.w3-bar-item:first-child {
+  padding-left: 20px;
+}
+
+/* General add-ons */
+
+.monospace {
+  font-family: 'Roboto Mono', 'PT Mono', Monaco, Menlo, Consolas, 'Courier New',
+    monospace;
+}
+
+.my-no-wrap {
+  white-space: nowrap;
+}
+
+.my-transition {
+  transition: 0.4s;
+}
+
+.my-italic {
+  font-style: italic;
+}
+
+/* Hover effects */
+
+.my-fader {
+  opacity: 0.6;
+  transition: 0.3s;
+}
+
+.my-fader:hover {
+  opacity: 1;
+}
+
+.my-white-glow {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  opacity: 0.6;
+}
+
+.my-white-glow:hover {
+  box-shadow: 0 2px 5px 0px rgba(255, 255, 255, 0.16),
+    0 2px 10px 0px rgba(255, 255, 255, 0.12);
+  opacity: 1;
+}
+
+/* Pointers */
+
+.my-pointer:hover {
+  cursor: pointer;
+}
+
+.my-default-cursor:hover {
+  cursor: default;
+}
+
+/* Input styling */
+
 input.my-check,
 input.my-radio {
   width: 17px;
@@ -38,18 +113,7 @@ input.my-label-input {
   width: 200px;
 }
 
-.my-fader {
-  opacity: 0.6;
-  transition: 0.3s;
-}
-
-.my-fader:hover {
-  opacity: 1;
-}
-
-.my-panel-title {
-  font-family: 'Roboto Condensed';
-}
+/* Rounded borders */
 
 .my-round {
   border-radius: 8px;
@@ -75,6 +139,14 @@ input.my-label-input {
   border-radius: 0 0 0 8px;
 }
 
+/* Panel styling */
+
+.my-panel-title {
+  font-family: 'Roboto Condensed';
+}
+
+/* Text buttons */
+
 .my-text-button {
   color: white;
   background: none;
@@ -99,10 +171,11 @@ input.my-label-input {
   outline: 0;
 }
 
-.monospace {
-  font-family: 'Roboto Mono', 'PT Mono', Monaco, Menlo, Consolas, 'Courier New',
-    monospace;
-}
+/******************************************************************************/
+/***   PAGE-SPECIFIC STYLING   ************************************************/
+/******************************************************************************/
+
+/* Trade */
 
 div.my-trading-interface {
   display: flex;
@@ -121,6 +194,8 @@ div.my-auth-panel {
   margin: 16px auto !important;
   text-align: center;
 }
+
+/** Option chain */
 
 div.my-expirations {
   display: inline-flex;
@@ -159,6 +234,8 @@ div.my-option-inner-container table th:last-child,
 div.my-option-inner-container table td:last-child {
   padding-right: 25px;
 }
+
+/** Option basket */
 
 div.my-option-basket-container-container {
   margin-top: 16px;
@@ -199,6 +276,8 @@ table.my-option-basket th {
   vertical-align: middle;
 }
 
+/** Position */
+
 div.my-position {
   display: flex;
   flex-flow: column nowrap;
@@ -234,24 +313,9 @@ div.my-position-foo {
   height: fit-content;
 }
 
-.my-white-glow {
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  opacity: 0.6;
-}
+/* App (Left) */
 
-.my-white-glow:hover {
-  box-shadow: 0 2px 5px 0px rgba(255, 255, 255, 0.16),
-    0 2px 10px 0px rgba(255, 255, 255, 0.12);
-  opacity: 1;
-}
-
-.my-no-wrap {
-  white-space: nowrap;
-}
-
-.my-transition {
-  transition: 0.4s;
-}
+/** Title */
 
 div#title {
   top: 0;
@@ -273,9 +337,7 @@ div#title h1 a {
   text-decoration: none;
 }
 
-svg g {
-  font-family: 'Kreon', sans-serif;
-}
+/** Volume flow chart */
 
 svg#volume-flow-chart g {
   font-size: 0.85em;
@@ -285,21 +347,6 @@ svg#volume-flow-chart g.flow-grid line {
   stroke: lightgrey;
   stroke-opacity: 0.3;
   shape-rendering: crispEdges;
-}
-
-svg#confluence-detector g {
-  font-size: 0.95em;
-}
-
-svg#confluence-detector g.lump-axis text,
-svg#confluence-detector g.lump-axis .tick,
-svg#confluence-detector g.lump-name-axis text {
-  color: orange;
-  font-size: 1.2em;
-}
-svg#confluence-detector g.price-axis text,
-svg#confluence-detector g.unlump-name-axis text {
-  font-size: 0.9em;
 }
 
 .toggle-handle {
@@ -320,19 +367,26 @@ svg#confluence-detector g.unlump-name-axis text {
   opacity: 1;
 }
 
-nav.my-nav {
-  position: sticky;
-  z-index: 5;
-  font-weight: 500;
+/* Confluence */
+
+svg#confluence-detector g {
+  font-size: 0.95em;
 }
 
-nav.my-nav a.w3-bar-item {
-  padding: 8px 16px;
+svg#confluence-detector g.lump-axis text,
+svg#confluence-detector g.lump-axis .tick,
+svg#confluence-detector g.lump-name-axis text {
+  color: orange;
+  font-size: 1.2em;
+}
+svg#confluence-detector g.price-axis text,
+svg#confluence-detector g.unlump-name-axis text {
+  font-size: 0.9em;
 }
 
-nav.my-nav a.w3-bar-item:first-child {
-  padding-left: 20px;
-}
+/******************************************************************************/
+/***   Check classes below for obsoletion (after Deribit component is done)   */
+/******************************************************************************/
 
 .my-column {
   width: 180px;
@@ -340,18 +394,6 @@ nav.my-nav a.w3-bar-item:first-child {
 
 .my-borderless {
   border-width: 0px;
-}
-
-.my-pointer:hover {
-  cursor: pointer;
-}
-
-.my-default-cursor:hover {
-  cursor: default;
-}
-
-.my-italic {
-  font-style: italic;
 }
 
 .my-cell {
