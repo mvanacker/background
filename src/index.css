@@ -581,7 +581,7 @@ div.my-timeframes-container {
   min-width: 175px;
 }
 
-div.my-checks {
+ul.my-checks {
   list-style-type: none;
   line-height: 2;
 }
