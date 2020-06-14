@@ -105,7 +105,7 @@ function Title() {
     <Link to="/" className="my-no-decoration">
       <div
         id="title"
-        className="w3-hover-theme w3-card w3-container w3-theme-d3 my-round-bottom"
+        className="w3-hover-l1 w3-card w3-container w3-theme-d2 my-round-bottom"
       >
         <h1>Maurits'</h1>
       </div>

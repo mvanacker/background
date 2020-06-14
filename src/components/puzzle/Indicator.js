@@ -260,7 +260,11 @@ export function useData(options) {
 
 export function Overview({ chart, data: { history, forecast } }) {
   return terms.map((term) => (
-    <Panel title={term.title} key={term.title}>
+    <Panel
+      title={term.title}
+      key={term.title}
+      className="my-indicator-overview"
+    >
       <div className="w3-cell-row w3-center">
         {Object.entries(term.timeframes).map(([tf, title]) => (
           <div className="w3-cell w3-cell-middle my-fourth" key={title}>

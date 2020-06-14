@@ -421,7 +421,7 @@ div.my-option-basket-container {
   margin: 0 auto;
 }
 
-div.my-option-basket-container > table.my-option-basket {
+table.my-option-basket {
   width: auto;
 }
 
@@ -519,15 +519,16 @@ div.my-right {
   opacity: 1;
 }
 
+div#app > div:not(:first-child) {
+  margin: 16px 24px !important;
+}
+
 /*** Title */
 
 div#title {
   top: 0;
   position: sticky;
-  margin-top: 0;
-  margin-bottom: 16px;
-  margin-left: 16px;
-  margin-right: 16px;
+  margin: 0 8px 16px;
 }
 
 div#title h1 {
@@ -603,6 +604,12 @@ svg#confluence-detector g.lump-name-axis text {
 svg#confluence-detector g.price-axis text,
 svg#confluence-detector g.unlump-name-axis text {
   font-size: 0.9em;
+}
+
+/* Indicators */
+
+div.my-indicator-overview {
+  margin: 16px 16px 16px 32px !important;
 }
 
 /******************************************************************************/
