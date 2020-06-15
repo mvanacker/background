@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom';
 import './w3.css';
 import './w3-theme-indigo.css';
 import './w3-theme-indigo-extension.css';
-import './components/App.css';
 import './index.css';
 
 import * as serviceWorker from './serviceWorker';
@@ -27,7 +26,7 @@ import CookieDisclaimer from './components/disclaimers/Cookie';
 
 // Components
 import Content from './components/Content';
-import App from './components/App';
+import Left from './components/Left';
 import Trade from './components/trade/Trade';
 import Options from './components/Options';
 
@@ -127,7 +126,7 @@ ReactDOM.render(
           <Router>
             <ScrollToTopOnNav />
             <Deribit>
-              <Content left={<App />} right={Right} />
+              <Content left={<Left />} right={Right} />
             </Deribit>
           </Router>
           <CookieDisclaimer />

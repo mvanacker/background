@@ -1,4 +1,4 @@
-import React, { Component, memo } from 'react';
+import React, { Component } from 'react';
 
 import { Link } from 'react-router-dom';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -8,11 +8,10 @@ import { DATA_URI } from '../config';
 import VolumeFlowChart from './VolumeFlowChart';
 import Panel from './common/Panel';
 import LabeledRow from './common/LabeledRow';
-import ListBlock from './common/ListBlock';
 import { Loading128 } from './common/Icons';
 import { useLocal } from '../hooks/useStorage';
 
-export default class App extends Component {
+export default class extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -78,21 +77,23 @@ export default class App extends Component {
 
   render() {
     return (
-      <div id="app" className="my-full-stretch">
-        {isNaN(this.state.dominance) ? (
-          <div className="my-display-flex my-full-stretch">
-            <Loading128 className="my-margin-auto" />
-          </div>
-        ) : (
-          <>
-            <Title />
-            <Notes />
-            <Overview state={this.state} />
-            <VolumeFlowChart />
-            <BitmexRecentTrades data={this.state.recentTrades} />
-          </>
-        )}
-      </div>
+      <>
+        <Title />
+        <div className="my-full-stretch my-left">
+          {isNaN(this.state.dominance) ? (
+            <div className="my-display-flex my-full-stretch">
+              <Loading128 className="my-margin-auto" />
+            </div>
+          ) : (
+            <>
+              <Notes />
+              <Overview state={this.state} />
+              <VolumeFlowChart />
+              <BitmexRecentTrades data={this.state.recentTrades} />
+            </>
+          )}
+        </div>
+      </>
     );
   }
 }
@@ -107,10 +108,10 @@ function Title() {
   );
 }
 
-const Notes = memo(() => {
+const Notes = () => {
   const [notes, setNotes] = useLocal('notes');
   return (
-    <Panel title={false}>
+    <Panel>
       <TextareaAutosize
         placeholder="Write notes..."
         value={notes}
@@ -120,13 +121,13 @@ const Notes = memo(() => {
       />
     </Panel>
   );
-});
+};
 
 function Overview(props) {
   const { dominance, fearAndGreed } = props.state;
   return (
-    <Panel title={false}>
-      <ListBlock>
+    <Panel>
+      <ul className="w3-ul">
         <li>
           <LabeledRow label="Dominance">{dominance}%</LabeledRow>
         </li>
@@ -136,7 +137,7 @@ function Overview(props) {
             <small>({fearAndGreed.value_classification})</small>
           </LabeledRow>
         </li>
-      </ListBlock>
+      </ul>
     </Panel>
   );
 }
@@ -171,15 +172,18 @@ function BitmexRecentTrades(props) {
       <table className="w3-content monospace">
         <tbody>
           {props.data.map((trade, i) => {
-            const rowClass = trade.side === 'Buy' ? 'buy' : 'sell';
+            const rowClass =
+              trade.side === 'Buy'
+                ? 'my-recent-trade-buy'
+                : 'my-recent-trade-sell';
             return (
               <tr className={rowClass + size_class(trade.size)} key={i}>
-                <td className="time">
+                <td className="my-recent-trade-time">
                   {trade.timestamp.split(' ')[1].split('.')[0]}
                 </td>
-                <td className="side">{trade.side}</td>
-                <td className="size">{squish(trade.size)}</td>
-                <td className="price">{trade.price}</td>
+                <td className="my-recent-trade-side">{trade.side}</td>
+                <td className="my-recent-trade-size">{squish(trade.size)}</td>
+                <td className="my-recent-trade-price">{trade.price}</td>
               </tr>
             );
           })}
