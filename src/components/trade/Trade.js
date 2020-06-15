@@ -24,6 +24,9 @@ import { DeribitContext } from '../../contexts/Deribit';
 
 import { AuthState, ReadyState } from '../../sources/DeribitWebSocket';
 
+// Skip authentication and log straight into testnet
+const DEV_MODE = true;
+
 // Only Deribit is implemented right now
 export default () => <DeribitTrade />;
 
@@ -71,6 +74,16 @@ const DeribitAuth = ({
   authState,
   ...props
 }) => {
+  // Engage developer mode
+  useEffect(() => {
+    if (DEV_MODE && deribit) {
+      deribit.auth({
+        key: '5jgRJ5dz',
+        secret: 'MvocUP-l8nPift3btFFZ9cJIY08NZcbG9NqpxvdP_BY',
+      });
+    }
+  }, [deribit]);
+
   const [key, setKey] = useState('');
   const [secret, setSecret] = useState('');
   const [error, setError] = useState(null);
