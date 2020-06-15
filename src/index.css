@@ -508,6 +508,17 @@ div.my-right {
   flex-grow: 1;
 }
 
+div.my-right-content-outer-container {
+  display: flex;
+  height: calc(100vh - 120px);
+}
+
+div.my-right-content-inner-container {
+  width: 100%;
+  text-align: center;
+  margin: auto;
+}
+
 /** Left */
 
 .my-left-toggle {

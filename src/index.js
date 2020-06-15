@@ -66,7 +66,7 @@ const Right = ({ width }) => {
     <Component width={width / 4 - 32} height={155} {...props} />
   );
   return (
-    <>
+    <div className="my-right">
       <Navigation
         className="w3-theme-l2"
         items={[
@@ -84,36 +84,39 @@ const Right = ({ width }) => {
           },
         ]}
       />
-
-      {/* Top-level pages */}
       <Route path="/" component={Puzzle} />
-      <Route exact path="/" component={withDimensions(MovingAverages)} />
-      <Route path="/trade" component={Trade} />
-      <Route path="/options" component={Options} />
 
-      {/* Puzzle pieces */}
-      <Route path="/confluence" component={Confluence} />
-      <Route
-        path="/moving-averages"
-        component={withDimensions(MovingAverages)}
-      />
-      <Route path="/stochs" component={withDimensions(Stochs)} />
-      <Route path="/rsi" component={withDimensions(Rsi)} />
-      <Route path="/volatility" component={withDimensions(Hvp)} />
+      <div className="my-right-content-outer-container">
+        <div className="my-right-content-inner-container">
+          <Route exact path="/" component={withDimensions(MovingAverages)} />
+          <Route path="/trade" component={Trade} />
+          <Route path="/options" component={Options} />
 
-      {/* Easter eggs */}
-      <Route path="/probs" component={Probs} />
-      <Route path="/futures" component={Futures} />
-      <Route path="/simulation" component={Simulation} />
+          {/* Puzzle pieces */}
+          <Route path="/confluence" component={Confluence} />
+          <Route
+            path="/moving-averages"
+            component={withDimensions(MovingAverages)}
+          />
+          <Route path="/stochs" component={withDimensions(Stochs)} />
+          <Route path="/rsi" component={withDimensions(Rsi)} />
+          <Route path="/volatility" component={withDimensions(Hvp)} />
 
-      {/* Deprecated features */}
-      <Route path="/iv" component={IV} />
-      <Route path="/giv" component={GIV} />
-      <Route path="/journal" component={TradeJournal} />
+          {/* Easter eggs */}
+          <Route path="/probs" component={Probs} />
+          <Route path="/futures" component={Futures} />
+          <Route path="/simulation" component={Simulation} />
 
-      {/* Testing */}
-      <Route path="/test" component={Test} />
-    </>
+          {/* Deprecated features */}
+          <Route path="/iv" component={IV} />
+          <Route path="/giv" component={GIV} />
+          <Route path="/journal" component={TradeJournal} />
+
+          {/* Testing */}
+          <Route path="/test" component={Test} />
+        </div>
+      </div>
+    </div>
   );
 };
 

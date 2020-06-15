@@ -5,9 +5,9 @@ import { extent, median, mean } from 'd3-array';
 import { axisLeft, axisRight } from 'd3-axis';
 import { scaleLinear } from 'd3-scale';
 
-import Loading from '../Loading';
 import { useData } from './Indicator';
 import { subsequentPairs } from '../../util/array';
+import { Loading256 } from '../common/Icons';
 import Panel from '../common/Panel';
 
 // Local storage variables
@@ -28,7 +28,7 @@ export default () => {
       'sma_200',
     ],
   });
-  return !data.history ? <Loading /> : <Confluence data={data} />;
+  return !data.history ? <Loading256 /> : <Confluence data={data} />;
 };
 
 const Confluence = memo(

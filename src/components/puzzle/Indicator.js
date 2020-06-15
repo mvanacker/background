@@ -6,7 +6,7 @@ import { isoStringToUnix } from '../../util/date';
 import { zip } from '../../util/array';
 import { retry } from '../../util/promise';
 
-import Loading from '../Loading';
+import { Loading256 } from '../common/Icons';
 import Panel from '../common/Panel';
 
 import useInterval from '../../hooks/useInterval';
@@ -278,5 +278,5 @@ export function Overview({ chart, data: { history, forecast } }) {
 
 export default function Indicator({ options, ...props }) {
   const data = useData(options);
-  return !data.history ? <Loading /> : <Overview {...props} data={data} />;
+  return !data.history ? <Loading256 /> : <Overview {...props} data={data} />;
 }

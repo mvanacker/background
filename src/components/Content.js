@@ -52,7 +52,7 @@ export default ({ left, right }) => {
             {left}
           </div>
         )}
-        <div className="my-right">{right({ width })}</div>
+        {right({ width })}
       </div>
     </>
   );
