@@ -25,10 +25,13 @@ import { DeribitContext } from '../../contexts/Deribit';
 import { AuthState, ReadyState } from '../../sources/DeribitWebSocket';
 
 // Only Deribit is implemented right now
-export default (props) => {
+export default () => <DeribitTrade />;
+
+const DeribitTrade = (props) => {
   const { deribit, readyState, authState, test, setTest } = useContext(
     DeribitContext
   );
+
   if (!deribit) {
     return null;
   }
@@ -443,9 +446,16 @@ const OrderOptions = ({
   }, [options]);
 
   // Subscribe to selected expiration(s) [plural TODO]
+  // Note: actually subscription should probably already take place inside the
+  //       option chain component, that would be easily extensible to support
+  //       selecting multiple chains
   useEffect(() => {
+    if (!selectedExpiration) {
+      return;
+    }
+
     // Any expiration date will have a chain of options associated with it
-    // Select those relevant to us; also (re)select options in basket
+    // Select those relevant to us
     const relevantOptions = options.filter(
       (option) => option.expiration_timestamp === selectedExpiration
     );
@@ -487,23 +497,25 @@ const OrderOptions = ({
   }, [deribit, options, setCallTickers, setPutTickers, selectedExpiration]);
 
   return (
-    <div {...props}>
-      <div className="w3-center">
-        <div className="w3-card w3-section w3-theme-l1 my-expirations my-round my-scrollbars">
-          {expirations.map((expiration) => (
-            <div
-              key={expiration}
-              className={`w3-padding-large my-expiration ${
-                expiration === selectedExpiration
-                  ? 'w3-theme my-default-cursor'
-                  : 'w3-hover-theme my-pointer'
-              }`}
-              onClick={() => setSelectedExpiration(expiration)}
-            >
-              {moment(expiration).format('MMM Do, YYYY')}
-            </div>
-          ))}
-        </div>
+    <div className="w3-center" {...props}>
+      <div className="w3-card w3-section w3-theme-l1 my-expirations my-round my-scrollbars">
+        {expirations.map((expiration) => (
+          <div
+            key={expiration}
+            className={`w3-padding-large my-expiration my-pointer w3-hover-theme ${
+              expiration === selectedExpiration && 'w3-theme'
+            }`}
+            onClick={() => {
+              setSelectedExpiration(
+                expiration === selectedExpiration ? null : expiration
+              );
+            }}
+          >
+            {moment(expiration).format('MMM Do, YYYY')}
+          </div>
+        ))}
+      </div>
+      {selectedExpiration && (
         <div className="w3-section">
           <OptionChain
             optionInstruments={optionInstruments}
@@ -513,7 +525,7 @@ const OrderOptions = ({
             setSelectedOptions={setSelectedOptions}
           />
         </div>
-      </div>
+      )}
     </div>
   );
 };
