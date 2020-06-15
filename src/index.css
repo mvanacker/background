@@ -175,6 +175,9 @@ input.my-label-input {
 .my-round-bottom-left {
   border-radius: 0 0 0 8px;
 }
+.my-round-bottom-right {
+  border-radius: 0 0 8px 0;
+}
 
 /* Panel styling */
 
@@ -520,22 +523,21 @@ div.my-right {
 }
 
 div#app > div:not(:first-child) {
-  margin: 16px 24px !important;
+  margin: 16px 25px 16px 16px !important;
 }
 
 /*** Title */
 
-div#title {
+div.my-title {
   top: 0;
   position: sticky;
-  margin: 0 8px 16px;
+  margin: 0 8px 16px 0;
 }
 
-div#title h1 {
+div.my-title h1 {
   font-family: 'Parisienne', 'Alex Brush', 'Allura', 'Dancing Script', serif;
   font-size: 80pt;
-  text-decoration: none;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 /*** Notes */

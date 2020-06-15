@@ -103,10 +103,7 @@ export default class App extends Component {
 function Title() {
   return (
     <Link to="/" className="my-no-decoration">
-      <div
-        id="title"
-        className="w3-hover-l1 w3-card w3-container w3-theme-d2 my-round-bottom"
-      >
+      <div className="w3-hover-theme w3-card w3-container w3-theme-d3 my-round-bottom-right my-title">
         <h1>Maurits'</h1>
       </div>
     </Link>
