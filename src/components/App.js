@@ -12,9 +12,6 @@ import ListBlock from './common/ListBlock';
 import { Loading128 } from './common/Icons';
 import { useLocal } from '../hooks/useStorage';
 
-// Never needs to update
-const VolumeFlowChartWrapper = memo(() => <VolumeFlowChart />);
-
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -91,7 +88,7 @@ export default class App extends Component {
             <Title />
             <Notes />
             <Overview state={this.state} />
-            <VolumeFlowChartWrapper />
+            <VolumeFlowChart />
             <BitmexRecentTrades data={this.state.recentTrades} />
           </>
         )}

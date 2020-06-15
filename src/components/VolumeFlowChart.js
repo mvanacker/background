@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 
 import { select } from 'd3-selection';
 import { extent, max } from 'd3-array';
@@ -21,7 +21,7 @@ const MIN_FLOW = 10000;
 const MAX_FLOW = 10000000;
 const ALARM_SCALAR = 75;
 
-export default function VolumeFlowChart() {
+export default memo(() => {
   // State
   // const [isDrawing, setIsDrawing] = useState(false);
   const isDrawing = true;
@@ -434,7 +434,7 @@ export default function VolumeFlowChart() {
 
       {/* Volume Flow Chart itself */}
       <svg
-        id="volume-flow-chart"
+        className="my-volume-flow-chart"
         ref={d3svg}
         role="img"
         width={width}
@@ -455,4 +455,4 @@ export default function VolumeFlowChart() {
     </div> */}
     </div>
   );
-}
+});
