@@ -240,7 +240,7 @@ const Confluence = memo(
     ]);
 
     return (
-      <Panel title="Confluence">
+      <Panel title="Confluence" className="my-content-panel">
         <div className="w3-cell-row">
           <div className="w3-cell w3-cell-top w3-content my-timeframes-container">
             <Checks
@@ -258,7 +258,7 @@ const Confluence = memo(
           </div>
           <div className="w3-cell">
             <svg
-              id="confluence-detector"
+              className="my-confluence-detector"
               ref={rimsvg}
               role="img"
               height={fixedHeight}

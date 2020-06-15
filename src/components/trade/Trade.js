@@ -34,7 +34,7 @@ export default (props) => {
   }
 
   return (
-    <div className="w3-container w3-section">
+    <div className="w3-container">
       {deribit.maybeDown ? (
         <Panel title="Deribit down?" className="my-auth-panel" {...props}>
           <div className="w3-center w3-padding-large">

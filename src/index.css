@@ -290,6 +290,12 @@ img.my-white {
 /***   PAGE-SPECIFIC STYLING   ************************************************/
 /******************************************************************************/
 
+/* Common */
+
+div.my-content-panel {
+  margin: 16px 16px 16px 32px !important;
+}
+
 /* Trade */
 
 div.my-trading-interface {
@@ -593,18 +599,18 @@ span.my-check-label {
   margin: 0 7px 0 5px;
 }
 
-svg#confluence-detector g {
+svg.my-confluence-detector g {
   font-size: 0.95em;
 }
 
-svg#confluence-detector g.lump-axis text,
-svg#confluence-detector g.lump-axis .tick,
-svg#confluence-detector g.lump-name-axis text {
+svg.my-confluence-detector g.lump-axis text,
+svg.my-confluence-detector g.lump-axis .tick,
+svg.my-confluence-detector g.lump-name-axis text {
   color: orange;
   font-size: 1.2em;
 }
-svg#confluence-detector g.price-axis text,
-svg#confluence-detector g.unlump-name-axis text {
+svg.my-confluence-detector g.price-axis text,
+svg.my-confluence-detector g.unlump-name-axis text {
   font-size: 0.9em;
 }
 
