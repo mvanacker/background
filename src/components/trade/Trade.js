@@ -8,6 +8,10 @@ import React, {
 
 import moment from 'moment';
 import { select } from 'd3-selection';
+import { min, max } from 'd3-array';
+import { scaleLinear } from 'd3-scale';
+import { axisLeft, axisBottom } from 'd3-axis';
+import { line } from 'd3-shape';
 
 import Panel, { PanelTitle } from '../common/Panel';
 import Lock from '../common/Lock';
@@ -17,14 +21,15 @@ import { DoubleDown, DoubleUp } from '../common/Icons';
 import { mean, floats } from '../../util/array';
 import { lcm, round_to } from '../../util/math';
 import { percent } from '../../util/format';
-import { appendRect } from '../../util/svg';
+import { compute_call, compute_put } from '../../util/math.bs';
 
-import { useLocal } from '../../hooks/useStorage';
+import { useLocal, useLocalSet } from '../../hooks/useStorage';
 import { DeribitContext } from '../../contexts/Deribit';
 
 import { AuthState, ReadyState } from '../../sources/DeribitWebSocket';
 
 // Skip authentication and log straight into testnet
+// const DEV_MODE = false;
 const DEV_MODE = true;
 
 // Only Deribit is implemented right now
@@ -77,12 +82,13 @@ const DeribitAuth = ({
   // Engage developer mode
   useEffect(() => {
     if (DEV_MODE && deribit) {
+      setTest(true);
       deribit.auth({
         key: '5jgRJ5dz',
         secret: 'MvocUP-l8nPift3btFFZ9cJIY08NZcbG9NqpxvdP_BY',
       });
     }
-  }, [deribit]);
+  }, [deribit, setTest]);
 
   const [key, setKey] = useState('');
   const [secret, setSecret] = useState('');
@@ -307,16 +313,13 @@ const DeribitInterface = ({ deribit, ...props }) => {
   }, [options]);
 
   // Used by the Options basket
-  const [selectedOptions, setSelectedOptions] = useLocal(
-    'deribit-selected-options',
-    {
-      initialValue: new Set(),
-      stringify: (set) => JSON.stringify(Array.from(set)),
-      parse: (string) => new Set(JSON.parse(string)),
-    }
-  );
+  const [
+    selectedOptions,
+    setSelectedOptions,
+  ] = useLocalSet('deribit-selected-options', { initialValue: new Set() });
 
   // Render panels
+  const optionsMapped = Object.keys(optionInstruments.current).length > 0;
   return (
     <div className="my-trading-interface" {...props}>
       <Panel title="Order Options">
@@ -329,7 +332,11 @@ const DeribitInterface = ({ deribit, ...props }) => {
         />
       </Panel>
       <Panel>
-        <Position portfolio={portfolio} positions={positions} />
+        <Position
+          portfolio={portfolio}
+          positions={positions}
+          optionInstruments={optionInstruments.current}
+        />
       </Panel>
       <Panel title="Order Futures">
         <OrderFutures
@@ -341,73 +348,362 @@ const DeribitInterface = ({ deribit, ...props }) => {
       <Panel title="Open Orders">
         <Orders deribit={deribit} orders={orders} />
       </Panel>
-      {selectedOptions.size > 0 &&
-        Object.keys(optionInstruments.current).length > 0 && (
-          <OptionBasket
-            deribit={deribit}
-            selectedOptions={selectedOptions}
-            setSelectedOptions={setSelectedOptions}
-            optionInstruments={optionInstruments.current}
-          />
-        )}
+      {selectedOptions.size > 0 && optionsMapped && (
+        <OptionBasket
+          deribit={deribit}
+          selectedOptions={selectedOptions}
+          setSelectedOptions={setSelectedOptions}
+          optionInstruments={optionInstruments.current}
+        />
+      )}
     </div>
   );
 };
 
 // Position
-const Position = ({ deribit, portfolio, positions, ...props }) => {
+const Position = ({
+  deribit,
+  portfolio,
+  positions,
+  optionInstruments,
+  ...props
+}) => {
+  // Separate futures from options positions
+  // For options, merge the position with the corresponding instrument
+  const futures = useRef({});
+  const options = useRef({});
+  const greeks = useRef(emptyGreeks());
+  useEffect(() => {
+    futures.current = {};
+    options.current = {};
+    Object.entries(positions).forEach(([instrument_name, position]) => {
+      if (position.size !== 0) {
+        switch (position.kind) {
+          case 'future':
+            futures.current[instrument_name] = position;
+            break;
+          case 'option':
+            options.current[instrument_name] = {
+              ...position,
+              ...optionInstruments[instrument_name],
+            };
+            break;
+          default:
+            break;
+        }
+      }
+    });
+
+    // Compute initial greeks
+    greeks.current = computeGreeks(Object.values(options.current));
+  }, [positions, optionInstruments]);
+
+  // Keep track of which positions were deselected
+  // This allows easily defaulting to all positions being selected
+  const [
+    deselectedOptions,
+    setDeselectedOptions,
+  ] = useLocalSet('deribit-deselected-options', { initialValue: new Set() });
+  const [
+    deselectedFutures,
+    setDeselectedFutures,
+  ] = useLocalSet('deribit-deselected-futures', { initialValue: new Set() });
+
+  // Recompute greeks based on which positions are selected
+  useEffect(() => {
+    console.log('computing greeks');
+    greeks.current = computeGreeks(
+      Object.values(options.current).filter(
+        (option) => !deselectedOptions.has(option.instrument_name)
+      )
+    );
+  }, [deselectedOptions]);
+
   return (
     <div className="my-position">
       <PanelTitle className="my-position-title">Position</PanelTitle>
       <div className="w3-padding my-greeks" {...props}>
-        <Greek>Δ {portfolio.options_delta}</Greek>
-        <Greek>Γ {portfolio.options_gamma}</Greek>
-        <Greek>ϴ {portfolio.options_theta}</Greek>
-        <Greek>𝜈 {portfolio.options_vega}</Greek>
+        <Greek>Δ {greeks.current.delta}</Greek>
+        <Greek>Γ {greeks.current.gamma}</Greek>
+        <Greek>ϴ {greeks.current.theta}</Greek>
+        <Greek>𝜈 {greeks.current.vega}</Greek>
       </div>
       <div className="my-pnl-chart-container">
-        <PnlChart positions={positions} />
+        <PnlChart
+          futures={futures.current}
+          options={options.current}
+          deselectedOptions={deselectedOptions}
+          deselectedFutures={deselectedFutures}
+        />
       </div>
-      <div className="my-position-foo">
-        <ul>
-          {Object.values(positions)
-            .filter(({ size }) => size !== 0)
-            .map(({ instrument_name, size, kind }) => (
-              <li key={instrument_name}>
-                {size}x {instrument_name} ({kind})
-              </li>
-            ))}
-        </ul>
+      <div className="my-position-list-container">
+        <PositionList
+          positions={futures.current}
+          deselectedPositions={deselectedFutures}
+          setDeselectedPositions={setDeselectedFutures}
+        />
+        <PositionList
+          positions={options.current}
+          deselectedPositions={deselectedOptions}
+          setDeselectedPositions={setDeselectedOptions}
+        />
       </div>
     </div>
   );
 };
 
-const PnlChart = ({ positions, ...props }) => {
-  const chartRef = useRef();
+const emptyGreeks = () => ({ delta: 0, gamma: 0, theta: 0, vega: 0 });
+const computeGreeks = (options) => {
+  const greeks = emptyGreeks();
+  options.forEach((option) => {
+    Object.keys(greeks).forEach((greek) => {
+      greeks[greek] += option[greek];
+    });
+  });
+  for (const greek in greeks) {
+    greeks[greek] = greeks[greek].toFixed(4);
+  }
+  return greeks;
+};
+
+const PositionList = ({
+  positions,
+  deselectedPositions,
+  setDeselectedPositions,
+}) => (
+  <ul className="my-position-list">
+    {Object.values(positions)
+      .filter(({ size }) => size !== 0)
+      .map(({ size, instrument_name }) => (
+        <li key={instrument_name}>
+          <label>
+            <input
+              type="checkbox"
+              className="my-check"
+              checked={!deselectedPositions.has(instrument_name)}
+              onChange={() =>
+                setDeselectedPositions((positions) => {
+                  const newPositions = new Set(positions);
+                  if (newPositions.has(instrument_name)) {
+                    newPositions.delete(instrument_name);
+                  } else {
+                    newPositions.add(instrument_name);
+                  }
+                  return newPositions;
+                })
+              }
+            />{' '}
+            {size}x {instrument_name}
+          </label>
+        </li>
+      ))}
+  </ul>
+);
+
+const PnlChart = ({
+  futures,
+  options,
+  deselectedFutures,
+  deselectedOptions,
+  width = 400,
+  height = 400,
+  resolution = 1,
+  padding = { top: 100, right: 1000, bottom: 100, left: 1000 },
+  margin = { top: 20, right: 30, bottom: 30, left: 55 },
+  ...props
+}) => {
+  // References to elements inside the SVG
+  // These will be the subjects of D3 manipulations
+  const clipRect = useRef();
+  const expirationPath = useRef();
+  const currentPath = useRef();
+  const zeroLine = useRef();
+  const verticalRulers = useRef();
+  const xAxis = useRef();
+  const yAxis = useRef();
+
+  // Steps taken below (TODO modularize)
+  // 1. Compute x-domain
+  // 2. Compute PNL over x-domain
+  // 3. Infer y-domain from PNL extrema
+
+  // Proposal: 1. Isolate these steps and their dependencies
+  //           2.
 
   useEffect(() => {
-    // draw here
-    const chart = select(chartRef.current);
-    appendRect(chart)(0, 0, '100%', '100%').attr('class', 'my-pnl-test-rect');
-    console.log('redraw rect', positions);
-    return () => {
-      // undraw here
+    if (!(Object.keys(options).length && Object.keys(futures).length)) {
+      return;
+    }
+    console.log('drawing axes');
+
+    const selectedPositions = (positions, deselectedPositions) =>
+      Object.values(positions).filter(
+        (position) => !deselectedPositions.has(position.instrument_name)
+      );
+    const selectedFutures = selectedPositions(futures, deselectedFutures);
+    const selectedOptions = selectedPositions(options, deselectedOptions);
+
+    // Isolate entries and strikes [TODO normalize futures entries]
+    const entries = selectedFutures.map((future) => future.average_price);
+    const strikes = selectedOptions.map((option) => option.strike);
+    const keyPrices = entries.concat(strikes);
+
+    // Compute x-axis domain
+    const xEnd = (f, translation) =>
+      f(keyPrices, (price) => price + translation);
+    const xMin = xEnd(min, -padding.left);
+    const xMax = xEnd(max, padding.right);
+
+    // Draw x-axis
+    const xScale = scaleLinear()
+      .domain([xMin, xMax])
+      .range([margin.left, width - margin.right]);
+    const xGroup = select(xAxis.current);
+    xGroup
+      .attr('transform', `translate(0,${height - margin.bottom})`)
+      .call(axisBottom(xScale).tickValues(keyPrices).tickSizeOuter(0));
+
+    // Set up PNL computation
+    const computeOption = { call: compute_call, put: compute_put };
+    const pnl = {
+      quote: { expiration: [], current: [] },
+      // base: { expiration: [], current: [] },
     };
-  }, [positions]);
+    const now = Date.now();
 
-  // every individually updateable part of the chart
-  // should be a separate component
+    // Simplistic computation of time to go in years (~TODO)
+    const years = (time) => (time - now) / (1000 * 60 * 60 * 24 * 365.25);
 
-  const filterPositions = (kind) =>
-    Object.values(positions).filter((position) => position.kind === kind);
-  const futuresPositions = filterPositions('future');
-  const optionsPositions = filterPositions('option');
+    // Set up y-domain computation
+    let yMin = +Infinity;
+    let yMax = -Infinity;
 
+    // Do computations
+    for (let x = xMin; x <= xMax; x++) {
+      let y = { expiration: 0, current: 0 };
+      selectedOptions.forEach(
+        ({
+          index_price,
+          average_price,
+          expiration_timestamp,
+          option_type,
+          size,
+          strike,
+        }) => {
+          // TODO [critical] simply setting volatility to a constant (0.75) here
+          // The main issue is elegantly avoiding many redundant rerenders per second
+          const optionPrice = (yearsRemaining) =>
+            computeOption[option_type](x, strike, 0.75, yearsRemaining);
+
+          // Note: average_price is in base currency (BTC)
+          //       while x and strike are in quote currency ($)
+          // Normalize to quote currency with index_price for now
+          const computePnl = (optionPrice) =>
+            size * optionPrice - Math.sign(size) * average_price * index_price;
+
+          // Compute
+          y.expiration += computePnl(optionPrice(0));
+          y.current += computePnl(optionPrice(years(expiration_timestamp)));
+        }
+      );
+      pnl.quote.expiration.push({ x, y: y.expiration });
+      pnl.quote.current.push({ x, y: y.current });
+      // pnl.base.expiration.push({ x, y: y.expiration / x });
+      // pnl.base.current.push({ x, y: y.current / x });
+
+      // Conduct measurements for the y-domain while we're here
+      yMin = Math.min(yMin, y.expiration);
+      yMax = Math.max(yMax, y.expiration);
+    }
+
+    // Apply padding to y-axis
+    yMin -= padding.bottom;
+    yMax += padding.top;
+
+    // Draw y-axis
+    const yScale = scaleLinear()
+      .domain([yMin, yMax])
+      .range([height - margin.bottom, margin.top]);
+    const yGroup = select(yAxis.current);
+    yGroup
+      .attr('transform', `translate(${margin.left},0)`)
+      .call(axisLeft(yScale).ticks(5).tickSizeOuter(0));
+
+    // Draw zero line
+    select(zeroLine.current)
+      .attr('x1', xScale(xMin))
+      .attr('y1', yScale(0))
+      .attr('x2', xScale(xMax))
+      .attr('y2', yScale(0));
+
+    // Clip plots
+    select(clipRect.current)
+      .attr('x', xScale(xMin))
+      .attr('y', yScale(yMax))
+      .attr('width', xScale(xMax) - xScale(xMin))
+      .attr('height', yScale(yMin) - yScale(yMax));
+
+    // Draw plots
+    const pnlLine = line()
+      .x((d) => xScale(d.x))
+      .y((d) => yScale(d.y));
+    select(expirationPath.current).attr('d', pnlLine(pnl.quote.expiration));
+    select(currentPath.current).attr('d', pnlLine(pnl.quote.current));
+
+    // Clean up axes
+    return () => {
+      console.log('undrawing axes');
+      xGroup.selectAll('*').remove();
+      yGroup.selectAll('*').remove();
+    };
+  }, [
+    futures,
+    options,
+    deselectedFutures,
+    deselectedOptions,
+    width,
+    height,
+    margin.top,
+    margin.right,
+    margin.bottom,
+    margin.left,
+    padding.top,
+    padding.right,
+    padding.bottom,
+    padding.left,
+  ]);
+
+  const clipId = 'my-pnl-chart-clip';
+  const clipUrl = `url(#${clipId})`;
   return (
-    <>
-      <svg ref={chartRef} className="my-pnl-chart" {...props} />
-    </>
+    <svg viewBox={`0 0 ${width} ${height}`} className="my-pnl-chart" {...props}>
+      <clipPath id={clipId}>
+        <rect ref={clipRect} />
+      </clipPath>
+      <path
+        ref={expirationPath}
+        strokeWidth={2}
+        fill="none"
+        stroke="white"
+        clipPath={clipUrl}
+      />
+      <path
+        ref={currentPath}
+        strokeWidth={2}
+        fill="none"
+        stroke="orange"
+        clipPath={clipUrl}
+      />
+      <line
+        ref={zeroLine}
+        stroke="white"
+        opacity={0.25}
+        strokeDasharray={(12, 4)}
+      />
+      <g ref={verticalRulers} />
+      <g ref={xAxis} />
+      <g ref={yAxis} />
+    </svg>
   );
 };
 
@@ -1642,6 +1938,7 @@ const Table = ({ children, className = '', ...props }) => (
 const OrderFuturesButton = ({ children, className, ...props }) => (
   <button
     className={`w3-card w3-section w3-btn w3-large ${className}`}
+    type="button"
     {...props}
   >
     {children}
@@ -1701,7 +1998,7 @@ const RadioGroup = ({ options, value: checked, setValue, ...props }) =>
   ));
 
 // General numerical slider (auxiliary component)
-const NumericalSlider = ({ value, setValue, ...props }) => {
+const NumericalSlider = ({ value, setValue, className = '', ...props }) => {
   const valueProps = { value, onChange: (e) => setValue(e.target.value) };
   return (
     <div className="w3-mobile w3-row">
@@ -1711,7 +2008,7 @@ const NumericalSlider = ({ value, setValue, ...props }) => {
       <div className="w3-col w3-mobile">
         <input
           type="range"
-          className="my-small-range"
+          className={`my-small-range ${className}`}
           {...valueProps}
           {...props}
         />
@@ -1721,14 +2018,14 @@ const NumericalSlider = ({ value, setValue, ...props }) => {
 };
 
 // General numerical input (auxiliary component)
-const NumericalInput = forwardRef((props, ref) => (
+const NumericalInput = forwardRef(({ className = '', ...props }, ref) => (
   <input
     ref={ref}
     type="number"
     min="1"
     max="99999"
     step="0.5"
-    className="w3-input my-small-input"
+    className={`w3-input my-small-input ${className}`}
     {...props}
   />
 ));

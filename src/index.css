@@ -146,6 +146,11 @@ input.my-small-input {
   width: 100px;
 }
 
+.my-small-range {
+  width: 100px;
+  display: block;
+}
+
 input.my-label-input {
   width: 200px;
 }
@@ -322,7 +327,7 @@ div.my-table-container {
   margin: 4px 0 12px;
 }
 
-div.my-radio-group-label {
+label.my-radio-group-label {
   margin-right: 8px;
 }
 
@@ -348,11 +353,12 @@ button.my-top-button {
 
 div.my-row-label {
   width: 25%;
-  max-width: 150px;
+  min-width: 100px;
+  max-width: 175px;
 }
 
 div.my-row-content {
-  width: 75%;
+  width: auto;
 }
 
 select.my-futures-selector {
@@ -478,22 +484,34 @@ div.my-greeks {
 }
 
 div.my-pnl-chart-container {
-  flex-grow: 1;
+  flex-grow: 0;
 }
 
 svg.my-pnl-chart {
   width: 100%;
   height: 100%;
-  min-height: 150px;
+  min-height: 450px;
+  /* border: 1px solid lime; */
 }
 
-rect.my-pnl-test-rect {
-  fill: white;
-}
+/* div.my-pnl-chart-container {
+  border: 1px solid white;
+} */
 
-div.my-position-foo {
+div.my-position-list-container {
   flex-grow: 0;
   height: fit-content;
+}
+
+ul.my-position-list {
+  padding-left: 16px;
+  list-style-type: none;
+  text-align: left;
+  line-height: 2em;
+}
+
+ul.my-position-list li input[type='checkbox'] {
+  margin-right: 4px;
 }
 
 /* Content */
@@ -691,11 +709,6 @@ div.my-indicator-overview {
 
 .my-fourth {
   width: 25%;
-}
-
-.my-small-range {
-  width: 91px;
-  display: block;
 }
 
 /* Adapted from https://www.w3schools.com/howto/howto_js_rangeslider.asp */
