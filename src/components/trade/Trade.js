@@ -280,14 +280,13 @@ const DeribitInterface = ({ deribit, ...props }) => {
 
           // After the initial fetches
           .then(() => {
-            // Prepare to subscribe to changes of all instruments
-            instruments.forEach(({ instrument_name }) => {
-              const channel = toChangesChannel(instrument_name);
-              privSubs[channel] = ({ data: { positions, orders } }) => {
-                updateOrders(orders);
-                updatePositions(positions);
-              };
-            });
+            // Prepare to subscribe to all change
+            privSubs['user.changes.any.btc.100ms'] = ({
+              data: { positions, orders },
+            }) => {
+              updateOrders(orders);
+              updatePositions(positions);
+            };
 
             // Do actual subscribing
             deribit.publicSubscribe(pubSubs);
@@ -372,7 +371,7 @@ const Position = ({
   // For options, merge the position with the corresponding instrument
   const futures = useRef({});
   const options = useRef({});
-  const greeks = useRef(emptyGreeks());
+  const [greeks, setGreeks] = useState(emptyGreeks());
   useEffect(() => {
     futures.current = {};
     options.current = {};
@@ -395,7 +394,7 @@ const Position = ({
     });
 
     // Compute initial greeks
-    greeks.current = computeGreeks(Object.values(options.current));
+    setGreeks(computeGreeks(Object.values(options.current)));
   }, [positions, optionInstruments]);
 
   // Keep track of which positions were deselected
@@ -412,9 +411,11 @@ const Position = ({
   // Recompute greeks based on which positions are selected
   useEffect(() => {
     console.log('computing greeks');
-    greeks.current = computeGreeks(
-      Object.values(options.current).filter(
-        (option) => !deselectedOptions.has(option.instrument_name)
+    setGreeks(
+      computeGreeks(
+        Object.values(options.current).filter(
+          (option) => !deselectedOptions.has(option.instrument_name)
+        )
       )
     );
   }, [deselectedOptions]);
@@ -423,10 +424,10 @@ const Position = ({
     <div className="my-position">
       <PanelTitle className="my-position-title">Position</PanelTitle>
       <div className="w3-padding my-greeks" {...props}>
-        <Greek>Δ {greeks.current.delta}</Greek>
-        <Greek>Γ {greeks.current.gamma}</Greek>
-        <Greek>ϴ {greeks.current.theta}</Greek>
-        <Greek>𝜈 {greeks.current.vega}</Greek>
+        <Greek>Δ {greeks.delta}</Greek>
+        <Greek>Γ {greeks.gamma}</Greek>
+        <Greek>ϴ {greeks.theta}</Greek>
+        <Greek>𝜈 {greeks.vega}</Greek>
       </div>
       <div className="my-pnl-chart-container">
         <PnlChart
@@ -528,7 +529,10 @@ const PnlChart = ({
   // 3. Infer y-domain from PNL extrema
 
   // Proposal: 1. Isolate these steps and their dependencies
-  //           2.
+  //           // Okay, the annoying thing here is that I would have to store
+  //           // a lot of information in references
+  //           2. Further additions can build on said references and their own
+  //              independent needs
 
   useEffect(() => {
     if (!(Object.keys(options).length && Object.keys(futures).length)) {
@@ -1947,8 +1951,6 @@ const OrderFuturesButton = ({ children, className, ...props }) => (
 
 // Auxiliary conversions
 const toTickerChannel = (instrument_name) => `ticker.${instrument_name}.100ms`;
-const toChangesChannel = (instrument_name) =>
-  `user.changes.${instrument_name}.100ms`;
 
 // Auxiliary component
 const TopButton = ({ children, ...props }) => (
