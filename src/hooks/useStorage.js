@@ -1,5 +1,16 @@
 import { useState, useEffect } from 'react';
 
+const setOptions = {
+  stringify: (set) => JSON.stringify(Array.from(set)),
+  parse: (string) => new Set(JSON.parse(string)),
+};
+
+export const useLocalSet = (id, options) =>
+  useLocal(id, { ...options, ...setOptions });
+
+export const useSessionSet = (id, options) =>
+  useSession(id, { ...options, ...setOptions });
+
 const localFuncs = {
   get: (id) => localStorage.getItem(id),
   set: (id, val) => localStorage.setItem(id, val),
