@@ -8,7 +8,7 @@ import React, {
 
 import moment from 'moment';
 import { select } from 'd3-selection';
-import { min, max } from 'd3-array';
+import { extent } from 'd3-array';
 import { scaleLinear } from 'd3-scale';
 import { axisLeft, axisBottom } from 'd3-axis';
 import { line } from 'd3-shape';
@@ -523,16 +523,11 @@ const PnlChart = ({
   const xAxis = useRef();
   const yAxis = useRef();
 
-  // Steps taken below (TODO modularize)
-  // 1. Compute x-domain
-  // 2. Compute PNL over x-domain
-  // 3. Infer y-domain from PNL extrema
-
-  // Proposal: 1. Isolate these steps and their dependencies
-  //           // Okay, the annoying thing here is that I would have to store
-  //           // a lot of information in references
-  //           2. Further additions can build on said references and their own
-  //              independent needs
+  // Previous plans didn't make any sense because everything depends on the
+  // same dependencies.
+  // However, the main issue was avoiding unnecessarily tearing down graphics
+  // and then redrawing the same graphics a little differently.
+  // Enter D3's selection.join *fireworks and gasps of awe*
 
   useEffect(() => {
     if (!(Object.keys(options).length && Object.keys(futures).length)) {
@@ -553,10 +548,9 @@ const PnlChart = ({
     const keyPrices = entries.concat(strikes);
 
     // Compute x-axis domain
-    const xEnd = (f, translation) =>
-      f(keyPrices, (price) => price + translation);
-    const xMin = xEnd(min, -padding.left);
-    const xMax = xEnd(max, padding.right);
+    let [xMin, xMax] = extent(keyPrices);
+    xMin -= padding.left;
+    xMax += padding.right;
 
     // Draw x-axis
     const xScale = scaleLinear()
@@ -633,13 +627,6 @@ const PnlChart = ({
       .attr('transform', `translate(${margin.left},0)`)
       .call(axisLeft(yScale).ticks(5).tickSizeOuter(0));
 
-    // Draw zero line
-    select(zeroLine.current)
-      .attr('x1', xScale(xMin))
-      .attr('y1', yScale(0))
-      .attr('x2', xScale(xMax))
-      .attr('y2', yScale(0));
-
     // Clip plots
     select(clipRect.current)
       .attr('x', xScale(xMin))
@@ -653,6 +640,24 @@ const PnlChart = ({
       .y((d) => yScale(d.y));
     select(expirationPath.current).attr('d', pnlLine(pnl.quote.expiration));
     select(currentPath.current).attr('d', pnlLine(pnl.quote.current));
+
+    // Draw zero line
+    select(zeroLine.current)
+      .attr('x1', xScale(xMin))
+      .attr('y1', yScale(0))
+      .attr('x2', xScale(xMax))
+      .attr('y2', yScale(0));
+
+    // Draw vertical rulers
+    select(verticalRulers.current)
+      .selectAll('line')
+      .data(keyPrices)
+      .join('line')
+      .attr('x1', (price) => xScale(price))
+      .attr('y1', yScale(yMax))
+      .attr('x2', (price) => xScale(price))
+      .attr('y2', yScale(yMin))
+      .attr('class', 'my-grid-line');
 
     // Clean up axes
     return () => {
@@ -698,12 +703,7 @@ const PnlChart = ({
         stroke="orange"
         clipPath={clipUrl}
       />
-      <line
-        ref={zeroLine}
-        stroke="white"
-        opacity={0.25}
-        strokeDasharray={(12, 4)}
-      />
+      <line ref={zeroLine} className="my-grid-line" />
       <g ref={verticalRulers} />
       <g ref={xAxis} />
       <g ref={yAxis} />

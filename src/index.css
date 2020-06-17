@@ -498,6 +498,12 @@ svg.my-pnl-chart {
   border: 1px solid white;
 } */
 
+line.my-grid-line {
+  stroke: white;
+  opacity: 0.25;
+  stroke-dasharray: 6 4;
+}
+
 div.my-position-list-container {
   flex-grow: 0;
   height: fit-content;
