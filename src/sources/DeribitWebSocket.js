@@ -3,17 +3,17 @@ import cryptoRandomString from 'crypto-random-string';
 import { APP_NAME, APP_VERSION } from '../config';
 
 export default class extends WebSocket {
-  constructor({ test = true, verbose = false } = {}) {
+  constructor({ test = true, verbosity = Verbosity.INFO } = {}) {
     if (test) {
       super('wss://test.deribit.com/ws/api/v2');
     } else {
       super('wss://www.deribit.com/ws/api/v2');
     }
-    this.verbose = verbose;
+    this.verbosity = verbosity;
 
     // Handle open
     this.onopen = (e) => {
-      if (verbose) {
+      if (verbosity >= Verbosity.INFO) {
         console.log("Connected to Deribit's WebSocket.", e);
       }
 
@@ -34,7 +34,7 @@ export default class extends WebSocket {
     };
 
     // Handle message
-    if (verbose) {
+    if (verbosity >= Verbosity.DEBUG) {
       this.onmessage = ({ data }) => {
         const message = JSON.parse(data);
         if (
@@ -53,7 +53,7 @@ export default class extends WebSocket {
 
     // Handle close
     this.onclose = (e) => {
-      if (verbose) {
+      if (verbosity >= Verbosity.INFO) {
         console.log('Disconnected from Deribit', e);
       }
     };
@@ -133,8 +133,8 @@ export default class extends WebSocket {
     this.messages[this.id] = message;
     super.send(JSON.stringify(message));
 
-    // Log message if in verbose mode
-    if (this.verbose && method !== 'public/test') {
+    // Log message if in debug mode
+    if (this.verbosity >= Verbosity.DEBUG && method !== 'public/test') {
       console.log(`Sent request ${this.id} to deribit: `, message);
     }
 
@@ -375,4 +375,14 @@ export const AuthState = {
   AUTHENTICATED: 2,
   LOGGING_OUT: 3,
   REAUTHENTICATING: 4,
+};
+
+// In spirit of https://docs.python.org/3/library/logging.html#logging-levels
+export const Verbosity = {
+  NOTSET: 0,
+  INFO: 10,
+  DEBUG: 20,
+  WARNING: 30,
+  ERROR: 40,
+  CRITICAL: 50,
 };
