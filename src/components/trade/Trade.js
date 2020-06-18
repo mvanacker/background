@@ -507,7 +507,6 @@ const PnlChart = ({
   futuresTickers,
   width = 400,
   height = 400,
-  resolution = 1,
   padding = { top: 100, right: 1000, bottom: 100, left: 1000 },
   margin = { top: 20, right: 30, bottom: 30, left: 55 },
   ...props
@@ -574,7 +573,12 @@ const PnlChart = ({
     y.current.top = -Infinity;
 
     // Do computations
-    for (let price = x.current.left; price <= x.current.right; price++) {
+    const resolution = ((x.current.right - x.current.left + 1) / width) * 10;
+    for (
+      let price = x.current.left;
+      price <= x.current.right;
+      price += resolution
+    ) {
       let pnlPoint = { expiration: 0, current: 0 };
       selectedOptions.forEach(
         ({
