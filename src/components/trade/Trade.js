@@ -186,6 +186,7 @@ const DeribitAuth = ({
 // Trading interface
 const DeribitInterface = ({ deribit, ...props }) => {
   const [futuresTickers, setFuturesTickers] = useState({});
+  const [instruments, setInstruments] = useState([]);
   const [options, setOptions] = useState([]);
   const [orders, setOrders] = useState({});
   const [positions, setPositions] = useState({});
@@ -200,6 +201,14 @@ const DeribitInterface = ({ deribit, ...props }) => {
 
     // Subscribe to portfolio
     privSubs['user.portfolio.btc'] = ({ data }) => setPortfolio(data);
+
+    // Subscribe to change
+    privSubs['user.changes.any.btc.100ms'] = ({
+      data: { positions, orders },
+    }) => {
+      updateOrders(orders);
+      updatePositions(positions);
+    };
 
     // Set up orders callback
     const updateOrders = (orders) => {
@@ -239,59 +248,55 @@ const DeribitInterface = ({ deribit, ...props }) => {
       });
     };
 
-    // Fetch futures
-    const setup = deribit
-      .send({
-        method: 'public/get_instruments',
-        params: { currency: 'btc' },
-      })
-      .then(({ result: instruments }) => {
-        // Separate futures and options
-        const futures = instruments.filter((r) => r.kind === 'future');
-        const options = instruments.filter((r) => r.kind === 'option');
-        setOptions(options);
+    const setup = Promise.all([
+      // Fetch instruments
+      deribit
+        .send({
+          method: 'public/get_instruments',
+          params: { currency: 'btc' },
+        })
+        .then(({ result: instruments }) => {
+          setInstruments(instruments);
 
-        // Subscribe to futures' tickers
-        const addTickerSubscription = (set) => ({ instrument_name }) => {
-          const channel = toTickerChannel(instrument_name);
-          pubSubs[channel] = ({ data }) => {
-            set((tickers) => ({ ...tickers, [instrument_name]: data }));
-          };
-        };
-        futures.forEach(addTickerSubscription(setFuturesTickers));
+          // Separate options
+          setOptions(instruments.filter((r) => r.kind === 'option'));
 
-        Promise.all([
-          // Fetch open orders
-          deribit
-            .send({
-              method: 'private/get_open_orders_by_currency',
-              params: { currency: 'btc' },
-            })
-            .then(({ result: orders }) => updateOrders(orders)),
+          // Subscribe to futures' tickers
+          instruments
+            .filter((r) => r.kind === 'future')
+            .forEach(({ instrument_name }) => {
+              const channel = toTickerChannel(instrument_name);
+              pubSubs[channel] = ({ data }) => {
+                setFuturesTickers((tickers) => ({
+                  ...tickers,
+                  [instrument_name]: data,
+                }));
+              };
+            });
+        }),
 
-          // Fetch positions
-          deribit
-            .send({
-              method: 'private/get_positions',
-              params: { currency: 'btc' },
-            })
-            .then(({ result: positions }) => updatePositions(positions)),
-        ])
+      // Fetch open orders
+      deribit
+        .send({
+          method: 'private/get_open_orders_by_currency',
+          params: { currency: 'btc' },
+        })
+        .then(({ result: orders }) => updateOrders(orders)),
 
-          // After the initial fetches
-          .then(() => {
-            // Prepare to subscribe to all change
-            privSubs['user.changes.any.btc.100ms'] = ({
-              data: { positions, orders },
-            }) => {
-              updateOrders(orders);
-              updatePositions(positions);
-            };
+      // Fetch positions
+      deribit
+        .send({
+          method: 'private/get_positions',
+          params: { currency: 'btc' },
+        })
+        .then(({ result: positions }) => updatePositions(positions)),
+    ])
 
-            // Do actual subscribing
-            deribit.publicSubscribe(pubSubs);
-            deribit.privateSubscribe(privSubs);
-          });
+      // After the initial fetches
+      .then(() => {
+        // Do actual subscribing
+        deribit.publicSubscribe(pubSubs);
+        deribit.privateSubscribe(privSubs);
       });
 
     // Unsubscribe when done, making sure setup ran first
@@ -303,13 +308,13 @@ const DeribitInterface = ({ deribit, ...props }) => {
   }, [deribit]);
 
   // Map option's instrument name to its metadata
-  const optionInstruments = useRef({});
+  const instrumentsRef = useRef({});
   useEffect(() => {
-    optionInstruments.current = {};
-    options.forEach((option) => {
-      optionInstruments.current[option.instrument_name] = option;
+    instrumentsRef.current = {};
+    instruments.forEach((instrument) => {
+      instrumentsRef.current[instrument.instrument_name] = instrument;
     });
-  }, [options]);
+  }, [instruments]);
 
   // Used by the Options basket
   const [
@@ -318,14 +323,14 @@ const DeribitInterface = ({ deribit, ...props }) => {
   ] = useLocalSet('deribit-selected-options', { initialValue: new Set() });
 
   // Render panels
-  const optionsMapped = Object.keys(optionInstruments.current).length > 0;
+  const optionsMapped = Object.keys(instrumentsRef.current).length > 0;
   return (
     <div className="my-trading-interface" {...props}>
       <Panel title="Order Options">
         <OrderOptions
           deribit={deribit}
           options={options}
-          optionInstruments={optionInstruments.current}
+          instruments={instrumentsRef.current}
           selectedOptions={selectedOptions}
           setSelectedOptions={setSelectedOptions}
         />
@@ -334,7 +339,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
         <Position
           portfolio={portfolio}
           positions={positions}
-          optionInstruments={optionInstruments.current}
+          instruments={instrumentsRef.current}
         />
       </Panel>
       <Panel title="Order Futures">
@@ -352,7 +357,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
           deribit={deribit}
           selectedOptions={selectedOptions}
           setSelectedOptions={setSelectedOptions}
-          optionInstruments={optionInstruments.current}
+          instruments={instrumentsRef.current}
         />
       )}
     </div>
@@ -360,42 +365,28 @@ const DeribitInterface = ({ deribit, ...props }) => {
 };
 
 // Position
-const Position = ({
-  deribit,
-  portfolio,
-  positions,
-  optionInstruments,
-  ...props
-}) => {
+const Position = ({ deribit, portfolio, positions, instruments, ...props }) => {
   // Separate futures from options positions
-  // For options, merge the position with the corresponding instrument
-  const futures = useRef({});
-  const options = useRef({});
+  // const futures = useRef({});
+  // const options = useRef({});
+  const positionsRef = useRef({ future: {}, option: {} });
   const [greeks, setGreeks] = useState(emptyGreeks());
   useEffect(() => {
-    futures.current = {};
-    options.current = {};
+    positionsRef.current.future = {};
+    positionsRef.current.option = {};
     Object.entries(positions).forEach(([instrument_name, position]) => {
       if (position.size !== 0) {
-        switch (position.kind) {
-          case 'future':
-            futures.current[instrument_name] = position;
-            break;
-          case 'option':
-            options.current[instrument_name] = {
-              ...position,
-              ...optionInstruments[instrument_name],
-            };
-            break;
-          default:
-            break;
-        }
+        positionsRef.current[position.kind][instrument_name] = {
+          ...position,
+          ...instruments[instrument_name],
+        };
       }
     });
+    console.log(positionsRef.current);
 
     // Compute initial greeks
-    setGreeks(computeGreeks(Object.values(options.current)));
-  }, [positions, optionInstruments]);
+    setGreeks(computeGreeks(Object.values(positionsRef.current.option)));
+  }, [positions, instruments]);
 
   // Keep track of which positions were deselected
   // This allows easily defaulting to all positions being selected
@@ -413,7 +404,7 @@ const Position = ({
     console.log('computing greeks');
     setGreeks(
       computeGreeks(
-        Object.values(options.current).filter(
+        Object.values(positionsRef.current.option).filter(
           (option) => !deselectedOptions.has(option.instrument_name)
         )
       )
@@ -431,20 +422,20 @@ const Position = ({
       </div>
       <div className="my-pnl-chart-container">
         <PnlChart
-          futures={futures.current}
-          options={options.current}
+          futures={positionsRef.current.future}
+          options={positionsRef.current.option}
           deselectedOptions={deselectedOptions}
           deselectedFutures={deselectedFutures}
         />
       </div>
       <div className="my-position-list-container">
         <PositionList
-          positions={futures.current}
+          positions={positionsRef.current.future}
           deselectedPositions={deselectedFutures}
           setDeselectedPositions={setDeselectedFutures}
         />
         <PositionList
-          positions={options.current}
+          positions={positionsRef.current.option}
           deselectedPositions={deselectedOptions}
           setDeselectedPositions={setDeselectedOptions}
         />
@@ -522,12 +513,6 @@ const PnlChart = ({
   const verticalRulers = useRef();
   const xAxis = useRef();
   const yAxis = useRef();
-
-  // Previous plans didn't make any sense because everything depends on the
-  // same dependencies.
-  // However, the main issue was avoiding unnecessarily tearing down graphics
-  // and then redrawing the same graphics a little differently.
-  // Enter D3's selection.join *fireworks and gasps of awe*
 
   useEffect(() => {
     if (!(Object.keys(options).length && Object.keys(futures).length)) {
@@ -722,7 +707,7 @@ const OrderOptions = ({
   deribit,
   options,
   portfolio,
-  optionInstruments,
+  instruments,
   selectedOptions,
   setSelectedOptions,
   ...props
@@ -831,7 +816,7 @@ const OrderOptions = ({
       {selectedExpiration && (
         <div className="w3-section">
           <OptionChain
-            optionInstruments={optionInstruments}
+            instruments={instruments}
             callTickers={callTickers}
             putTickers={putTickers}
             selectedOptions={selectedOptions}
@@ -844,7 +829,7 @@ const OrderOptions = ({
 };
 
 const OptionChain = ({
-  optionInstruments,
+  instruments,
   callTickers,
   putTickers,
   selectedOptions,
@@ -856,7 +841,7 @@ const OptionChain = ({
       <HalfOptionChain
         tickers={callTickers}
         title="Calls"
-        optionInstruments={optionInstruments}
+        instruments={instruments}
         className="my-half-option-chain"
         callSide={false}
         selectedOptions={selectedOptions}
@@ -865,7 +850,7 @@ const OptionChain = ({
       <HalfOptionChain
         tickers={putTickers}
         title="Puts"
-        optionInstruments={optionInstruments}
+        instruments={instruments}
         className="my-half-option-chain"
         callSide={true}
         selectedOptions={selectedOptions}
@@ -878,7 +863,7 @@ const OptionChain = ({
 const HalfOptionChain = ({
   title,
   tickers,
-  optionInstruments,
+  instruments,
   callSide,
   selectedOptions,
   setSelectedOptions,
@@ -886,7 +871,7 @@ const HalfOptionChain = ({
 }) => {
   // Sort tickers in ascending order
   tickers = Object.values(tickers).sort((a, b) => {
-    const strike = (ticker) => optionInstruments[ticker.instrument_name].strike;
+    const strike = (ticker) => instruments[ticker.instrument_name].strike;
     return strike(a) - strike(b);
   });
 
@@ -942,7 +927,7 @@ const HalfOptionChain = ({
                 // best_ask_amount,
                 underlying_price,
               }) => {
-                const strike = optionInstruments[instrument_name].strike;
+                const strike = instruments[instrument_name].strike;
                 const mirrorColumns0 = mirrorColumns({ strike, delta });
                 return (
                   <tr
@@ -998,7 +983,7 @@ const OptionBasket = ({
   deribit,
   selectedOptions,
   setSelectedOptions,
-  optionInstruments,
+  instruments,
 }) => {
   // Delete option from the basket
   const deleteOption = (instrument_name) => () => {
@@ -1116,7 +1101,7 @@ const OptionBasket = ({
                 <OptionBasketRow
                   deribit={deribit}
                   key={instrument_name}
-                  instrument={optionInstruments[instrument_name]}
+                  instrument={instruments[instrument_name]}
                   deleteOption={deleteOption}
                   quantity={quantities[instrument_name]}
                   setQuantity={setQuantity(instrument_name)}
