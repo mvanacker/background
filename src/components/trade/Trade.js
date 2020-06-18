@@ -1988,7 +1988,7 @@ const NumericalSlider = ({ value, setValue, className = '', ...props }) => {
   return (
     <div className="w3-mobile w3-row">
       <div className="w3-col w3-mobile">
-        <NumericalInput {...valueProps} {...props} />
+        <NumericalInput className={className} {...valueProps} {...props} />
       </div>
       <div className="w3-col w3-mobile">
         <input
