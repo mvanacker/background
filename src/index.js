@@ -8,7 +8,6 @@ import './index.css';
 
 import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { CookiesProvider } from 'react-cookie';
 
 // Redux
 import { Provider } from 'react-redux';
@@ -34,19 +33,17 @@ document.body.classList.add('w3-theme-dark');
 
 // Render application
 ReactDOM.render(
-  <CookiesProvider>
-    <Provider store={store}>
-      <FinancialDisclaimer>
-        <Router>
-          <ScrollToTopOnNav />
-          <Deribit>
-            <Content left={<Left />} right={Right} />
-          </Deribit>
-        </Router>
-        <CookieDisclaimer />
-      </FinancialDisclaimer>
-    </Provider>
-  </CookiesProvider>,
+  <Provider store={store}>
+    <FinancialDisclaimer>
+      <Router>
+        <ScrollToTopOnNav />
+        <Deribit>
+          <Content left={<Left />} right={Right} />
+        </Deribit>
+      </Router>
+      <CookieDisclaimer />
+    </FinancialDisclaimer>
+  </Provider>,
   document.getElementById('root')
 );
 
