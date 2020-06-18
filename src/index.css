@@ -450,10 +450,12 @@ div.my-option-basket-hide {
 }
 
 div.my-option-basket-show {
+  position: fixed;
+  bottom: 0px;
+  border-bottom: 0px;
+  left: 50%;
   width: fit-content;
-  margin: 0 auto 7px;
   padding: 8px 6px 12px 6px;
-  align-self: flex-end;
 }
 
 table.my-option-basket td,

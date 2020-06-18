@@ -1053,71 +1053,69 @@ const OptionBasket = ({
   });
 
   // Render basket
-  return (
+  return !visible ? (
+    <div className="w3-theme-l1 my-round-top my-transition my-pointer my-white-glow my-option-basket-show">
+      <DoubleUp
+        title={`Show ${selectedOptions.size} options`}
+        onClick={() => setVisible(true)}
+      />
+    </div>
+  ) : (
     <div className="my-option-basket-outer-container">
-      {!visible ? (
-        <div className="w3-theme-l1 my-round-top my-transition my-pointer my-white-glow my-option-basket-show">
-          <DoubleUp
-            title={`Show ${selectedOptions.size} options`}
-            onClick={() => setVisible(true)}
-          />
-        </div>
-      ) : (
-        <div className="w3-card w3-theme-l1 my-round my-option-basket-inner-container">
-          <table className="w3-table w3-centered w3-striped-l2 my-option-basket">
-            <thead className="my-sticky-thead">
-              <tr className="w3-theme-l1">
-                <th>
-                  <div
-                    className="w3-theme-l2 my-round my-transition my-pointer my-white-glow my-option-basket-hide"
-                    onClick={() => setVisible(false)}
-                  >
-                    <DoubleDown title="Hide" />
-                  </div>
-                </th>
-                <th>Expiration</th>
-                <th>Strike</th>
-                <th>Type</th>
-                <th>Bid</th>
-                <th>Ask</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Side</th>
-                <th>Label</th>
-                <th>
-                  <OrderAllOptionsButton onClick={() => {}}>
-                    Analyze all
-                  </OrderAllOptionsButton>
-                </th>
-                <th>
-                  <OrderAllOptionsButton onClick={orderAll}>
-                    Order all
-                  </OrderAllOptionsButton>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from(selectedOptions).map((instrument_name) => (
-                <OptionBasketRow
-                  deribit={deribit}
-                  key={instrument_name}
-                  instrument={instruments[instrument_name]}
-                  deleteOption={deleteOption}
-                  quantity={quantities[instrument_name]}
-                  setQuantity={setQuantity(instrument_name)}
-                  price={prices[instrument_name]}
-                  setPrice={setPrice(instrument_name)}
-                  side={sides[instrument_name]}
-                  setSide={setSide(instrument_name)}
-                  label={labels[instrument_name]}
-                  setLabel={setLabel(instrument_name)}
-                  order={order(instrument_name)}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <div className="w3-card w3-theme-l1 my-round my-option-basket-inner-container">
+        <table className="w3-table w3-centered w3-striped-l2 my-option-basket">
+          <thead className="my-sticky-thead">
+            <tr className="w3-theme-l1">
+              <th>
+                <div
+                  className="w3-theme-l2 my-round my-transition my-pointer my-white-glow my-option-basket-hide"
+                  onClick={() => setVisible(false)}
+                >
+                  <DoubleDown title="Hide" />
+                </div>
+              </th>
+              <th>Expiration</th>
+              <th>Strike</th>
+              <th>Type</th>
+              <th>Bid</th>
+              <th>Ask</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Side</th>
+              <th>Label</th>
+              <th>
+                <OrderAllOptionsButton onClick={() => {}}>
+                  Analyze all
+                </OrderAllOptionsButton>
+              </th>
+              <th>
+                <OrderAllOptionsButton onClick={orderAll}>
+                  Order all
+                </OrderAllOptionsButton>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from(selectedOptions).map((instrument_name) => (
+              <OptionBasketRow
+                deribit={deribit}
+                key={instrument_name}
+                instrument={instruments[instrument_name]}
+                deleteOption={deleteOption}
+                quantity={quantities[instrument_name]}
+                setQuantity={setQuantity(instrument_name)}
+                price={prices[instrument_name]}
+                setPrice={setPrice(instrument_name)}
+                side={sides[instrument_name]}
+                setSide={setSide(instrument_name)}
+                label={labels[instrument_name]}
+                setLabel={setLabel(instrument_name)}
+                order={order(instrument_name)}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
