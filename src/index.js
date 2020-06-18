@@ -29,27 +29,22 @@ import Content from './components/Content';
 import Left from './components/Left';
 import Right from './components/Right';
 
-// When a page has a vertical scrollbar, a white band appears at its bottom.
-// To counter this, I place the background color directly on the <html> tag,
-// which does stretch all the way to the bottom, unlike the <body> element or
-// the <div id="root"> element, even when the page has a vertical scrollbar.
+// Use JS to add themed background-color to <body>
 document.body.classList.add('w3-theme-dark');
 
 // Render application
 ReactDOM.render(
   <CookiesProvider>
     <Provider store={store}>
-      <div className="w3-theme-dark w3-text-white">
-        <FinancialDisclaimer>
-          <Router>
-            <ScrollToTopOnNav />
-            <Deribit>
-              <Content left={<Left />} right={Right} />
-            </Deribit>
-          </Router>
-          <CookieDisclaimer />
-        </FinancialDisclaimer>
-      </div>
+      <FinancialDisclaimer>
+        <Router>
+          <ScrollToTopOnNav />
+          <Deribit>
+            <Content left={<Left />} right={Right} />
+          </Deribit>
+        </Router>
+        <CookieDisclaimer />
+      </FinancialDisclaimer>
     </Provider>
   </CookiesProvider>,
   document.getElementById('root')

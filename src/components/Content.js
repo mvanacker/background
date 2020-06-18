@@ -46,14 +46,12 @@ export default ({ left, right }) => {
           {visible ? <DoubleLeft title="Hide" /> : <DoubleRight title="Show" />}
         </div>
       )}
-      <div className="my-content">
-        {enabled && visible && (
-          <div style={{ minWidth: LEFT_WIDTH_PX, width: LEFT_WIDTH_PX }}>
-            {left}
-          </div>
-        )}
-        {right({ width })}
-      </div>
+      {enabled && visible && (
+        <div style={{ minWidth: LEFT_WIDTH_PX, width: LEFT_WIDTH_PX }}>
+          {left}
+        </div>
+      )}
+      {right({ width })}
     </>
   );
 };
