@@ -337,9 +337,9 @@ const DeribitInterface = ({ deribit, ...props }) => {
       </Panel>
       <Panel>
         <Position
-          portfolio={portfolio}
           positions={positions}
           instruments={instrumentsRef.current}
+          futuresTickers={futuresTickers}
         />
       </Panel>
       <Panel title="Order Futures">
@@ -365,7 +365,13 @@ const DeribitInterface = ({ deribit, ...props }) => {
 };
 
 // Position
-const Position = ({ deribit, portfolio, positions, instruments, ...props }) => {
+const Position = ({
+  deribit,
+  positions,
+  instruments,
+  futuresTickers,
+  ...props
+}) => {
   // Separate futures from options positions
   // const futures = useRef({});
   // const options = useRef({});
@@ -426,6 +432,7 @@ const Position = ({ deribit, portfolio, positions, instruments, ...props }) => {
           options={positionsRef.current.option}
           deselectedOptions={deselectedOptions}
           deselectedFutures={deselectedFutures}
+          futuresTickers={futuresTickers}
         />
       </div>
       <div className="my-position-list-container">
@@ -497,6 +504,7 @@ const PnlChart = ({
   options,
   deselectedFutures,
   deselectedOptions,
+  futuresTickers,
   width = 400,
   height = 400,
   resolution = 1,
@@ -510,9 +518,13 @@ const PnlChart = ({
   const expirationPath = useRef();
   const currentPath = useRef();
   const zeroLine = useRef();
-  const verticalRulers = useRef();
+  const verticalLines = useRef();
   const xAxis = useRef();
   const yAxis = useRef();
+
+  // Parts of the initial construction needed in subsequent module(s)
+  const x = useRef({ scale: null, left: null, right: null });
+  const y = useRef({ scale: null, top: null, bottom: null });
 
   useEffect(() => {
     if (!(Object.keys(options).length && Object.keys(futures).length)) {
@@ -533,22 +545,22 @@ const PnlChart = ({
     const keyPrices = entries.concat(strikes);
 
     // Compute x-axis domain
-    let [xMin, xMax] = extent(keyPrices);
-    xMin -= padding.left;
-    xMax += padding.right;
+    [x.current.left, x.current.right] = extent(keyPrices);
+    x.current.left -= padding.left;
+    x.current.right += padding.right;
 
     // Draw x-axis
-    const xScale = scaleLinear()
-      .domain([xMin, xMax])
+    x.current.scale = scaleLinear()
+      .domain([x.current.left, x.current.right])
       .range([margin.left, width - margin.right]);
     const xGroup = select(xAxis.current);
     xGroup
       .attr('transform', `translate(0,${height - margin.bottom})`)
-      .call(axisBottom(xScale).tickValues(keyPrices).tickSizeOuter(0));
+      .call(axisBottom(x.current.scale).tickValues(keyPrices).tickSizeOuter(0));
 
     // Set up PNL computation
     const computeOption = { call: compute_call, put: compute_put };
-    const pnl = {
+    const pnlPoints = {
       quote: { expiration: [], current: [] },
       // base: { expiration: [], current: [] },
     };
@@ -558,12 +570,12 @@ const PnlChart = ({
     const years = (time) => (time - now) / (1000 * 60 * 60 * 24 * 365.25);
 
     // Set up y-domain computation
-    let yMin = +Infinity;
-    let yMax = -Infinity;
+    y.current.bottom = +Infinity;
+    y.current.top = -Infinity;
 
     // Do computations
-    for (let x = xMin; x <= xMax; x++) {
-      let y = { expiration: 0, current: 0 };
+    for (let price = x.current.left; price <= x.current.right; price++) {
+      let pnlPoint = { expiration: 0, current: 0 };
       selectedOptions.forEach(
         ({
           index_price,
@@ -576,7 +588,7 @@ const PnlChart = ({
           // TODO [critical] simply setting volatility to a constant (0.75) here
           // The main issue is elegantly avoiding many redundant rerenders per second
           const optionPrice = (yearsRemaining) =>
-            computeOption[option_type](x, strike, 0.75, yearsRemaining);
+            computeOption[option_type](price, strike, 0.75, yearsRemaining);
 
           // Note: average_price is in base currency (BTC)
           //       while x and strike are in quote currency ($)
@@ -585,63 +597,74 @@ const PnlChart = ({
             size * optionPrice - Math.sign(size) * average_price * index_price;
 
           // Compute
-          y.expiration += computePnl(optionPrice(0));
-          y.current += computePnl(optionPrice(years(expiration_timestamp)));
+          pnlPoint.expiration += computePnl(optionPrice(0));
+          pnlPoint.current += computePnl(
+            optionPrice(years(expiration_timestamp))
+          );
         }
       );
-      pnl.quote.expiration.push({ x, y: y.expiration });
-      pnl.quote.current.push({ x, y: y.current });
-      // pnl.base.expiration.push({ x, y: y.expiration / x });
-      // pnl.base.current.push({ x, y: y.current / x });
+      pnlPoints.quote.expiration.push({ x: price, y: pnlPoint.expiration });
+      pnlPoints.quote.current.push({ x: price, y: pnlPoint.current });
+      // pnlPoints.base.expiration.push({ x: price, y: pnlPoint.expiration / price });
+      // pnlPoints.base.current.push({ x: price, y: pnlPoint.current / price });
 
       // Conduct measurements for the y-domain while we're here
-      yMin = Math.min(yMin, y.expiration);
-      yMax = Math.max(yMax, y.expiration);
+      y.current.bottom = Math.min(y.current.bottom, pnlPoint.expiration);
+      y.current.top = Math.max(y.current.top, pnlPoint.expiration);
     }
 
     // Apply padding to y-axis
-    yMin -= padding.bottom;
-    yMax += padding.top;
+    y.current.bottom -= padding.bottom;
+    y.current.top += padding.top;
 
     // Draw y-axis
-    const yScale = scaleLinear()
-      .domain([yMin, yMax])
+    y.current.scale = scaleLinear()
+      .domain([y.current.bottom, y.current.top])
       .range([height - margin.bottom, margin.top]);
     const yGroup = select(yAxis.current);
     yGroup
       .attr('transform', `translate(${margin.left},0)`)
-      .call(axisLeft(yScale).ticks(5).tickSizeOuter(0));
+      .call(axisLeft(y.current.scale).ticks(5).tickSizeOuter(0));
 
     // Clip plots
     select(clipRect.current)
-      .attr('x', xScale(xMin))
-      .attr('y', yScale(yMax))
-      .attr('width', xScale(xMax) - xScale(xMin))
-      .attr('height', yScale(yMin) - yScale(yMax));
+      .attr('x', x.current.scale(x.current.left))
+      .attr('y', y.current.scale(y.current.top))
+      .attr(
+        'width',
+        x.current.scale(x.current.right) - x.current.scale(x.current.left)
+      )
+      .attr(
+        'height',
+        y.current.scale(y.current.bottom) - y.current.scale(y.current.top)
+      );
 
     // Draw plots
     const pnlLine = line()
-      .x((d) => xScale(d.x))
-      .y((d) => yScale(d.y));
-    select(expirationPath.current).attr('d', pnlLine(pnl.quote.expiration));
-    select(currentPath.current).attr('d', pnlLine(pnl.quote.current));
+      .x((d) => x.current.scale(d.x))
+      .y((d) => y.current.scale(d.y));
+    select(expirationPath.current).attr(
+      'd',
+      pnlLine(pnlPoints.quote.expiration)
+    );
+    select(currentPath.current).attr('d', pnlLine(pnlPoints.quote.current));
 
     // Draw zero line
     select(zeroLine.current)
-      .attr('x1', xScale(xMin))
-      .attr('y1', yScale(0))
-      .attr('x2', xScale(xMax))
-      .attr('y2', yScale(0));
+      .attr('x1', x.current.scale(x.current.left))
+      .attr('y1', y.current.scale(0))
+      .attr('x2', x.current.scale(x.current.right))
+      .attr('y2', y.current.scale(0));
 
     // Draw vertical rulers
-    select(verticalRulers.current)
+    select(verticalLines.current)
       .selectAll('line')
       .data(keyPrices)
       .join('line')
-      .attr('x1', (price) => xScale(price))
-      .attr('y1', yScale(yMax))
-      .attr('x2', (price) => xScale(price))
-      .attr('y2', yScale(yMin))
+      .attr('x1', (price) => x.current.scale(price))
+      .attr('x2', (price) => x.current.scale(price))
+      .attr('y1', y.current.scale(y.current.top))
+      .attr('y2', y.current.scale(y.current.bottom))
       .attr('class', 'my-grid-line');
 
     // Clean up axes
@@ -667,6 +690,36 @@ const PnlChart = ({
     padding.left,
   ]);
 
+  const priceLine = useRef();
+  const priceDot = useRef();
+  useEffect(() => {
+    if (!(futuresTickers && Object.keys(futuresTickers).length)) return;
+    const price = futuresTickers['BTC-PERPETUAL'].last_price;
+    const _x = x.current.scale(price);
+    const _y = {
+      top: y.current.scale(y.current.top),
+      bottom: y.current.scale(y.current.bottom),
+    };
+    select(priceLine.current)
+      .attr('x1', _x)
+      .attr('x2', _x)
+      .attr('y1', _y.top)
+      .attr('y2', _y.bottom);
+    select(priceDot.current)
+      .attr('cx', _x)
+      .attr('cy', _y.bottom + 1);
+    // Concern: what if perpetual price is off the chart?
+    // Proposal: add futuresTickers to "big construction"'s dependencylist
+    //           add perpetual contract's price P to keyPrices
+    //           if x.current.scale === null // !hasAlreadyDrawnAtLeastOnce
+    //             // do initial draw
+    //           else
+    //             if P is not in x-domain, mend the scale so it fits, redraw
+    //             else redraw price line only
+    // Hesitation: code gets complicated, feels dirty, feels like there should
+    //             be a more elegant solution
+  }, [futuresTickers]);
+
   const clipId = 'my-pnl-chart-clip';
   const clipUrl = `url(#${clipId})`;
   return (
@@ -676,22 +729,16 @@ const PnlChart = ({
       </clipPath>
       <path
         ref={expirationPath}
-        strokeWidth={2}
-        fill="none"
-        stroke="white"
         clipPath={clipUrl}
+        className="my-expiration-path"
       />
-      <path
-        ref={currentPath}
-        strokeWidth={2}
-        fill="none"
-        stroke="orange"
-        clipPath={clipUrl}
-      />
+      <path ref={currentPath} clipPath={clipUrl} className="my-current-path" />
       <line ref={zeroLine} className="my-grid-line" />
-      <g ref={verticalRulers} />
+      <g ref={verticalLines} />
       <g ref={xAxis} />
       <g ref={yAxis} />
+      <line ref={priceLine} className="my-price-line" />
+      <circle ref={priceDot} className="my-price-dot" />
     </svg>
   );
 };

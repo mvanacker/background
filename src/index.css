@@ -503,10 +503,38 @@ svg.my-pnl-chart {
   border: 1px solid white;
 } */
 
+path.my-expiration-path,
+path.my-current-path {
+  fill: none;
+}
+
+path.my-expiration-path {
+  stroke-width: 2;
+  stroke: white;
+}
+
+path.my-current-path {
+  stroke-width: 2;
+  stroke: orange;
+}
+
 line.my-grid-line {
   stroke: white;
   opacity: 0.25;
   stroke-dasharray: 6 4;
+}
+
+line.my-price-line {
+  stroke: lightgreen;
+  stroke-width: 2;
+  stroke-dasharray: 3 2;
+}
+
+circle.my-price-dot {
+  stroke-width: 2;
+  fill: lightgreen;
+  stroke: white;
+  r: 4;
 }
 
 div.my-position-list-container {
