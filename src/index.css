@@ -106,24 +106,23 @@ nav.my-nav a.w3-bar-item:first-child {
 
 /* Hover effects */
 
-.my-fader {
+.my-fader,
+.my-white-glow {
   opacity: 0.6;
   transition: 0.3s;
 }
 
-.my-fader:hover {
+.my-fader:hover,
+.my-white-glow:hover {
   opacity: 1;
 }
 
 .my-white-glow {
   border: 1px solid rgba(255, 255, 255, 0.3);
-  opacity: 0.6;
 }
 
 .my-white-glow:hover {
-  box-shadow: 0 2px 5px 0px rgba(255, 255, 255, 0.16),
-    0 2px 10px 0px rgba(255, 255, 255, 0.12);
-  opacity: 1;
+  box-shadow: 0 2px 5px 0px rgba(255, 255, 255, 0.16);
 }
 
 /* Pointers */
@@ -548,20 +547,11 @@ div.my-right-content-inner-container {
 
 .my-left-toggle {
   position: fixed;
-  left: -1px;
+  left: 0px;
   bottom: 10px;
-  cursor: pointer;
   padding: 6px 8px 6px 12px;
-  opacity: 0.6;
-  transition: 0.3s;
   z-index: 4;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.my-left-toggle:hover {
-  box-shadow: 0 2px 5px 0px rgba(255, 255, 255, 0.16),
-    0 2px 10px 0px rgba(255, 255, 255, 0.12);
-  opacity: 1;
+  border-left: 0px;
 }
 
 div.my-left {
