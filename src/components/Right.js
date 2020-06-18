@@ -2,7 +2,6 @@ import React from 'react';
 import { Route } from 'react-router-dom';
 
 import Trade from './trade/Trade';
-import Options from './Options';
 
 // Puzzle pieces
 import Confluence from './puzzle/Confluence';
@@ -20,6 +19,7 @@ import Simulation from './easter-eggs/Simulation';
 import IV from './deprecated/IV';
 import GIV from './deprecated/GIV';
 import TradeJournal from './deprecated/TradeJournal';
+import Options from './deprecated/Options';
 
 // UI components
 import Navigation from './common/Navigation';
