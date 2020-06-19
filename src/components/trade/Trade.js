@@ -519,6 +519,7 @@ const PnlChart = ({
   height = 400,
   padding = { top: 100, right: 1000, bottom: 100, left: 1000 },
   margin = { top: 20, right: 30, bottom: 30, left: 55 },
+  minScaleWidthX = 1000,
   ...props
 }) => {
   // Refer to tickers objects so not every tick causes a repaint
@@ -541,10 +542,10 @@ const PnlChart = ({
   const x = useRef({ scale: null, left: null, right: null });
   const y = useRef({ scale: null, top: null, bottom: null });
 
+  const ready = Object.keys(options).length || Object.keys(futures).length;
+
   useEffect(() => {
-    if (!(Object.keys(options).length && Object.keys(futures).length)) {
-      return;
-    }
+    if (!ready) return;
 
     // Select positions, given sets of deselected positions (as props)
     const selectedPositions = (positions, deselectedPositions) =>
@@ -573,6 +574,14 @@ const PnlChart = ({
     [x.current.left, x.current.right] = extent(keyPrices);
     x.current.left -= padding.left;
     x.current.right += padding.right;
+
+    // Widen x-scale if necessary
+    const scaleWidthX = x.current.right - x.current.left;
+    if (scaleWidthX < minScaleWidthX) {
+      const extraWidth = minScaleWidthX - scaleWidthX / 2;
+      x.current.left += extraWidth;
+      x.current.right += extraWidth;
+    }
 
     // Set up x-scale
     x.current.scale = scaleLinear()
@@ -740,7 +749,9 @@ const PnlChart = ({
   const priceLine = useRef();
   const priceDot = useRef();
   useEffect(() => {
-    if (!(futuresTickers && Object.keys(futuresTickers).length)) return;
+    if (!ready) return;
+    if (!Object.keys(futuresTickers).length) return;
+
     const price = futuresTickers['BTC-PERPETUAL'].last_price;
     const _x = x.current.scale(price);
     const _y = {
