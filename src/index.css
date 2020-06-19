@@ -104,6 +104,10 @@ nav.my-nav a.w3-bar-item:first-child {
   text-decoration: none;
 }
 
+.my-uppercase {
+  text-transform: uppercase;
+}
+
 /* Hover effects */
 
 .my-fader,
@@ -649,31 +653,17 @@ svg.my-volume-flow-chart g.flow-grid line {
 
 /*** Recent trades */
 
-tr.my-recent-trade-buy {
+div.my-recent-trades {
+  display: grid;
+  grid-template-columns: auto 65px 120px auto;
+}
+
+div.my-recent-trades-buy {
   color: lime;
 }
 
-tr.my-recent-trade-sell {
+div.my-recent-trades-sell {
   color: rgb(235, 90, 90);
-}
-
-td.my-recent-trade-time {
-  text-align: right;
-}
-
-td.my-recent-trade-side {
-  text-transform: uppercase;
-  text-align: right;
-  width: 65px;
-}
-
-td.my-recent-trade-size {
-  text-align: center;
-  width: 120px;
-}
-
-td.my-recent-trade-price {
-  text-align: left;
 }
 
 /* Confluence */

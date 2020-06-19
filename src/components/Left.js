@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Fragment, Component } from 'react';
 
 import { Link } from 'react-router-dom';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -142,53 +142,39 @@ function Overview(props) {
   );
 }
 
-function BitmexRecentTrades(props) {
-  const squish = (size) => {
-    if (size >= 1000000) {
-      const first = Math.trunc(size / 100000);
-      if (first % 10 === 0) {
-        return `** ${Math.trunc(first / 10)}M **`;
-      }
-      return `**${first / 10}M**`;
-    } else if (size >= 500000) {
-      return ` *${Math.trunc(size / 1000)}K* `;
-    } else if (size >= 100000) {
-      return `  ${Math.trunc(size / 1000)}K  `;
-    }
-    return size;
-  };
+const BitmexRecentTrades = ({ data }) => (
+  <Panel>
+    <div className="my-recent-trades monospace w3-large">
+      {data.map(({ timestamp, side, size, price }, i) => {
+        const sideClass =
+          side === 'Buy' ? 'my-recent-trades-buy' : 'my-recent-trades-sell';
+        return (
+          <Fragment key={i}>
+            <div className={`my-recent-trades-time ${sideClass}`}>
+              {timestamp.split(' ')[1].split('.')[0]}
+            </div>
+            <div
+              className={`my-recent-trades-side ${sideClass} my-uppercase w3-right-align`}
+            >
+              {side}
+            </div>
+            <div className={`my-recent-trades-size ${sideClass}`}>
+              {squish(size)}
+            </div>
+            <div
+              className={`my-recent-trades-price ${sideClass} w3-left-align`}
+            >
+              {price}
+            </div>
+          </Fragment>
+        );
+      })}
+    </div>
+  </Panel>
+);
 
-  const size_class = (size) => {
-    if (size >= 1000000) {
-      return ' w3-large';
-    } else if (size >= 500000) {
-      return ' w3-medium';
-    }
-    return ' w3-medium';
-  };
-
-  return (
-    <Panel>
-      <table className="w3-content monospace">
-        <tbody>
-          {props.data.map((trade, i) => {
-            const rowClass =
-              trade.side === 'Buy'
-                ? 'my-recent-trade-buy'
-                : 'my-recent-trade-sell';
-            return (
-              <tr className={rowClass + size_class(trade.size)} key={i}>
-                <td className="my-recent-trade-time">
-                  {trade.timestamp.split(' ')[1].split('.')[0]}
-                </td>
-                <td className="my-recent-trade-side">{trade.side}</td>
-                <td className="my-recent-trade-size">{squish(trade.size)}</td>
-                <td className="my-recent-trade-price">{trade.price}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </Panel>
-  );
-}
+const squish = (size) => {
+  const first = Math.trunc(size / 100000);
+  const trunc = first % 10 === 0 ? Math.trunc : (x) => x;
+  return `${trunc(first / 10)}M`;
+};
