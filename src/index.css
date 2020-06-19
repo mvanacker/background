@@ -713,6 +713,13 @@ div.my-indicator-overview {
   margin: 16px 16px 16px 32px !important;
 }
 
+/* About */
+div.my-bubble {
+  font-family: Roboto Slab, Georgia, serif;
+  width: 100%;
+  max-width: 300px;
+}
+
 /******************************************************************************/
 /***   Check classes below for obsoletion (after Deribit component is done)   */
 /******************************************************************************/
