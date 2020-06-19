@@ -506,15 +506,17 @@ svg.my-pnl-chart {
 path.my-expiration-path,
 path.my-current-path {
   fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  shape-rendering: auto;
 }
 
 path.my-expiration-path {
-  stroke-width: 2;
   stroke: white;
 }
 
 path.my-current-path {
-  stroke-width: 2;
   stroke: orange;
 }
 
