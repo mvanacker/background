@@ -76,7 +76,7 @@ export default class extends Component {
 
   render() {
     return (
-      <>
+      <div className="my-left-inner-container">
         <Title />
         <div className="my-full-stretch my-left">
           {isNaN(this.state.dominance) ? (
@@ -92,7 +92,7 @@ export default class extends Component {
             </>
           )}
         </div>
-      </>
+      </div>
     );
   }
 }

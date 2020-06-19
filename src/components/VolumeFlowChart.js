@@ -28,7 +28,7 @@ export default memo(() => {
 
   // Decide dimensions
   const margin = { top: 25, bottom: 25, flow: 65, price: 50, openInterest: 45 };
-  const width = 468;
+  const width = 450;
   const height = 300;
 
   // Reference to SVG's DOM-element

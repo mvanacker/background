@@ -47,7 +47,10 @@ export default ({ left, right }) => {
         </div>
       )}
       {enabled && visible && (
-        <div style={{ minWidth: LEFT_WIDTH_PX, width: LEFT_WIDTH_PX }}>
+        <div
+          className="my-left-outer-container"
+          style={{ minWidth: LEFT_WIDTH_PX, width: LEFT_WIDTH_PX }}
+        >
           {left}
         </div>
       )}

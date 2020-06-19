@@ -24,28 +24,13 @@ html,
 body {
   height: 100%;
   min-height: 100%;
+  overflow: hidden;
 }
 
 div#root {
   display: flex;
   flex-flow: row nowrap;
   align-content: stretch;
-}
-
-/* Navigation styling */
-
-nav.my-nav {
-  position: sticky;
-  z-index: 5;
-  font-weight: 500;
-}
-
-nav.my-nav a.w3-bar-item {
-  padding: 8px 16px;
-}
-
-nav.my-nav a.w3-bar-item:first-child {
-  padding-left: 20px;
 }
 
 /* General add-ons */
@@ -561,25 +546,47 @@ ul.my-position-list li input[type='checkbox'] {
 
 /* Content */
 
+/** Navigation styling */
+
+div.my-nav-container {
+  height: 80px;
+}
+
+nav.my-nav {
+  position: sticky;
+  z-index: 5;
+  font-weight: 500;
+}
+
+nav.my-nav a.w3-bar-item {
+  padding: 8px 16px;
+}
+
+nav.my-nav a.w3-bar-item:first-child {
+  padding-left: 20px;
+}
+
+/** Right */
+
 div.my-right {
   flex: 1 1 auto;
 }
 
 div.my-right-content-outer-container {
   display: flex;
+  min-height: calc(100vh - 80px);
+  max-height: calc(100vh - 80px);
   height: auto;
-  min-height: calc(100vh - 120px);
+  overflow-y: auto;
 }
 
 div.my-right-content-inner-container {
-  /* width: 100%;
-  text-align: center; */
   margin: auto;
 }
 
 /** Left */
 
-.my-left-toggle {
+div.my-left-toggle {
   position: fixed;
   left: 0px;
   bottom: 10px;
@@ -588,15 +595,32 @@ div.my-right-content-inner-container {
   border-left: 0px;
 }
 
+div.my-left-outer-container {
+  position: sticky;
+  top: 0;
+}
+
+div.my-left-inner-container {
+  height: 100vh;
+  max-height: 100vh;
+}
+
 div.my-left {
   display: flex;
   flex-flow: column nowrap;
   align-items: stretch;
   text-align: center;
+  height: calc(100vh - 153px);
+  overflow-y: auto;
+  width: calc(100% - 16px);
+}
+
+div.my-left > div:first-child {
+  margin-top: 16px !important;
 }
 
 div.my-left > div {
-  margin: 8px 25px 8px 16px !important;
+  margin: 8px 16px !important;
 }
 
 /*** Title */
@@ -604,8 +628,9 @@ div.my-left > div {
 div.my-title {
   top: 0;
   position: sticky;
-  margin: 0 8px 8px -8px;
+  margin: 0 8px 1px -8px;
   text-align: center;
+  height: 153px;
 }
 
 div.my-title h1 {

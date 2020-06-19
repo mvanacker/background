@@ -33,8 +33,9 @@ export default ({ width }) => {
   );
   return (
     <div className="my-right">
-      <Menu />
-
+      <div className="my-nav-container">
+        <Menu />
+      </div>
       <div className="my-right-content-outer-container">
         <div className="my-right-content-inner-container">
           <Route exact path="/" component={withDimensions(MovingAverages)} />
