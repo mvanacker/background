@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef, useState } from 'react';
+import React, { memo, useEffect, useRef } from 'react';
 
 import { select } from 'd3-selection';
 import { extent, max } from 'd3-array';
@@ -22,10 +22,6 @@ const MAX_FLOW = 10000000;
 const ALARM_SCALAR = 75;
 
 export default memo(() => {
-  // State
-  // const [isDrawing, setIsDrawing] = useState(false);
-  const isDrawing = true;
-
   // Decide dimensions
   const margin = { top: 25, bottom: 25, flow: 65, price: 50, openInterest: 45 };
   const width = 450;
@@ -352,42 +348,40 @@ export default memo(() => {
                 openInterest.push({ x: next_x, y: lastOpenInterest });
                 openInterest.shift();
 
-                if (isDrawing) {
-                  const svg = select(d3svg.current);
+                const svg = select(d3svg.current);
 
-                  // Update bottom axis
-                  x.domain([buyFlow[0].x, next_x]);
-                  svg.select('g.x-axis').call(xAxis);
+                // Update bottom axis
+                x.domain([buyFlow[0].x, next_x]);
+                svg.select('g.x-axis').call(xAxis);
 
-                  // Update flow axis
-                  flowScale.domain([
-                    MIN_FLOW,
-                    Math.max(
-                      MAX_FLOW,
-                      max(buyFlow, (d) => d.y),
-                      max(sellFlow, (d) => d.y)
-                    ),
-                  ]);
-                  svg.select('g.flow-axis').call(flowAxis);
+                // Update flow axis
+                flowScale.domain([
+                  MIN_FLOW,
+                  Math.max(
+                    MAX_FLOW,
+                    max(buyFlow, (d) => d.y),
+                    max(sellFlow, (d) => d.y)
+                  ),
+                ]);
+                svg.select('g.flow-axis').call(flowAxis);
 
-                  // Update price axis
-                  priceScale.domain(stretchLinear(extent(price, (d) => d.y)));
-                  svg.select('g.price-axis').call(priceAxis);
+                // Update price axis
+                priceScale.domain(stretchLinear(extent(price, (d) => d.y)));
+                svg.select('g.price-axis').call(priceAxis);
 
-                  // Update open interest axis
-                  openInterestScale.domain(
-                    stretchLinear(extent(openInterest, (d) => d.y))
-                  );
-                  svg.select('g.open-interest-axis').call(openInterestAxis);
+                // Update open interest axis
+                openInterestScale.domain(
+                  stretchLinear(extent(openInterest, (d) => d.y))
+                );
+                svg.select('g.open-interest-axis').call(openInterestAxis);
 
-                  // Update paths
-                  svg
-                    .select('path#open-interest')
-                    .attr('d', openInterestLine(openInterest));
-                  svg.select('path#price').attr('d', priceLine(price));
-                  svg.select('path#buy-flow').attr('d', flowLine(buyFlow));
-                  svg.select('path#sell-flow').attr('d', flowLine(sellFlow));
-                }
+                // Update paths
+                svg
+                  .select('path#open-interest')
+                  .attr('d', openInterestLine(openInterest));
+                svg.select('path#price').attr('d', priceLine(price));
+                svg.select('path#buy-flow').attr('d', flowLine(buyFlow));
+                svg.select('path#sell-flow').attr('d', flowLine(sellFlow));
               })
 
               // Skip failed updates
@@ -440,19 +434,6 @@ export default memo(() => {
         width={width}
         height={height}
       />
-
-      {/* Draw option; TODO: optimize drawing */}
-      {/* <div className="w3-center w3-section">
-      <input
-        id="isDrawingId"
-        className="w3-check"
-        type="checkbox"
-        defaultChecked={isDrawing}
-        value={isDrawing}
-        onChange={e => setIsDrawing(e.target.checked)}
-      />{' '}
-      <label htmlFor="isDrawingId">Enable drawing (moderate CPU usage)</label>
-    </div> */}
     </div>
   );
 });

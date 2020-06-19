@@ -14,7 +14,6 @@ import Hvp from './puzzle/Hvp';
 // Easter eggs
 import Probs from './easter-eggs/Probs';
 import Futures from './easter-eggs/Futures';
-import Simulation from './easter-eggs/Simulation';
 
 // Deprecated components
 import IV from './deprecated/IV';
@@ -55,7 +54,6 @@ export default ({ width }) => {
           {/* Easter eggs */}
           <Route path="/probs" component={Probs} />
           <Route path="/futures" component={Futures} />
-          <Route path="/simulation" component={Simulation} />
 
           {/* Deprecated features */}
           <Route path="/iv" component={IV} />
