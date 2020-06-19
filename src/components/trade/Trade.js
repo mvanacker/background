@@ -521,7 +521,7 @@ const PnlChart = ({
   margin = { top: 20, right: 30, bottom: 30, left: 55 },
   ...props
 }) => {
-  //
+  // Refer to tickers objects so not every tick causes a repaint
   const tickersRef = useRef();
   useEffect(() => {
     tickersRef.current = { ...tickersRef.current, ...futuresTickers };
@@ -546,6 +546,7 @@ const PnlChart = ({
       return;
     }
 
+    // Select positions, given sets of deselected positions (as props)
     const selectedPositions = (positions, deselectedPositions) =>
       Object.values(positions).filter(
         (position) => !deselectedPositions.has(position.instrument_name)
@@ -573,13 +574,13 @@ const PnlChart = ({
     x.current.left -= padding.left;
     x.current.right += padding.right;
 
-    // Draw x-axis
+    // Set up x-scale
     x.current.scale = scaleLinear()
       .domain([x.current.left, x.current.right])
       .range([margin.left, width - margin.right]);
-    const xGroup = select(xAxis.current);
-    xGroup.selectAll('*').remove();
-    xGroup
+
+    // Draw x-axis
+    select(xAxis.current)
       .attr('transform', `translate(0,${height - margin.bottom})`)
       .call(axisBottom(x.current.scale).tickValues(keyPrices).tickSizeOuter(0))
       // Remove overlapping labels on the x-axis,
@@ -669,13 +670,13 @@ const PnlChart = ({
     y.current.bottom -= padding.bottom;
     y.current.top += padding.top;
 
-    // Draw y-axis
+    // Set up y-scale
     y.current.scale = scaleLinear()
       .domain([y.current.bottom, y.current.top])
       .range([height - margin.bottom, margin.top]);
-    const yGroup = select(yAxis.current);
-    yGroup.selectAll('*').remove();
-    yGroup
+
+    // Draw y-axis
+    select(yAxis.current)
       .attr('transform', `translate(${margin.left},0)`)
       .call(axisLeft(y.current.scale).ticks(5).tickSizeOuter(0));
 
@@ -709,7 +710,7 @@ const PnlChart = ({
       .attr('x2', x.current.scale(x.current.right))
       .attr('y2', y.current.scale(0));
 
-    // Draw vertical rulers
+    // Draw vertical lines
     select(verticalLines.current)
       .selectAll('line')
       .data(keyPrices)
