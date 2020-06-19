@@ -7,7 +7,6 @@ import { DATA_URI } from '../config';
 
 import VolumeFlowChart from './VolumeFlowChart';
 import Panel from './common/Panel';
-import LabeledRow from './common/LabeledRow';
 import { Loading128 } from './common/Icons';
 import { useLocal } from '../hooks/useStorage';
 
@@ -127,17 +126,15 @@ function Overview(props) {
   const { dominance, fearAndGreed } = props.state;
   return (
     <Panel>
-      <ul className="w3-ul">
-        <li>
-          <LabeledRow label="Dominance">{dominance}%</LabeledRow>
-        </li>
-        <li>
-          <LabeledRow label="Fear and Greed">
-            {fearAndGreed.value}{' '}
-            <small>({fearAndGreed.value_classification})</small>
-          </LabeledRow>
-        </li>
-      </ul>
+      <div className="my-overview">
+        <div className="w3-right-align">Dominance</div>
+        <div className="w3-left-align">{dominance}%</div>
+        <div className="w3-right-align">Fear and Greed</div>
+        <div className="w3-left-align">
+          {fearAndGreed.value}{' '}
+          <small>({fearAndGreed.value_classification})</small>
+        </div>
+      </div>
     </Panel>
   );
 }

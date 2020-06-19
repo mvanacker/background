@@ -621,6 +621,15 @@ textarea.my-notes {
   overflow: hidden;
 }
 
+/*** Overview */
+
+div.my-overview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 16px;
+  row-gap: 8px;
+}
+
 /*** Volume flow chart */
 
 div.my-flow-numbers-container {
