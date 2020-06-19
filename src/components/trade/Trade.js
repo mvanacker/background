@@ -13,6 +13,8 @@ import { scaleLinear } from 'd3-scale';
 import { axisLeft, axisBottom } from 'd3-axis';
 import { line } from 'd3-shape';
 
+import { removeOverlap, removeOverlapWithDatum } from '../../util/d3-axis-util';
+
 import Panel, { PanelTitle } from '../common/Panel';
 import Lock from '../common/Lock';
 import BTC from '../common/Bitcoin';
@@ -388,7 +390,6 @@ const Position = ({
         };
       }
     });
-    console.log(positionsRef.current);
 
     // Compute initial greeks
     setGreeks(computeGreeks(Object.values(positionsRef.current.option)));
@@ -407,7 +408,6 @@ const Position = ({
 
   // Recompute greeks based on which positions are selected
   useEffect(() => {
-    console.log('computing greeks');
     setGreeks(
       computeGreeks(
         Object.values(positionsRef.current.option).filter(
@@ -427,13 +427,23 @@ const Position = ({
         <Greek>𝜈 {greeks.vega}</Greek>
       </div>
       <div className="my-pnl-chart-container">
-        <PnlChart
-          futures={positionsRef.current.future}
-          options={positionsRef.current.option}
-          deselectedOptions={deselectedOptions}
-          deselectedFutures={deselectedFutures}
-          futuresTickers={futuresTickers}
-        />
+        {futuresTickers &&
+          Object.keys(positionsRef.current.future).length &&
+          Object.keys(positionsRef.current.future).every(
+            (instrument_name) => instrument_name in futuresTickers
+          ) && (
+            // Only render if futuresTickers is set,
+            // as a workaround to conditionally call the first useEffect/drawing
+            // otherwise its dependencies won't have updated
+            // by the time futuresTickers is first set
+            <PnlChart
+              futures={positionsRef.current.future}
+              options={positionsRef.current.option}
+              deselectedOptions={deselectedOptions}
+              deselectedFutures={deselectedFutures}
+              futuresTickers={futuresTickers}
+            />
+          )}
       </div>
       <div className="my-position-list-container">
         <PositionList
@@ -511,6 +521,12 @@ const PnlChart = ({
   margin = { top: 20, right: 30, bottom: 30, left: 55 },
   ...props
 }) => {
+  //
+  const tickersRef = useRef();
+  useEffect(() => {
+    tickersRef.current = { ...tickersRef.current, ...futuresTickers };
+  }, [futuresTickers]);
+
   // References to elements inside the SVG
   // These will be the subjects of D3 manipulations
   const clipRect = useRef();
@@ -529,7 +545,6 @@ const PnlChart = ({
     if (!(Object.keys(options).length && Object.keys(futures).length)) {
       return;
     }
-    console.log('drawing axes');
 
     const selectedPositions = (positions, deselectedPositions) =>
       Object.values(positions).filter(
@@ -538,10 +553,20 @@ const PnlChart = ({
     const selectedFutures = selectedPositions(futures, deselectedFutures);
     const selectedOptions = selectedPositions(options, deselectedOptions);
 
-    // Isolate entries and strikes [TODO normalize futures entries]
-    const entries = selectedFutures.map((future) => future.average_price);
+    // Normalize futures entries
+    const perpetual_price = tickersRef.current['BTC-PERPETUAL'].last_price;
+    selectedFutures.forEach((future) => {
+      future.average_price_norm =
+        (perpetual_price * future.average_price) /
+        tickersRef.current[future.instrument_name].last_price;
+    });
+
+    // Isolate (normalized) entries and strikes
+    const entries = selectedFutures.map((future) => future.average_price_norm);
     const strikes = selectedOptions.map((option) => option.strike);
-    const keyPrices = entries.concat(strikes);
+    const keyPrices = [...entries, ...strikes, perpetual_price].sort(
+      (a, b) => a - b
+    );
 
     // Compute x-axis domain
     [x.current.left, x.current.right] = extent(keyPrices);
@@ -553,9 +578,14 @@ const PnlChart = ({
       .domain([x.current.left, x.current.right])
       .range([margin.left, width - margin.right]);
     const xGroup = select(xAxis.current);
+    xGroup.selectAll('*').remove();
     xGroup
       .attr('transform', `translate(0,${height - margin.bottom})`)
-      .call(axisBottom(x.current.scale).tickValues(keyPrices).tickSizeOuter(0));
+      .call(axisBottom(x.current.scale).tickValues(keyPrices).tickSizeOuter(0))
+      // Remove overlapping labels on the x-axis,
+      // but make sure perpetual price takes priority
+      .call(removeOverlapWithDatum, perpetual_price)
+      .call(removeOverlap);
 
     // Set up PNL computation
     const computeOption = { call: compute_call, put: compute_put };
@@ -580,6 +610,8 @@ const PnlChart = ({
       price += resolution
     ) {
       let pnlPoint = { expiration: 0, current: 0 };
+
+      // Options PNL
       selectedOptions.forEach(
         ({
           index_price,
@@ -591,28 +623,44 @@ const PnlChart = ({
         }) => {
           // TODO [critical] simply setting volatility to a constant (0.75) here
           // The main issue is elegantly avoiding many redundant rerenders per second
-          const optionPrice = (yearsRemaining) =>
-            computeOption[option_type](price, strike, 0.75, yearsRemaining);
+          // const optionPrice = (yearsRemaining) =>
+          //   computeOption[option_type](price, strike, 0.75, yearsRemaining);
 
           // Note: average_price is in base currency (BTC)
           //       while x and strike are in quote currency ($)
           // Normalize to quote currency with index_price for now
-          const computePnl = (optionPrice) =>
-            size * optionPrice - Math.sign(size) * average_price * index_price;
+          const computePnl = (yearsRemaining) => {
+            const optionPrice = computeOption[option_type](
+              price,
+              strike,
+              0.75,
+              yearsRemaining
+            );
+            return (
+              size * optionPrice - Math.sign(size) * average_price * index_price
+            );
+          };
 
           // Compute
-          pnlPoint.expiration += computePnl(optionPrice(0));
-          pnlPoint.current += computePnl(
-            optionPrice(years(expiration_timestamp))
-          );
+          pnlPoint.expiration += computePnl(0);
+          pnlPoint.current += computePnl(years(expiration_timestamp));
         }
       );
+
+      // Futures PNL
+      selectedFutures.forEach(({ average_price_norm, size }) => {
+        const pnl = size * (1 - average_price_norm / price);
+        pnlPoint.expiration += pnl;
+        pnlPoint.current += pnl;
+      });
+
+      // Tally
       pnlPoints.quote.expiration.push({ x: price, y: pnlPoint.expiration });
       pnlPoints.quote.current.push({ x: price, y: pnlPoint.current });
       // pnlPoints.base.expiration.push({ x: price, y: pnlPoint.expiration / price });
       // pnlPoints.base.current.push({ x: price, y: pnlPoint.current / price });
 
-      // Conduct measurements for the y-domain while we're here
+      // Measure y-domain while we're here
       y.current.bottom = Math.min(y.current.bottom, pnlPoint.expiration);
       y.current.top = Math.max(y.current.top, pnlPoint.expiration);
     }
@@ -626,6 +674,7 @@ const PnlChart = ({
       .domain([y.current.bottom, y.current.top])
       .range([height - margin.bottom, margin.top]);
     const yGroup = select(yAxis.current);
+    yGroup.selectAll('*').remove();
     yGroup
       .attr('transform', `translate(${margin.left},0)`)
       .call(axisLeft(y.current.scale).ticks(5).tickSizeOuter(0));
@@ -670,13 +719,6 @@ const PnlChart = ({
       .attr('y1', y.current.scale(y.current.top))
       .attr('y2', y.current.scale(y.current.bottom))
       .attr('class', 'my-grid-line');
-
-    // Clean up axes
-    return () => {
-      console.log('undrawing axes');
-      xGroup.selectAll('*').remove();
-      yGroup.selectAll('*').remove();
-    };
   }, [
     futures,
     options,
@@ -712,17 +754,7 @@ const PnlChart = ({
     select(priceDot.current)
       .attr('cx', _x)
       .attr('cy', _y.bottom + 1);
-    // Concern: what if perpetual price is off the chart?
-    // Proposal: add futuresTickers to "big construction"'s dependencylist
-    //           add perpetual contract's price P to keyPrices
-    //           if x.current.scale === null // !hasAlreadyDrawnAtLeastOnce
-    //             // do initial draw
-    //           else
-    //             if P is not in x-domain, mend the scale so it fits, redraw
-    //             else redraw price line only
-    // Hesitation: code gets complicated, feels dirty, feels like there should
-    //             be a more elegant solution
-  }, [futuresTickers]);
+  }, [futuresTickers, deselectedFutures, deselectedOptions]);
 
   const clipId = 'my-pnl-chart-clip';
   const clipUrl = `url(#${clipId})`;
