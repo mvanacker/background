@@ -2,6 +2,7 @@ import React from 'react';
 import { Route } from 'react-router-dom';
 
 import Trade from './trade/Trade';
+import About from './About';
 
 // Puzzle pieces
 import Confluence from './puzzle/Confluence';
@@ -19,10 +20,9 @@ import Simulation from './easter-eggs/Simulation';
 import IV from './deprecated/IV';
 import GIV from './deprecated/GIV';
 import TradeJournal from './deprecated/TradeJournal';
-import Options from './deprecated/Options';
 
 // UI components
-import Navigation from './common/Navigation';
+import Menu from './Menu';
 
 // Test component(s)
 import Test from '../sandbox/Test.js';
@@ -33,14 +33,13 @@ export default ({ width }) => {
   );
   return (
     <div className="my-right">
-      <Navigation className="w3-theme-l2" items={upperNavItems} />
-      <Navigation className="w3-theme-l1" items={lowerNavItems} level={2} />
+      <Menu />
 
       <div className="my-right-content-outer-container">
         <div className="my-right-content-inner-container">
           <Route exact path="/" component={withDimensions(MovingAverages)} />
           <Route path="/trade" component={Trade} />
-          <Route path="/options" component={Options} />
+          <Route path="/about" component={About} />
 
           {/* Puzzle pieces */}
           <Route path="/confluence" component={Confluence} />
@@ -69,37 +68,3 @@ export default ({ width }) => {
     </div>
   );
 };
-
-const upperNavItems = [
-  {
-    title: 'Home',
-    path: '/',
-  },
-  {
-    title: 'Trade',
-    path: '/trade',
-  },
-  {
-    title: 'Options',
-    path: '/options',
-  },
-];
-
-const lowerNavItems = [
-  {
-    title: 'Volatility',
-    path: '/volatility',
-  },
-  {
-    title: 'MAs',
-    path: '/moving-averages',
-  },
-  {
-    title: 'Stochs',
-    path: '/stochs',
-  },
-  {
-    title: 'Confluence',
-    path: '/confluence',
-  },
-];
