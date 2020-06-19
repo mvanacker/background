@@ -3,9 +3,7 @@ import React from 'react';
 import Panel from './common/Panel';
 
 const Bubble = ({ children }) => (
-  <Panel title={false} className="my-bubble">
-    {children}
-  </Panel>
+  <Panel className="my-bubble">{children}</Panel>
 );
 
 export default () => (

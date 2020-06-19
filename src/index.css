@@ -715,7 +715,7 @@ div.my-indicator-overview {
 
 /* About */
 div.my-bubble {
-  font-family: Roboto Slab, Georgia, serif;
+  font-family: Roboto Slab, Georgia, Kreon, serif;
   width: 100%;
   max-width: 300px;
 }
