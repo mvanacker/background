@@ -608,16 +608,6 @@ div.my-left-toggle {
   border-left: 0px;
 }
 
-div.my-left-outer-container {
-  position: sticky;
-  top: 0;
-}
-
-div.my-left-inner-container {
-  height: 100vh;
-  max-height: 100vh;
-}
-
 div.my-left {
   display: flex;
   flex-flow: column nowrap;
@@ -626,6 +616,7 @@ div.my-left {
   height: calc(100vh - 153px);
   overflow-y: auto;
   width: calc(100% - 16px);
+  padding-bottom: 16px;
 }
 
 div.my-left > div:first-child {

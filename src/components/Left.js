@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from 'react';
+import React, { useContext, Fragment, Component } from 'react';
 
 import { Link } from 'react-router-dom';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -9,6 +9,7 @@ import VolumeFlowChart from './VolumeFlowChart';
 import Panel from './common/Panel';
 import { Loading128 } from './common/Icons';
 import { useLocal } from '../hooks/useStorage';
+import { DeribitContext } from '../contexts/Deribit';
 
 export default class extends Component {
   constructor(props) {
@@ -89,6 +90,7 @@ export default class extends Component {
               <Overview state={this.state} />
               <VolumeFlowChart />
               <BitmexRecentTrades data={this.state.recentTrades} />
+              <Logout />
             </>
           )}
         </div>
@@ -174,4 +176,19 @@ const squish = (size) => {
   const first = Math.trunc(size / 100000);
   const trunc = first % 10 === 0 ? Math.trunc : (x) => x;
   return `${trunc(first / 10)}M`;
+};
+
+const Logout = () => {
+  const { deribit } = useContext(DeribitContext);
+  return (
+    <div>
+      <button
+        className="w3-btn w3-card w3-theme-l2 my-round my-opaquer-fader my-full-width"
+        type="button"
+        onClick={() => deribit.logout()}
+      >
+        Log out from Deribit
+      </button>
+    </div>
+  );
 };
