@@ -24,7 +24,7 @@ import { DoubleDown, DoubleUp } from '../common/Icons';
 import { mean, floats } from '../../util/array';
 import { lcm, round_to } from '../../util/math';
 import { percent } from '../../util/format';
-import { compute_premium } from '../../util/math.bs';
+import { premium } from '../../util/math.bs';
 
 import { useLocal, useLocalSet } from '../../hooks/useStorage';
 import { DeribitContext } from '../../contexts/Deribit';
@@ -674,14 +674,14 @@ const PnlChart = ({
           //       while x and strike are in quote currency ($)
           // Normalize to quote currency with index_price
           const computePnl = (yearsRemaining) => {
-            const premium = average_price * index_price; // in $
-            const optionPrice = compute_premium[option_type](
+            const entryPrice = average_price * index_price; // in $
+            const optionPrice = premium[option_type](
               price,
               strike,
               mark_iv / 100,
               yearsRemaining
             );
-            return size * (optionPrice - premium);
+            return size * (optionPrice - entryPrice);
           };
 
           // Compute
