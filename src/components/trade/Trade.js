@@ -19,7 +19,7 @@ import { removeOverlap, removeOverlapWithDatum } from '../../util/d3-axis-util';
 import Panel, { PanelTitle } from '../common/Panel';
 import Lock from '../common/Lock';
 import BTC from '../common/Bitcoin';
-import { DoubleDown, DoubleUp } from '../common/Icons';
+import { DoubleDown, DoubleUp, Cogwheels } from '../common/Icons';
 
 import { mean, floats } from '../../util/array';
 import { lcm, round_to } from '../../util/math';
@@ -358,14 +358,14 @@ const DeribitInterface = ({ deribit, ...props }) => {
           // historicalVolatility={historicalVolatility}
         />
       </Panel>
-      <Panel title="Order Futures">
+      <Panel>
         <OrderFutures
           deribit={deribit}
           tickers={futuresTickers}
           portfolio={portfolio}
         />
       </Panel>
-      <Panel title="Open Orders">
+      <Panel>
         <Orders deribit={deribit} orders={orders} />
       </Panel>
       {selectedOptions.size > 0 && optionsMapped && (
@@ -1284,7 +1284,7 @@ const OptionBasketRow = ({
   return (
     <tr className="w3-hover-theme" {...props}>
       <td>
-        <TextButton onClick={deleteOption(instrument_name)}>🗑</TextButton>
+        <DeleteButton onClick={deleteOption(instrument_name)} />
       </td>
       <td>{moment(expiration_timestamp).format('MMMM Do, YYYY')}</td>
       <td>{strike}</td>
@@ -1420,17 +1420,14 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
   const riskOpacity = opacity(stopsEnabled);
   return (
     <form {...props}>
-      <div className="w3-right-align my-top-buttons-container">
-        <TopButton
-          onClick={() => deribit.send({ method: 'private/cancel_all' })}
-        >
-          Cancel all
-        </TopButton>
-        <TopButton onClick={() => setShowConfig(!showConfig)}>
-          {showConfig ? 'Hide config' : 'Show config'}
-        </TopButton>
-        <TopButton onClick={() => deribit.logout()}>Log out</TopButton>
-      </div>
+      <PanelTitle>
+        <Cogwheels
+          onClick={() => setShowConfig(!showConfig)}
+          className="my-opaquer-fader"
+          title={showConfig ? 'Hide config' : 'Show config'}
+        />
+        Order Futures
+      </PanelTitle>
       <div className="w3-padding">
         <Row label="Equity">
           <BTC />
@@ -1923,6 +1920,13 @@ const Orders = ({ deribit, orders, ...props }) => {
   const byPrice = (a, b) => price(b) - price(a);
 
   // Cancellation handlers
+  const cancelAll = () => {
+    deribit.send({
+      method: 'private/cancel_all_by_currency',
+      params: { currency: 'btc' },
+    });
+  };
+
   const cancelByInstrument = (instrument_name) => () => {
     deribit.send({
       method: 'private/cancel_all_by_instrument',
@@ -1946,6 +1950,10 @@ const Orders = ({ deribit, orders, ...props }) => {
 
   return (
     <div className="w3-center" {...props}>
+      <PanelTitle>
+        Open Orders
+        <DeleteButton onClick={cancelAll} />
+      </PanelTitle>
       {Object.keys(orders).every((future) => amount(future) === 0) && (
         <i>No open orders.</i>
       )}
@@ -1957,7 +1965,7 @@ const Orders = ({ deribit, orders, ...props }) => {
             <h4>
               {future}
               {amount(future) > 0 && (
-                <TextButton onClick={cancelByInstrument(future)}>🗑</TextButton>
+                <DeleteButton onClick={cancelByInstrument(future)} />
               )}
             </h4>
             <OrderTable>
@@ -1989,9 +1997,7 @@ const Orders = ({ deribit, orders, ...props }) => {
                       <tr key={order_id}>
                         <td>
                           {label}
-                          <TextButton onClick={cancelByLabel(label)}>
-                            🗑
-                          </TextButton>
+                          <DeleteButton onClick={cancelByLabel(label)} />
                         </td>
                         <td>{direction}</td>
                         {order_type === 'stop_market' ? (
@@ -2014,7 +2020,7 @@ const Orders = ({ deribit, orders, ...props }) => {
                             <TextButton>🖉</TextButton>
                           </td> */}
                         <td>
-                          <TextButton onClick={cancel(order_id)}>🗑</TextButton>
+                          <DeleteButton onClick={cancel(order_id)} />
                         </td>
                       </tr>
                     )
@@ -2050,7 +2056,7 @@ const Table = ({ children, className = '', ...props }) => (
 
 const OrderFuturesButton = ({ children, className, ...props }) => (
   <button
-    className={`w3-card w3-section w3-btn w3-large ${className}`}
+    className={`w3-card w3-btn w3-large ${className}`}
     type="button"
     {...props}
   >
@@ -2062,22 +2068,14 @@ const OrderFuturesButton = ({ children, className, ...props }) => (
 const toTickerChannel = (instrument_name) => `ticker.${instrument_name}.100ms`;
 
 // Auxiliary component
-const TopButton = ({ children, ...props }) => (
-  <button
-    className="w3-mobile w3-btn w3-card w3-theme-l2 my-round my-fader my-top-button"
-    type="button"
-    {...props}
-  >
-    {children}
-  </button>
-);
-
-// Auxiliary component
 const TextButton = ({ children, ...props }) => (
   <button type="text" className="my-text-button my-round" {...props}>
     {children}
   </button>
 );
+
+// Auxiliary component
+const DeleteButton = ({ ...props }) => <TextButton {...props}>🗑</TextButton>;
 
 // Row with 2 columns; 25% and 75% wide (auxiliary component)
 const Row = ({ label, children, ...props }) => (
