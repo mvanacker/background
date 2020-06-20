@@ -96,12 +96,22 @@ div#root {
 /* Hover effects */
 
 .my-fader,
+.my-opaquer-fader,
 .my-white-glow {
-  opacity: 0.6;
   transition: 0.3s;
 }
 
+.my-fader,
+.my-white-glow {
+  opacity: 0.6;
+}
+
+.my-opaquer-fader {
+  opacity: 0.8;
+}
+
 .my-fader:hover,
+.my-opaquer-fader:hover,
 .my-white-glow:hover {
   opacity: 1;
 }
@@ -211,6 +221,15 @@ input.my-label-input {
   outline: 0;
 }
 
+/* Icons */
+
+img.my-cogwheels {
+  margin-left: 8px;
+  margin-right: 8px;
+  position: relative;
+  bottom: 2px;
+}
+
 /******************************************************************************/
 /***   DISCLAIMER-SPECIFIC STYLING   ******************************************/
 /******************************************************************************/
@@ -286,6 +305,11 @@ img.my-white {
     contrast(100%);
 }
 
+img.my-orange {
+  filter: invert(77%) sepia(37%) saturate(5687%) hue-rotate(0deg)
+    brightness(102%) contrast(102%);
+}
+
 /******************************************************************************/
 /***   PAGE-SPECIFIC STYLING   ************************************************/
 /******************************************************************************/
@@ -331,17 +355,6 @@ thead.my-sticky-thead > tr > th {
 }
 
 /** Order Futures */
-
-div.my-top-buttons-container {
-  display: flex;
-  flex-flow: row wrap;
-  padding: 8px 24px 16px;
-}
-
-button.my-top-button {
-  margin: 4px;
-  flex-grow: 1;
-}
 
 div.my-row-label {
   width: 25%;

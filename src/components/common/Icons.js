@@ -20,6 +20,10 @@ import loading256 from '../../assets/loading256.svg';
 import lock from '../../assets/lock.png';
 import unlock from '../../assets/unlock.png';
 
+import cogwheels from '../../assets/cogwheels.png';
+
+// Attributions: srip, freepik
+
 const icon = ({
   title,
   width = '16px',
@@ -73,3 +77,10 @@ export const Loading32 = loading({ src: loading32 });
 export const Loading64 = loading({ src: loading64 });
 export const Loading128 = loading({ src: loading128 });
 export const Loading256 = loading({ src: loading256 });
+
+// Settings
+export const Cogwheels = icon({
+  src: cogwheels,
+  width: '24px',
+  className: 'my-orange my-fader my-cogwheels',
+});
