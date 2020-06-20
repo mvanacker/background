@@ -3,6 +3,7 @@ import React, {
   useEffect,
   useRef,
   useContext,
+  useCallback,
   forwardRef,
 } from 'react';
 
@@ -23,7 +24,7 @@ import { DoubleDown, DoubleUp } from '../common/Icons';
 import { mean, floats } from '../../util/array';
 import { lcm, round_to } from '../../util/math';
 import { percent } from '../../util/format';
-import { compute_call, compute_put } from '../../util/math.bs';
+import { compute_premium } from '../../util/math.bs';
 
 import { useLocal, useLocalSet } from '../../hooks/useStorage';
 import { DeribitContext } from '../../contexts/Deribit';
@@ -193,6 +194,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
   const [orders, setOrders] = useState({});
   const [positions, setPositions] = useState({});
   const [portfolio, setPortfolio] = useState({});
+  // const [historicalVolatility, setHistoricalVolatility] = useState(null);
 
   // Setup information retrieval needed to provide a trading interface
   useEffect(() => {
@@ -292,6 +294,16 @@ const DeribitInterface = ({ deribit, ...props }) => {
           params: { currency: 'btc' },
         })
         .then(({ result: positions }) => updatePositions(positions)),
+
+      // Fetch historical volatility
+      // deribit
+      //   .send({
+      //     method: 'public/get_historical_volatility',
+      //     params: { currency: 'btc' },
+      //   })
+      //   .then(({ result: hv }) => {
+      //     setHistoricalVolatility(hv[hv.length - 1][1] / 100);
+      //   }),
     ])
 
       // After the initial fetches
@@ -339,9 +351,11 @@ const DeribitInterface = ({ deribit, ...props }) => {
       </Panel>
       <Panel>
         <Position
+          deribit={deribit}
           positions={positions}
           instruments={instrumentsRef.current}
           futuresTickers={futuresTickers}
+          // historicalVolatility={historicalVolatility}
         />
       </Panel>
       <Panel title="Order Futures">
@@ -372,28 +386,57 @@ const Position = ({
   positions,
   instruments,
   futuresTickers,
+  // historicalVolatility,
   ...props
 }) => {
   // Separate futures from options positions
-  // const futures = useRef({});
-  // const options = useRef({});
+  // Merge position and instrument objects
+  // Include a snapshot of the option tickers
   const positionsRef = useRef({ future: {}, option: {} });
   const [greeks, setGreeks] = useState(emptyGreeks());
+  const isReady = useCallback(
+    () => Object.keys(positions).length && Object.keys(instruments).length,
+    [positions, instruments]
+  );
   useEffect(() => {
-    positionsRef.current.future = {};
-    positionsRef.current.option = {};
-    Object.entries(positions).forEach(([instrument_name, position]) => {
-      if (position.size !== 0) {
-        positionsRef.current[position.kind][instrument_name] = {
-          ...position,
-          ...instruments[instrument_name],
-        };
-      }
-    });
+    if (!isReady()) return;
 
-    // Compute initial greeks
-    setGreeks(computeGreeks(Object.values(positionsRef.current.option)));
-  }, [positions, instruments]);
+    // Fetch tickers
+    Promise.all(
+      Object.keys(positions).map((instrument_name) =>
+        deribit.send({ method: 'public/ticker', params: { instrument_name } })
+      )
+    ).then((result) => {
+      positionsRef.current.future = {};
+      positionsRef.current.option = {};
+      result.forEach(({ result: ticker }) => {
+        const { instrument_name } = ticker;
+        const position = positions[instrument_name];
+        if (position.size !== 0) {
+          positionsRef.current[position.kind][instrument_name] = {
+            ...ticker,
+            ...position,
+            ...instruments[instrument_name],
+          };
+        }
+      });
+
+      // Compute initial greeks
+      setGreeks(computeGreeks(Object.values(positionsRef.current.option)));
+    });
+  }, [deribit, isReady, positions, instruments]);
+
+  //
+  const isReadyForPNL = useCallback(
+    () =>
+      isReady() &&
+      futuresTickers &&
+      'BTC-PERPETUAL' in futuresTickers &&
+      Object.keys(positionsRef.current.future).every(
+        (instrument_name) => instrument_name in futuresTickers
+      ),
+    [isReady, futuresTickers]
+  );
 
   // Keep track of which positions were deselected
   // This allows easily defaulting to all positions being selected
@@ -427,23 +470,21 @@ const Position = ({
         <Greek>𝜈 {greeks.vega}</Greek>
       </div>
       <div className="my-pnl-chart-container">
-        {futuresTickers &&
-          Object.keys(positionsRef.current.future).length &&
-          Object.keys(positionsRef.current.future).every(
-            (instrument_name) => instrument_name in futuresTickers
-          ) && (
-            // Only render if futuresTickers is set,
-            // as a workaround to conditionally call the first useEffect/drawing
-            // otherwise its dependencies won't have updated
-            // by the time futuresTickers is first set
-            <PnlChart
-              futures={positionsRef.current.future}
-              options={positionsRef.current.option}
-              deselectedOptions={deselectedOptions}
-              deselectedFutures={deselectedFutures}
-              futuresTickers={futuresTickers}
-            />
-          )}
+        {isReadyForPNL() && (
+          // Only render if futuresTickers is set,
+          // as a workaround to conditionally call the first useEffect/drawing
+          // otherwise its dependencies won't have updated
+          // by the time futuresTickers is first set
+          <PnlChart
+            deribit={deribit}
+            futures={positionsRef.current.future}
+            options={positionsRef.current.option}
+            deselectedOptions={deselectedOptions}
+            deselectedFutures={deselectedFutures}
+            futuresTickers={futuresTickers}
+            // historicalVolatility={historicalVolatility}
+          />
+        )}
       </div>
       <div className="my-position-list-container">
         <PositionList
@@ -510,11 +551,13 @@ const PositionList = ({
 );
 
 const PnlChart = ({
+  deribit,
   futures,
   options,
   deselectedFutures,
   deselectedOptions,
   futuresTickers,
+  // historicalVolatility,
   width = 400,
   height = 400,
   padding = { top: 100, right: 1000, bottom: 100, left: 1000 },
@@ -542,11 +585,7 @@ const PnlChart = ({
   const x = useRef({ scale: null, left: null, right: null });
   const y = useRef({ scale: null, top: null, bottom: null });
 
-  const ready = Object.keys(options).length || Object.keys(futures).length;
-
   useEffect(() => {
-    if (!ready) return;
-
     // Select positions, given sets of deselected positions (as props)
     const selectedPositions = (positions, deselectedPositions) =>
       Object.values(positions).filter(
@@ -598,7 +637,6 @@ const PnlChart = ({
       .call(removeOverlap);
 
     // Set up PNL computation
-    const computeOption = { call: compute_call, put: compute_put };
     const pnlPoints = {
       quote: { expiration: [], current: [] },
       // base: { expiration: [], current: [] },
@@ -624,6 +662,7 @@ const PnlChart = ({
       // Options PNL
       selectedOptions.forEach(
         ({
+          mark_iv,
           index_price,
           average_price,
           expiration_timestamp,
@@ -631,24 +670,18 @@ const PnlChart = ({
           size,
           strike,
         }) => {
-          // TODO [critical] simply setting volatility to a constant (0.75) here
-          // The main issue is elegantly avoiding many redundant rerenders per second
-          // const optionPrice = (yearsRemaining) =>
-          //   computeOption[option_type](price, strike, 0.75, yearsRemaining);
-
           // Note: average_price is in base currency (BTC)
           //       while x and strike are in quote currency ($)
-          // Normalize to quote currency with index_price for now
+          // Normalize to quote currency with index_price
           const computePnl = (yearsRemaining) => {
-            const optionPrice = computeOption[option_type](
+            const premium = average_price * index_price; // in $
+            const optionPrice = compute_premium[option_type](
               price,
               strike,
-              0.75,
+              mark_iv / 100,
               yearsRemaining
             );
-            return (
-              size * optionPrice - Math.sign(size) * average_price * index_price
-            );
+            return size * (optionPrice - premium);
           };
 
           // Compute
@@ -744,14 +777,12 @@ const PnlChart = ({
     padding.right,
     padding.bottom,
     padding.left,
+    minScaleWidthX,
   ]);
 
   const priceLine = useRef();
   const priceDot = useRef();
   useEffect(() => {
-    if (!ready) return;
-    if (!Object.keys(futuresTickers).length) return;
-
     const price = futuresTickers['BTC-PERPETUAL'].last_price;
     const _x = x.current.scale(price);
     const _y = {
