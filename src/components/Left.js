@@ -146,8 +146,7 @@ const BitmexRecentTrades = ({ data }) =>
     <Panel>
       <div className="my-recent-trades monospace w3-large">
         {data.map(({ timestamp, side, size, price }, i) => {
-          const sideClass =
-            side === 'Buy' ? 'my-recent-trades-buy' : 'my-recent-trades-sell';
+          const sideClass = side === 'Buy' ? 'my-text-lime' : 'my-text-lime';
           return (
             <Fragment key={i}>
               <div className={`my-recent-trades-time ${sideClass}`}>

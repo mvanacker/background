@@ -415,13 +415,13 @@ export default memo(() => {
 
       {/* Price, buy flow and sell flow numbers */}
       <div className="w3-section w3-xxlarge my-flow-numbers-container">
-        <div className="w3-cell my-third my-price-number" id={priceId}>
+        <div className="w3-cell my-third my-text-royal-blue" id={priceId}>
           <Loading32 />
         </div>
         <div className="w3-cell my-third w3-text-lime" id={buyFlowId}>
           <Loading32 />
         </div>
-        <div className="w3-cell my-third my-sell-flow-number" id={sellFlowId}>
+        <div className="w3-cell my-third my-text-red" id={sellFlowId}>
           <Loading32 />
         </div>
       </div>

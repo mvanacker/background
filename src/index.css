@@ -33,6 +33,21 @@ div#root {
   align-content: stretch;
 }
 
+/* Text colors */
+
+.my-text-royal-blue {
+  color: royalblue;
+}
+
+.my-text-red {
+  /* color: #b33; */
+  color: rgb(235, 90, 90);
+}
+
+.my-text-lime {
+  color: lime;
+}
+
 /* General add-ons */
 
 .monospace {
@@ -671,14 +686,6 @@ div.my-flow-numbers-container > div {
   flex-grow: 1;
 }
 
-div.my-price-number {
-  color: royalblue;
-}
-
-div.my-sell-flow-number {
-  color: #b33;
-}
-
 svg.my-volume-flow-chart g {
   font-size: 0.85em;
 }
@@ -694,14 +701,6 @@ svg.my-volume-flow-chart g.flow-grid line {
 div.my-recent-trades {
   display: grid;
   grid-template-columns: auto 65px 120px auto;
-}
-
-div.my-recent-trades-buy {
-  color: lime;
-}
-
-div.my-recent-trades-sell {
-  color: rgb(235, 90, 90);
 }
 
 /* Confluence */
