@@ -141,36 +141,37 @@ function Overview(props) {
   );
 }
 
-const BitmexRecentTrades = ({ data }) => (
-  <Panel>
-    <div className="my-recent-trades monospace w3-large">
-      {data.map(({ timestamp, side, size, price }, i) => {
-        const sideClass =
-          side === 'Buy' ? 'my-recent-trades-buy' : 'my-recent-trades-sell';
-        return (
-          <Fragment key={i}>
-            <div className={`my-recent-trades-time ${sideClass}`}>
-              {timestamp.split(' ')[1].split('.')[0]}
-            </div>
-            <div
-              className={`my-recent-trades-side ${sideClass} my-uppercase w3-right-align`}
-            >
-              {side}
-            </div>
-            <div className={`my-recent-trades-size ${sideClass}`}>
-              {squish(size)}
-            </div>
-            <div
-              className={`my-recent-trades-price ${sideClass} w3-left-align`}
-            >
-              {price}
-            </div>
-          </Fragment>
-        );
-      })}
-    </div>
-  </Panel>
-);
+const BitmexRecentTrades = ({ data }) =>
+  !data.length ? null : (
+    <Panel>
+      <div className="my-recent-trades monospace w3-large">
+        {data.map(({ timestamp, side, size, price }, i) => {
+          const sideClass =
+            side === 'Buy' ? 'my-recent-trades-buy' : 'my-recent-trades-sell';
+          return (
+            <Fragment key={i}>
+              <div className={`my-recent-trades-time ${sideClass}`}>
+                {timestamp.split(' ')[1].split('.')[0]}
+              </div>
+              <div
+                className={`my-recent-trades-side ${sideClass} my-uppercase w3-right-align`}
+              >
+                {side}
+              </div>
+              <div className={`my-recent-trades-size ${sideClass}`}>
+                {squish(size)}
+              </div>
+              <div
+                className={`my-recent-trades-price ${sideClass} w3-left-align`}
+              >
+                {price}
+              </div>
+            </Fragment>
+          );
+        })}
+      </div>
+    </Panel>
+  );
 
 const squish = (size) => {
   const first = Math.trunc(size / 100000);
