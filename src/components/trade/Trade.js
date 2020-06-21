@@ -48,10 +48,7 @@ const DeribitTrade = (props) => {
   const { deribit, readyState, authState, test, setTest } = useContext(
     DeribitContext
   );
-
-  if (!deribit) {
-    return null;
-  }
+  if (!deribit) return null;
 
   return (
     <div className="w3-container">
@@ -200,7 +197,6 @@ const DeribitInterface = ({ deribit, ...props }) => {
   const [orders, setOrders] = useState({});
   const [positions, setPositions] = useState({});
   const [portfolio, setPortfolio] = useState({});
-  // const [historicalVolatility, setHistoricalVolatility] = useState(null);
 
   // Setup information retrieval needed to provide a trading interface
   useEffect(() => {
@@ -300,16 +296,6 @@ const DeribitInterface = ({ deribit, ...props }) => {
           params: { currency: 'btc' },
         })
         .then(({ result: positions }) => updatePositions(positions)),
-
-      // Fetch historical volatility
-      // deribit
-      //   .send({
-      //     method: 'public/get_historical_volatility',
-      //     params: { currency: 'btc' },
-      //   })
-      //   .then(({ result: hv }) => {
-      //     setHistoricalVolatility(hv[hv.length - 1][1] / 100);
-      //   }),
     ])
 
       // After the initial fetches
@@ -361,7 +347,6 @@ const DeribitInterface = ({ deribit, ...props }) => {
           positions={positions}
           instruments={instrumentsRef.current}
           futuresTickers={futuresTickers}
-          // historicalVolatility={historicalVolatility}
         />
       </Panel>
       <Panel>
@@ -392,7 +377,6 @@ const Position = ({
   positions,
   instruments,
   futuresTickers,
-  // historicalVolatility,
   ...props
 }) => {
   // Separate futures from options positions
@@ -488,7 +472,6 @@ const Position = ({
             deselectedOptions={deselectedOptions}
             deselectedFutures={deselectedFutures}
             futuresTickers={futuresTickers}
-            // historicalVolatility={historicalVolatility}
           />
         )}
       </div>
@@ -563,7 +546,6 @@ const PnlChart = ({
   deselectedFutures,
   deselectedOptions,
   futuresTickers,
-  // historicalVolatility,
   width = 400,
   height = 400,
   padding = { top: 100, right: 1000, bottom: 100, left: 1000 },
@@ -2087,7 +2069,7 @@ const TextButton = ({ children, ...props }) => (
 );
 
 // Auxiliary component
-const DeleteButton = ({ ...props }) => <TextButton {...props}>🗑</TextButton>;
+const DeleteButton = (props) => <TextButton {...props}>🗑</TextButton>;
 
 // Row with 2 columns; 25% and 75% wide (auxiliary component)
 const Row = ({ label, children, ...props }) => (

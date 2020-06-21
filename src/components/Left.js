@@ -81,7 +81,7 @@ export default class extends Component {
         <Title />
         <div className="my-full-stretch my-left">
           {isNaN(this.state.dominance) ? (
-            <div className="my-display-flex my-full-stretch">
+            <div className="my-flex my-full-stretch">
               <Loading128 className="my-margin-auto" />
             </div>
           ) : (
@@ -146,7 +146,7 @@ const BitmexRecentTrades = ({ data }) =>
     <Panel>
       <div className="my-recent-trades monospace w3-large">
         {data.map(({ timestamp, side, size, price }, i) => {
-          const sideClass = side === 'Buy' ? 'my-text-lime' : 'my-text-lime';
+          const sideClass = side === 'Buy' ? 'my-text-lime' : 'my-text-red';
           return (
             <Fragment key={i}>
               <div className={`my-recent-trades-time ${sideClass}`}>

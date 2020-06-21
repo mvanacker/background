@@ -40,8 +40,7 @@ div#root {
 }
 
 .my-text-red {
-  /* color: #b33; */
-  color: rgb(235, 90, 90);
+  color: #b33;
 }
 
 .my-text-lime {
@@ -63,20 +62,20 @@ div#root {
   transition: 0.4s;
 }
 
-.my-italic {
-  font-style: italic;
-}
-
 .my-margin-auto {
   margin: auto;
 }
 
-.my-display-flex {
+.my-flex {
   display: flex;
 }
 
-.my-full-height {
-  height: 100%;
+.my-third {
+  width: 33.33%;
+}
+
+.my-fourth {
+  width: 25%;
 }
 
 .my-full-width {
@@ -377,6 +376,13 @@ thead.my-sticky-thead > tr > th {
   background: inherit;
 }
 
+/** Order table */
+
+div.my-order-tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+}
+
 /** Order Futures */
 
 div.my-row-label {
@@ -655,7 +661,7 @@ div.my-left > div {
 div.my-title {
   top: 0;
   position: sticky;
-  margin: 0 8px 1px -8px;
+  margin: 0 8px 0 -8px;
   text-align: center;
   height: 153px;
 }
@@ -753,61 +759,6 @@ div.my-bubble {
   font-family: Roboto Slab, Georgia, Kreon, serif;
   width: 100%;
   max-width: 300px;
-}
-
-/******************************************************************************/
-/***   Check classes below for obsoletion (after Deribit component is done)   */
-/******************************************************************************/
-
-.my-column {
-  width: 180px;
-}
-
-.my-borderless {
-  border-width: 0px;
-}
-
-.my-cell {
-  height: 39px;
-  display: table-cell;
-}
-
-.my-third {
-  width: 33.33%;
-}
-
-.my-fourth {
-  width: 25%;
-}
-
-/* Adapted from https://www.w3schools.com/howto/howto_js_rangeslider.asp */
-/* May need -moz- properties to work in Firefox */
-
-.my-range {
-  -webkit-appearance: none; /* Override default CSS styles */
-  appearance: none;
-  width: 100%; /* Full-width */
-  height: 30px; /* Specified height */
-  background: white;
-  outline: none; /* Remove outline */
-  opacity: 1; /* Set transparency (for mouse-over effects on hover) */
-  -webkit-transition: 0.2s; /* 0.2 seconds transition on hover */
-  transition: opacity 0.2s;
-}
-
-.my-range::-webkit-slider-thumb {
-  -webkit-appearance: none; /* Override default look */
-  appearance: none;
-  width: 30px; /* Set a specific slider handle width */
-  height: 30px; /* Slider handle height */
-  background: black;
-  cursor: pointer; /* Cursor on hover */
-}
-
-.clearfix::after {
-  content: '';
-  clear: both;
-  display: table;
 }
 
 /*** Trade Journal (should've been deprecated) ***/
