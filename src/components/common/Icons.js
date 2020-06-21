@@ -22,6 +22,9 @@ import unlock from '../../assets/unlock.png';
 
 import cogwheels from '../../assets/cogwheels.png';
 
+import buyStop from '../../assets/buy-stop.png';
+import sellStop from '../../assets/sell-stop.png';
+
 // Attributions: srip, freepik
 
 const icon = ({
@@ -83,4 +86,18 @@ export const Cogwheels = icon({
   src: cogwheels,
   width: '24px',
   className: 'my-orange my-fader my-cogwheels',
+});
+
+// Stop (order)
+export const SellStop = icon({
+  src: sellStop,
+  width: '24px',
+  className: 'my-stop',
+  title: 'Sell stop',
+});
+export const BuyStop = icon({
+  src: buyStop,
+  width: '24px',
+  className: 'my-stop',
+  title: 'Buy stop',
 });
