@@ -19,7 +19,13 @@ import { removeOverlap, removeOverlapWithDatum } from '../../util/d3-axis-util';
 import Panel, { PanelTitle } from '../common/Panel';
 import Lock from '../common/Lock';
 import BTC from '../common/Bitcoin';
-import { DoubleDown, DoubleUp, Cogwheels } from '../common/Icons';
+import {
+  DoubleDown,
+  DoubleUp,
+  Cogwheels,
+  BuyStop,
+  SellStop,
+} from '../common/Icons';
 
 import { mean, floats } from '../../util/array';
 import { lcm, round_to } from '../../util/math';
@@ -1954,81 +1960,87 @@ const Orders = ({ deribit, orders, ...props }) => {
         Open Orders
         <DeleteButton onClick={cancelAll} />
       </PanelTitle>
-      {Object.keys(orders).every((future) => amount(future) === 0) && (
-        <i>No open orders.</i>
-      )}
-      {Object.keys(orders)
-        .filter((future) => amount(future) > 0)
-        .sort(byAmount)
-        .map((future) => (
-          <div key={future}>
-            <h4>
-              {future}
-              {amount(future) > 0 && (
-                <DeleteButton onClick={cancelByInstrument(future)} />
-              )}
-            </h4>
-            <OrderTable>
-              <thead>
-                <tr>
-                  <th>label</th>
-                  <th>side</th>
-                  <th>type</th>
-                  <th>price</th>
-                  <th>amount</th>
-                  <th>reduce</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.values(orders[future])
-                  .sort(byPrice)
-                  .map(
-                    ({
-                      order_id,
-                      label,
-                      direction,
-                      order_type,
-                      stop_price,
-                      price,
-                      filled_amount,
-                      amount,
-                      reduce_only,
-                    }) => (
-                      <tr key={order_id}>
-                        <td>
-                          {label}
-                          <DeleteButton onClick={cancelByLabel(label)} />
-                        </td>
-                        <td>{direction}</td>
-                        {order_type === 'stop_market' ? (
-                          <>
-                            <td>stop</td>
-                            <td>{stop_price}</td>
-                            <td>{amount}</td>
-                          </>
-                        ) : (
-                          <>
-                            <td>{order_type}</td>
-                            <td>{price}</td>
-                            <td>
-                              {filled_amount} / {amount}
-                            </td>
-                          </>
-                        )}
-                        <td>{reduce_only ? '✓' : '✕'}</td>
-                        {/* <td className="w3-center">
+      <div className="my-order-tables">
+        {Object.keys(orders).every((future) => amount(future) === 0) && (
+          <i>No open orders.</i>
+        )}
+        {Object.keys(orders)
+          .filter((future) => amount(future) > 0)
+          .sort(byAmount)
+          .map((future) => (
+            <div key={future}>
+              <h4>
+                {future}
+                {amount(future) > 0 && (
+                  <DeleteButton onClick={cancelByInstrument(future)} />
+                )}
+              </h4>
+              <OrderTable>
+                <thead>
+                  <tr>
+                    <th>label</th>
+                    <th>price</th>
+                    <th>amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.values(orders[future])
+                    .sort(byPrice)
+                    .map(
+                      ({
+                        order_id,
+                        label,
+                        direction,
+                        order_type,
+                        stop_price,
+                        price,
+                        filled_amount,
+                        amount,
+                        // reduce_only,
+                      }) => (
+                        <tr
+                          key={order_id}
+                          className={
+                            direction === 'buy' ? 'my-text-lime' : 'my-text-red'
+                          }
+                        >
+                          <td>
+                            {order_type === 'stop_market' &&
+                              (direction === 'buy' ? (
+                                <BuyStop />
+                              ) : (
+                                <SellStop />
+                              ))}
+                            {label}
+                            <DeleteButton onClick={cancelByLabel(label)} />
+                          </td>
+                          {order_type === 'stop_market' ? (
+                            <>
+                              <td>{stop_price}</td>
+                              <td>{amount}</td>
+                            </>
+                          ) : (
+                            <>
+                              <td>{price}</td>
+                              <td>
+                                {filled_amount}/{amount}
+                              </td>
+                            </>
+                          )}
+                          {/* <td className="w3-center">
                             <TextButton>🖉</TextButton>
                           </td> */}
-                        <td>
-                          <DeleteButton onClick={cancel(order_id)} />
-                        </td>
-                      </tr>
-                    )
-                  )}
-              </tbody>
-            </OrderTable>
-          </div>
-        ))}
+                          <td>
+                            <DeleteButton onClick={cancel(order_id)} />
+                          </td>
+                        </tr>
+                      )
+                    )}
+                </tbody>
+              </OrderTable>
+            </div>
+          ))}
+      </div>
     </div>
   );
 };
