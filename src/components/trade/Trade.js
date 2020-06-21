@@ -1267,7 +1267,7 @@ const OptionBasketRow = ({
   }, [deribit, instrument_name]);
 
   if (!ticker) return null;
-  const { best_bid_price, best_ask_price } = ticker;
+  const { best_bid_price, best_ask_price, mark_price } = ticker;
 
   return (
     <tr className="w3-hover-theme" {...props}>
@@ -1293,13 +1293,17 @@ const OptionBasketRow = ({
         />
       </td>
       <td>
-        <NumericalInput
-          min={tick_size}
-          step={tick_size}
-          value={price ? price : ''}
-          onChange={(e) => setPrice(e.target.value)}
-          className="my-option-basket-price"
-        />
+        <div className="my-no-wrap">
+          <BTC />
+          <NumericalInput
+            min={tick_size}
+            step={tick_size}
+            value={price ? price : ''}
+            onChange={(e) => setPrice(e.target.value)}
+            className="my-option-basket-price"
+            placeholder={mark_price.toFixed(4)}
+          />
+        </div>
       </td>
       <td>
         <RadioGroup

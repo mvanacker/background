@@ -498,7 +498,10 @@ input.my-option-basket-quantity {
 }
 
 input.my-option-basket-price {
+  position: relative;
+  left: 2px;
   width: 95px;
+  display: inline-block;
 }
 
 /** Position */
