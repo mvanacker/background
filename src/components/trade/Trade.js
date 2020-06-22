@@ -38,8 +38,8 @@ import { DeribitContext } from '../../contexts/Deribit';
 import { AuthState, ReadyState } from '../../sources/DeribitWebSocket';
 
 // Skip authentication and log straight into testnet
-// const DEV_MODE = false;
-const DEV_MODE = true;
+const DEV_MODE = false;
+// const DEV_MODE = true;
 
 // Only Deribit is implemented right now
 export default () => <DeribitTrade />;
@@ -50,29 +50,25 @@ const DeribitTrade = (props) => {
   );
   if (!deribit) return null;
 
-  return (
-    <div className="w3-container">
-      {deribit.maybeDown ? (
-        <Panel title="Deribit down?" className="my-auth-panel" {...props}>
-          <div className="w3-center w3-padding-large">
-            <p>We encountered an error while trying to connect to Deribit.</p>
-            <p>You may refresh this page to try again.</p>
-          </div>
-        </Panel>
-      ) : deribit.authState !== AuthState.AUTHENTICATED ? (
-        <DeribitAuth
-          deribit={deribit}
-          test={test}
-          setTest={setTest}
-          readyState={readyState}
-          authState={authState}
-          className="my-auth-panel"
-          {...props}
-        />
-      ) : (
-        <DeribitInterface deribit={deribit} {...props} />
-      )}
-    </div>
+  return deribit.maybeDown ? (
+    <Panel title="Deribit down?" className="my-auth-panel" {...props}>
+      <div className="w3-center w3-padding-large">
+        <p>We encountered an error while trying to connect to Deribit.</p>
+        <p>You may refresh this page to try again.</p>
+      </div>
+    </Panel>
+  ) : deribit.authState !== AuthState.AUTHENTICATED ? (
+    <DeribitAuth
+      deribit={deribit}
+      test={test}
+      setTest={setTest}
+      readyState={readyState}
+      authState={authState}
+      className="my-auth-panel"
+      {...props}
+    />
+  ) : (
+    <DeribitInterface deribit={deribit} {...props} />
   );
 };
 
@@ -331,34 +327,38 @@ const DeribitInterface = ({ deribit, ...props }) => {
   // Render panels
   const optionsMapped = Object.keys(instrumentsRef.current).length > 0;
   return (
-    <div className="my-trading-interface" {...props}>
-      <Panel title="Order Options">
-        <OrderOptions
-          deribit={deribit}
-          options={options}
-          instruments={instrumentsRef.current}
-          selectedOptions={selectedOptions}
-          setSelectedOptions={setSelectedOptions}
-        />
-      </Panel>
-      <Panel>
-        <Position
-          deribit={deribit}
-          positions={positions}
-          instruments={instrumentsRef.current}
-          futuresTickers={futuresTickers}
-        />
-      </Panel>
-      <Panel>
-        <OrderFutures
-          deribit={deribit}
-          tickers={futuresTickers}
-          portfolio={portfolio}
-        />
-      </Panel>
-      <Panel>
-        <Orders deribit={deribit} orders={orders} />
-      </Panel>
+    <>
+      <div className="my-trading-interface" {...props}>
+        <Panel title="Order Options" className="my-order-options">
+          <OrderOptions
+            deribit={deribit}
+            options={options}
+            instruments={instrumentsRef.current}
+            selectedOptions={selectedOptions}
+            setSelectedOptions={setSelectedOptions}
+          />
+        </Panel>
+        <div className="my-trading-interface-core">
+          <Panel className="my-order-futures">
+            <OrderFutures
+              deribit={deribit}
+              tickers={futuresTickers}
+              portfolio={portfolio}
+            />
+          </Panel>
+          <Panel className="my-position">
+            <Position
+              deribit={deribit}
+              positions={positions}
+              instruments={instrumentsRef.current}
+              futuresTickers={futuresTickers}
+            />
+          </Panel>
+        </div>
+        <Panel className="my-orders">
+          <Orders deribit={deribit} orders={orders} />
+        </Panel>
+      </div>
       {selectedOptions.size > 0 && optionsMapped && (
         <OptionBasket
           deribit={deribit}
@@ -367,7 +367,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
           instruments={instrumentsRef.current}
         />
       )}
-    </div>
+    </>
   );
 };
 
@@ -451,7 +451,7 @@ const Position = ({
   }, [deselectedOptions]);
 
   return (
-    <div className="my-position">
+    <div className="my-position-inner">
       <PanelTitle className="my-position-title">Position</PanelTitle>
       <div className="w3-padding my-greeks" {...props}>
         <Greek>Δ {greeks.delta}</Greek>
@@ -811,7 +811,7 @@ const PnlChart = ({
 };
 
 const Greek = ({ children, ...props }) => (
-  <div className="w3-theme-l1 w3-padding my-round" {...props}>
+  <div className="w3-theme-l1 w3-padding my-round my-no-wrap" {...props}>
     {children}
   </div>
 );

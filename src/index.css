@@ -346,10 +346,26 @@ div.my-content-panel {
 
 div.my-trading-interface {
   display: flex;
-  flex-flow: row wrap;
-  align-items: stretch;
-  width: 100%;
+  flex-flow: column nowrap;
+  justify-content: stretch;
 }
+
+div.my-trading-interface-core {
+  display: flex;
+  flex-flow: row wrap;
+}
+
+/* div.my-order-options {} */
+
+div.my-order-futures {
+  flex: 1 1 auto;
+}
+
+div.my-position {
+  flex: 1 1 auto;
+}
+
+/* div.my-orders {} */
 
 div.my-trading-interface > div {
   flex-grow: 1;
@@ -480,7 +496,7 @@ div.my-option-basket-hide {
 }
 
 div.my-option-basket-show {
-  position: fixed;
+  position: sticky;
   bottom: 0px;
   border-bottom: 0px;
   left: 50%;
@@ -506,24 +522,29 @@ input.my-option-basket-price {
 
 /** Position */
 
-div.my-position {
+div.my-position-inner {
   display: flex;
   flex-flow: column nowrap;
   height: 100%;
 }
 
 div.my-position-title {
-  flex-grow: 0;
+  flex: 1 1 content;
 }
 
 div.my-greeks {
+  flex: 1 1 content;
   display: flex;
+  flex-flow: row wrap;
   justify-content: space-around;
-  flex-grow: 0;
+}
+
+div.my-greeks > div {
+  margin: 0 4px;
 }
 
 div.my-pnl-chart-container {
-  flex-grow: 0;
+  flex: 1 1 content;
 }
 
 svg.my-pnl-chart {
@@ -574,8 +595,7 @@ circle.my-price-dot {
 }
 
 div.my-position-list-container {
-  flex-grow: 0;
-  height: fit-content;
+  flex: 1 1 auto;
 }
 
 ul.my-position-list {
