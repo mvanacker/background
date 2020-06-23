@@ -1597,13 +1597,7 @@ const Entries = ({ entryMethod, entries, setEntries, ...props }) => {
       return <SplayedEntries setEntries={setEntries} {...props} />;
     case EntryMethod.MANUAL:
     default:
-      return (
-        <NumericalDynamicInputs
-          values={entries}
-          setValues={setEntries}
-          {...props}
-        />
-      );
+      return <ManualEntries setEntries={setEntries} {...props} />;
   }
 };
 
@@ -1666,6 +1660,22 @@ const SplayedEntries = ({ setEntries, locked, ...props }) => {
         <span {...props}>{aggregates.max}</span>
       </div>
     </div>
+  );
+};
+
+const ManualEntries = ({ setEntries, ...props }) => {
+  const [manualEntries, setManualEntries] = useLocal('deribit-manual-entries', {
+    initialValue: [''],
+  });
+  useEffect(() => {
+    setEntries(manualEntries);
+  }, [manualEntries, setEntries]);
+  return (
+    <NumericalDynamicInputs
+      values={manualEntries}
+      setValues={setManualEntries}
+      {...props}
+    />
   );
 };
 
