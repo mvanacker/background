@@ -89,15 +89,7 @@ export const Cogwheels = icon({
 });
 
 // Stop (order)
-export const SellStop = icon({
-  src: sellStop,
-  width: '24px',
-  className: 'my-stop',
-  title: 'Sell stop',
-});
-export const BuyStop = icon({
-  src: buyStop,
-  width: '24px',
-  className: 'my-stop',
-  title: 'Buy stop',
-});
+export const stop = ({ src, title }) =>
+  icon({ src, title, width: '24px', className: 'my-stop' });
+export const SellStop = stop({ src: sellStop, title: 'Sell stop' });
+export const BuyStop = stop({ src: buyStop, title: 'Buy stop' });

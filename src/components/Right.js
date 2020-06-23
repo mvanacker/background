@@ -28,7 +28,7 @@ import Test from '../sandbox/Test.js';
 
 export default ({ width }) => {
   const withDimensions = (Component) => (props) => (
-    <Component width={width / 4 - 32} height={155} {...props} />
+    <Component width={width / 4 - 32} height={154} {...props} />
   );
   return (
     <div className="my-right">
@@ -36,12 +36,12 @@ export default ({ width }) => {
         <Menu />
       </div>
 
-      <div className="my-right-content-outer-container">
-        {/* Non-centered content. */}
-        <Route path="/trade" component={Trade} />
+      {/* Custom-positioned content. */}
+      <Route path="/trade" component={Trade} />
 
-        {/* Centered content. */}
-        <div className="my-flex my-right-content-inner-container">
+      {/* Centered content. */}
+      <div className="my-flex my-right-outer-container">
+        <div className="my-right-inner-container">
           <Route exact path="/" component={withDimensions(MovingAverages)} />
           <Route path="/about" component={About} />
 

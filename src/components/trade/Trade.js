@@ -50,23 +50,32 @@ const DeribitTrade = (props) => {
   );
   if (!deribit) return null;
 
-  return deribit.maybeDown ? (
-    <Panel title="Deribit down?" className="my-auth-panel" {...props}>
-      <div className="w3-center w3-padding-large">
-        <p>We encountered an error while trying to connect to Deribit.</p>
-        <p>You may refresh this page to try again.</p>
+  const down = deribit.maybeDown;
+  const unauth = deribit.authState !== AuthState.AUTHENTICATED;
+
+  return down || unauth ? (
+    <div className="my-flex my-right-outer-container">
+      <div className="my-right-inner-container">
+        {down ? (
+          <Panel title="Deribit down?" className="my-auth-panel" {...props}>
+            <div className="w3-center w3-padding-large">
+              <p>We encountered an error while trying to connect to Deribit.</p>
+              <p>You may refresh this page to try again.</p>
+            </div>
+          </Panel>
+        ) : (
+          <DeribitAuth
+            deribit={deribit}
+            test={test}
+            setTest={setTest}
+            readyState={readyState}
+            authState={authState}
+            className="my-auth-panel"
+            {...props}
+          />
+        )}
       </div>
-    </Panel>
-  ) : deribit.authState !== AuthState.AUTHENTICATED ? (
-    <DeribitAuth
-      deribit={deribit}
-      test={test}
-      setTest={setTest}
-      readyState={readyState}
-      authState={authState}
-      className="my-auth-panel"
-      {...props}
-    />
+    </div>
   ) : (
     <DeribitInterface deribit={deribit} {...props} />
   );
@@ -258,7 +267,11 @@ const DeribitInterface = ({ deribit, ...props }) => {
           params: { currency: 'btc' },
         })
         .then(({ result: instruments }) => {
-          setInstruments(instruments);
+          const newInstruments = {};
+          instruments.forEach((instrument) => {
+            newInstruments[instrument.instrument_name] = instrument;
+          });
+          setInstruments(newInstruments);
 
           // Separate options
           setOptions(instruments.filter((r) => r.kind === 'option'));
@@ -309,15 +322,6 @@ const DeribitInterface = ({ deribit, ...props }) => {
       });
   }, [deribit]);
 
-  // Map option's instrument name to its metadata
-  const instrumentsRef = useRef({});
-  useEffect(() => {
-    instrumentsRef.current = {};
-    instruments.forEach((instrument) => {
-      instrumentsRef.current[instrument.instrument_name] = instrument;
-    });
-  }, [instruments]);
-
   // Used by the Options basket
   const [
     selectedOptions,
@@ -325,48 +329,50 @@ const DeribitInterface = ({ deribit, ...props }) => {
   ] = useLocalSet('deribit-selected-options', { initialValue: new Set() });
 
   // Render panels
-  const optionsMapped = Object.keys(instrumentsRef.current).length > 0;
+  const optionsMapped = Object.keys(instruments).length > 0;
   return (
-    <div className="w3-padding my-trading-interface-container">
-      <div className="my-trading-interface" {...props}>
-        <Panel title="Order Options" className="my-order-options">
-          <OrderOptions
-            deribit={deribit}
-            options={options}
-            instruments={instrumentsRef.current}
-            selectedOptions={selectedOptions}
-            setSelectedOptions={setSelectedOptions}
-          />
-        </Panel>
-        <div className="my-trading-interface-core">
-          <Panel className="my-order-futures">
-            <OrderFutures
+    <div className="my-right-outer-container">
+      <div className="my-trading-interface-container">
+        <div className="my-trading-interface" {...props}>
+          <Panel title="Order Options" className="my-order-options">
+            <OrderOptions
               deribit={deribit}
-              tickers={futuresTickers}
-              portfolio={portfolio}
+              options={options}
+              instruments={instruments}
+              selectedOptions={selectedOptions}
+              setSelectedOptions={setSelectedOptions}
             />
           </Panel>
-          <Panel className="my-position">
-            <Position
-              deribit={deribit}
-              positions={positions}
-              instruments={instrumentsRef.current}
-              futuresTickers={futuresTickers}
-            />
+          <div className="my-trading-interface-core">
+            <Panel className="my-order-futures">
+              <OrderFutures
+                deribit={deribit}
+                tickers={futuresTickers}
+                portfolio={portfolio}
+              />
+            </Panel>
+            <Panel className="my-position">
+              <Position
+                deribit={deribit}
+                positions={positions}
+                instruments={instruments}
+                futuresTickers={futuresTickers}
+              />
+            </Panel>
+          </div>
+          <Panel className="my-orders">
+            <Orders deribit={deribit} orders={orders} />
           </Panel>
         </div>
-        <Panel className="my-orders">
-          <Orders deribit={deribit} orders={orders} />
-        </Panel>
+        {selectedOptions.size > 0 && optionsMapped && (
+          <OptionBasket
+            deribit={deribit}
+            selectedOptions={selectedOptions}
+            setSelectedOptions={setSelectedOptions}
+            instruments={instruments}
+          />
+        )}
       </div>
-      {selectedOptions.size > 0 && optionsMapped && (
-        <OptionBasket
-          deribit={deribit}
-          selectedOptions={selectedOptions}
-          setSelectedOptions={setSelectedOptions}
-          instruments={instrumentsRef.current}
-        />
-      )}
     </div>
   );
 };
@@ -639,7 +645,7 @@ const PnlChart = ({
     y.current.top = -Infinity;
 
     // Do computations
-    const resolution = ((x.current.right - x.current.left + 1) / width) * 10;
+    const resolution = ((x.current.right - x.current.left + 1) / width) * 5;
     for (
       let price = x.current.left;
       price <= x.current.right;

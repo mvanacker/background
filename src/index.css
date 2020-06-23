@@ -344,6 +344,10 @@ div.my-content-panel {
 
 /* Trade */
 
+div.my-trading-interface-container {
+  padding: 16px 16px 0 16px;
+}
+
 div.my-trading-interface {
   display: flex;
   flex-flow: column nowrap;
@@ -355,14 +359,15 @@ div.my-trading-interface {
 div.my-trading-interface-core {
   display: flex;
   flex-flow: row wrap;
+  align-items: flex-start;
 }
 
 div.my-order-futures {
-  flex: 1 0 450px;
+  flex: 1 0 400px;
 }
 
 div.my-position {
-  flex: 1 2 auto;
+  flex: 1 1 auto;
 }
 
 /* div.my-orders {} */
@@ -392,16 +397,21 @@ thead.my-sticky-thead > tr > th {
 
 div.my-order-tables {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
 }
 
 /** Order Futures */
 
-form.my-order-futures-form,
+form.my-order-futures-form {
+  display: grid;
+  grid: auto-flow / 1fr minmax(1fr, 2fr);
+  gap: 16px;
+}
+
 div.my-splayed-entries {
   display: grid;
   grid: auto-flow / auto 1fr;
-  gap: 16px;
+  gap: 8px;
 }
 
 form.my-order-futures-form div:nth-child(odd),
@@ -494,6 +504,7 @@ div.my-option-basket-show {
   right: 50%;
   width: fit-content;
   padding: 8px 6px 12px 6px;
+  z-index: 4;
 }
 
 table.my-option-basket td,
@@ -510,6 +521,10 @@ input.my-option-basket-price {
   left: 2px;
   width: 95px;
   display: inline-block;
+}
+
+input.my-option-basket-price::placeholder {
+  opacity: 0.7;
 }
 
 /** Position */
@@ -629,14 +644,14 @@ div.my-right {
   flex: 1 1 auto;
 }
 
-div.my-right-content-outer-container {
+div.my-right-outer-container {
   min-height: calc(100vh - 80px);
   max-height: calc(100vh - 80px);
   height: auto;
   overflow-y: auto;
 }
 
-div.my-right-content-inner-container {
+div.my-right-inner-container {
   margin: auto;
 }
 
