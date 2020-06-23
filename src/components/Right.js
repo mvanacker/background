@@ -35,10 +35,14 @@ export default ({ width }) => {
       <div className="my-nav-container">
         <Menu />
       </div>
+
       <div className="my-right-content-outer-container">
-        <div className="my-right-content-inner-container">
+        {/* Non-centered content. */}
+        <Route path="/trade" component={Trade} />
+
+        {/* Centered content. */}
+        <div className="my-flex my-right-content-inner-container">
           <Route exact path="/" component={withDimensions(MovingAverages)} />
-          <Route path="/trade" component={Trade} />
           <Route path="/about" component={About} />
 
           {/* Puzzle pieces */}

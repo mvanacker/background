@@ -38,8 +38,8 @@ import { DeribitContext } from '../../contexts/Deribit';
 import { AuthState, ReadyState } from '../../sources/DeribitWebSocket';
 
 // Skip authentication and log straight into testnet
-const DEV_MODE = false;
-// const DEV_MODE = true;
+// const DEV_MODE = false;
+const DEV_MODE = true;
 
 // Only Deribit is implemented right now
 export default () => <DeribitTrade />;
@@ -327,7 +327,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
   // Render panels
   const optionsMapped = Object.keys(instrumentsRef.current).length > 0;
   return (
-    <>
+    <div className="w3-padding my-trading-interface-container">
       <div className="my-trading-interface" {...props}>
         <Panel title="Order Options" className="my-order-options">
           <OrderOptions
@@ -367,7 +367,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
           instruments={instrumentsRef.current}
         />
       )}
-    </>
+    </div>
   );
 };
 
@@ -1411,7 +1411,7 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
   const entryOpacity = opacity(entriesEnabled);
   const riskOpacity = opacity(stopsEnabled);
   return (
-    <form {...props}>
+    <>
       <PanelTitle>
         <Cogwheels
           onClick={() => setShowConfig(!showConfig)}
@@ -1420,12 +1420,14 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
         />
         Order Futures
       </PanelTitle>
-      <div className="w3-padding">
-        <Row label="Equity">
+      <form className="w3-padding-large my-order-futures-form" {...props}>
+        <div>Equity</div>
+        <div>
           <BTC />
           {portfolio.equity}
-        </Row>
-        <Row label="Futures">
+        </div>
+        <div>Futures</div>
+        <div>
           <div>
             <select
               className="w3-input my-futures-selector"
@@ -1458,36 +1460,36 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
               BTC-PERPETUAL ${tickers['BTC-PERPETUAL']?.last_price}
             </div>
           )}
-        </Row>
-      </div>
-      <div className="w3-padding">
+        </div>
         {showConfig && (
-          <Row label="Entry method">
-            <RadioGroup
-              options={EntryMethod}
-              value={entryMethod}
-              setValue={setEntryMethod}
-            />
-          </Row>
+          <>
+            <div>Entry method</div>
+            <div>
+              <RadioGroup
+                options={EntryMethod}
+                value={entryMethod}
+                setValue={setEntryMethod}
+              />
+            </div>
+          </>
         )}
-        <Row
-          label={
-            <>
-              <label>
-                <input
-                  type="checkbox"
-                  className="my-check"
-                  checked={entriesEnabled}
-                  onChange={(e) => setEntriesEnabled(e.target.checked)}
-                />{' '}
-                <span className={entryOpacity}>Limit</span>{' '}
-              </label>
-              {entryMethod === EntryMethod.MANUAL && (
-                <Lock locked={entriesLocked} setLocked={setEntriesLocked} />
-              )}
-            </>
-          }
-        >
+        <div>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                className="my-check"
+                checked={entriesEnabled}
+                onChange={(e) => setEntriesEnabled(e.target.checked)}
+              />{' '}
+              <span className={entryOpacity}>Limit</span>{' '}
+            </label>
+            {entryMethod === EntryMethod.MANUAL && (
+              <Lock locked={entriesLocked} setLocked={setEntriesLocked} />
+            )}
+          </div>
+        </div>
+        <div>
           <Entries
             locked={entriesLocked}
             entryMethod={entryMethod}
@@ -1495,42 +1497,43 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
             setEntries={setEntries}
             className={entryOpacity}
           />
-        </Row>
-      </div>
-      <div className="w3-padding">
+        </div>
         {showConfig && (
-          <Row label="Risk method">
-            <RadioGroup
-              options={RiskMethod}
-              value={riskMethod}
-              setValue={setRiskMethod}
-            />
-          </Row>
+          <>
+            <div>Risk method</div>
+            <div>
+              <RadioGroup
+                options={RiskMethod}
+                value={riskMethod}
+                setValue={setRiskMethod}
+              />
+            </div>
+          </>
         )}
-        <Row
-          label={
-            <>
-              <label>
-                <input
-                  type="checkbox"
-                  className="my-check"
-                  checked={stopsEnabled}
-                  onChange={(e) => setStopsEnabled(e.target.checked)}
-                />{' '}
-                <span className={riskOpacity}>Stop loss</span>
-              </label>{' '}
-              <Lock locked={stopsLocked} setLocked={setStopsLocked} />
-            </>
-          }
-        >
+        <div>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                className="my-check"
+                checked={stopsEnabled}
+                onChange={(e) => setStopsEnabled(e.target.checked)}
+              />{' '}
+              <span className={riskOpacity}>Stop loss</span>
+            </label>{' '}
+            <Lock locked={stopsLocked} setLocked={setStopsLocked} />
+          </div>
+        </div>
+        <div>
           <NumericalDynamicInputs
             locked={stopsLocked}
             values={stops}
             setValues={setStops}
             className={riskOpacity}
           />
-        </Row>
-        <Row label="Quantity">
+        </div>
+        <div>Quantity</div>
+        <div>
           <Quantity
             riskMethod={riskMethod}
             quantity={quantity}
@@ -1540,8 +1543,11 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
             equity={portfolio.equity}
             risk={risk}
           />
-        </Row>
-        <Row label={<span className={riskOpacity}>Risk</span>}>
+        </div>
+        <div>
+          <span className={riskOpacity}>Risk</span>
+        </div>
+        <div>
           <Risk
             riskMethod={riskMethod}
             risk={risk}
@@ -1552,31 +1558,30 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
             quantity={quantity}
             className={riskOpacity}
           />
-        </Row>
-      </div>
-      <div className="w3-padding">
-        <Row label="Label">
+        </div>
+        <div>Label</div>
+        <div>
           <input
             className="my-small-input my-label-input"
             value={label ? label : ''}
             onChange={(e) => setLabel(e.target.value)}
             maxLength={64}
           />
-        </Row>
-      </div>
-      <div className="w3-padding">
-        <OrderFuturesButtonContainer
-          deribit={deribit}
-          label={label}
-          instrument_name={selectedFuture}
-          quantity={quantity}
-          entriesEnabled={entriesEnabled}
-          entries={addPremium(entries)}
-          stops={addPremium(stops)}
-          stopsEnabled={stopsEnabled}
-        />
-      </div>
-    </form>
+        </div>
+        <div className="my-order-futures-button-container">
+          <OrderFuturesButtonContainer
+            deribit={deribit}
+            label={label}
+            instrument_name={selectedFuture}
+            quantity={quantity}
+            entriesEnabled={entriesEnabled}
+            entries={addPremium(entries)}
+            stops={addPremium(stops)}
+            stopsEnabled={stopsEnabled}
+          />
+        </div>
+      </form>
+    </>
   );
 };
 
@@ -1615,15 +1620,17 @@ const SplayedEntries = ({ setEntries, locked, ...props }) => {
   }, [center, spread, orders, setEntries, setAggregates]);
 
   return (
-    <>
-      <Row label="Center">
+    <div className="my-splayed-entries">
+      <div>Center</div>
+      <div>
         <NumericalInput
           value={center}
           onChange={(e) => setCenter(e.target.value)}
           {...props}
         />
-      </Row>
-      <Row label="Spread">
+      </div>
+      <div>Spread</div>
+      <div>
         <NumericalSlider
           value={spread}
           setValue={setSpread}
@@ -1632,8 +1639,9 @@ const SplayedEntries = ({ setEntries, locked, ...props }) => {
           step={1}
           {...props}
         />
-      </Row>
-      <Row label="Orders">
+      </div>
+      <div>Orders</div>
+      <div>
         <NumericalSlider
           value={orders}
           setValue={setOrders}
@@ -1642,14 +1650,16 @@ const SplayedEntries = ({ setEntries, locked, ...props }) => {
           step={2}
           {...props}
         />
-      </Row>
-      <Row label="Min">
+      </div>
+      <div>Min</div>
+      <div>
         <span {...props}>{aggregates.min}</span>
-      </Row>
-      <Row label="Max">
+      </div>
+      <div>Max</div>
+      <div>
         <span {...props}>{aggregates.max}</span>
-      </Row>
-    </>
+      </div>
+    </div>
   );
 };
 
@@ -2074,18 +2084,6 @@ const TextButton = ({ children, ...props }) => (
 
 // Auxiliary component
 const DeleteButton = (props) => <TextButton {...props}>🗑</TextButton>;
-
-// Row with 2 columns; 25% and 75% wide (auxiliary component)
-const Row = ({ label, children, ...props }) => (
-  <div className="w3-row-padding w3-container" {...props}>
-    <div className="w3-col w3-padding-small w3-left-align w3-mobile my-row-label">
-      {label ? label : ''}
-    </div>
-    <div className="w3-col w3-padding-small w3-left-align w3-mobile my-row-content">
-      {children}
-    </div>
-  </div>
-);
 
 // Auxiliary component
 const RadioGroup = ({ options, value: checked, setValue, ...props }) =>

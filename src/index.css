@@ -350,26 +350,22 @@ div.my-trading-interface {
   justify-content: stretch;
 }
 
+/* div.my-order-options {} */
+
 div.my-trading-interface-core {
   display: flex;
   flex-flow: row wrap;
 }
 
-/* div.my-order-options {} */
-
 div.my-order-futures {
-  flex: 1 1 auto;
+  flex: 1 0 450px;
 }
 
 div.my-position {
-  flex: 1 1 auto;
+  flex: 1 2 auto;
 }
 
 /* div.my-orders {} */
-
-div.my-trading-interface > div {
-  flex-grow: 1;
-}
 
 div.my-auth-panel {
   text-align: center;
@@ -401,35 +397,30 @@ div.my-order-tables {
 
 /** Order Futures */
 
-div.my-row-label {
-  width: 25%;
-  min-width: 100px;
-  max-width: 175px;
+form.my-order-futures-form,
+div.my-splayed-entries {
+  display: grid;
+  grid: auto-flow / auto 1fr;
+  gap: 16px;
 }
 
-div.my-row-content {
-  width: auto;
+form.my-order-futures-form div:nth-child(odd),
+div.my-splayed-entries div:nth-child(odd) {
+  padding-right: 12px;
 }
 
 select.my-futures-selector {
   padding: 0 8px 0 4px;
-  display: inline;
+  width: auto;
 }
 
-div.my-auto-premium-container {
-  margin: 4px 0 0 8px;
-}
-
+div.my-auto-premium-container,
 div.my-perpetual-container {
-  margin: 4px 0 0 8px;
+  margin: 6px 0px 0 8px;
 }
 
-div.my-future-order-close-error-container {
-  width: 15%;
-}
-
-div.my-future-order-error-container {
-  width: 85%;
+div.my-order-futures-button-container {
+  grid-column: span 2;
 }
 
 /** Order Options */
@@ -500,6 +491,7 @@ div.my-option-basket-show {
   bottom: 0px;
   border-bottom: 0px;
   left: 50%;
+  right: 50%;
   width: fit-content;
   padding: 8px 6px 12px 6px;
 }
@@ -638,7 +630,6 @@ div.my-right {
 }
 
 div.my-right-content-outer-container {
-  display: flex;
   min-height: calc(100vh - 80px);
   max-height: calc(100vh - 80px);
   height: auto;
