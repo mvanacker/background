@@ -264,6 +264,7 @@ div.my-cookie-disclaimer-container {
 
 div.my-cookie-disclaimer {
   width: 80%;
+  border-bottom: 0px !important;
 }
 
 /* TODO flexify */
