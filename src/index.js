@@ -10,8 +10,8 @@ import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 // Redux
-import { Provider } from 'react-redux';
-import store from './store';
+// import { Provider } from 'react-redux';
+// import store from './store';
 
 // Scroll restoration
 import { ScrollToTopOnNav } from './components/common/ScrollToTop';
@@ -33,17 +33,17 @@ document.body.classList.add('w3-theme-dark');
 
 // Render application
 ReactDOM.render(
-  <Provider store={store}>
-    <FinancialDisclaimer>
-      <Router>
-        <ScrollToTopOnNav />
-        <Deribit>
-          <Content left={<Left />} right={Right} />
-        </Deribit>
-      </Router>
-      <CookieDisclaimer />
-    </FinancialDisclaimer>
-  </Provider>,
+  // <Provider store={store}>
+  <FinancialDisclaimer>
+    <Router>
+      <ScrollToTopOnNav />
+      <Deribit>
+        <Content left={<Left />} right={Right} />
+      </Deribit>
+    </Router>
+    <CookieDisclaimer />
+  </FinancialDisclaimer>,
+  // </Provider>
   document.getElementById('root')
 );
 
