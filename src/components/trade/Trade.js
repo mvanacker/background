@@ -50,32 +50,23 @@ const DeribitTrade = (props) => {
   );
   if (!deribit) return null;
 
-  const down = deribit.maybeDown;
-  const unauth = deribit.authState !== AuthState.AUTHENTICATED;
-
-  return down || unauth ? (
-    <div className="my-flex my-right-outer-container">
-      <div className="my-right-inner-container">
-        {down ? (
-          <Panel title="Deribit down?" className="my-auth-panel" {...props}>
-            <div className="w3-center w3-padding-large">
-              <p>We encountered an error while trying to connect to Deribit.</p>
-              <p>You may refresh this page to try again.</p>
-            </div>
-          </Panel>
-        ) : (
-          <DeribitAuth
-            deribit={deribit}
-            test={test}
-            setTest={setTest}
-            readyState={readyState}
-            authState={authState}
-            className="my-auth-panel"
-            {...props}
-          />
-        )}
+  return deribit.maybeDown ? (
+    <Panel title="Deribit down?" className="my-auth-panel" {...props}>
+      <div className="w3-center w3-padding-large">
+        <p>We encountered an error while trying to connect to Deribit.</p>
+        <p>You may refresh this page to try again.</p>
       </div>
-    </div>
+    </Panel>
+  ) : deribit.authState !== AuthState.AUTHENTICATED ? (
+    <DeribitAuth
+      deribit={deribit}
+      test={test}
+      setTest={setTest}
+      readyState={readyState}
+      authState={authState}
+      className="my-auth-panel"
+      {...props}
+    />
   ) : (
     <DeribitInterface deribit={deribit} {...props} />
   );
@@ -331,7 +322,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
   // Render panels
   const optionsMapped = Object.keys(instruments).length > 0;
   return (
-    <div className="my-right-outer-container">
+    <>
       <div className="my-trading-interface-container">
         <div className="my-trading-interface" {...props}>
           <Panel title="Order Options" className="my-order-options">
@@ -364,16 +355,16 @@ const DeribitInterface = ({ deribit, ...props }) => {
             <Orders deribit={deribit} orders={orders} />
           </Panel>
         </div>
-        {selectedOptions.size > 0 && optionsMapped && (
-          <OptionBasket
-            deribit={deribit}
-            selectedOptions={selectedOptions}
-            setSelectedOptions={setSelectedOptions}
-            instruments={instruments}
-          />
-        )}
       </div>
-    </div>
+      {selectedOptions.size > 0 && optionsMapped && (
+        <OptionBasket
+          deribit={deribit}
+          selectedOptions={selectedOptions}
+          setSelectedOptions={setSelectedOptions}
+          instruments={instruments}
+        />
+      )}
+    </>
   );
 };
 

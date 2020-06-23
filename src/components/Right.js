@@ -37,12 +37,12 @@ export default ({ width }) => {
       </div>
 
       {/* Custom-positioned content. */}
-      <Route path="/trade" component={Trade} />
 
       {/* Centered content. */}
       <div className="my-flex my-right-outer-container">
         <div className="my-right-inner-container">
           <Route exact path="/" component={withDimensions(MovingAverages)} />
+          <Route path="/trade" component={Trade} />
           <Route path="/about" component={About} />
 
           {/* Puzzle pieces */}

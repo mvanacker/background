@@ -403,15 +403,17 @@ div.my-order-tables {
 
 /** Order Futures */
 
-form.my-order-futures-form {
+form.my-order-futures-form,
+div.my-splayed-entries {
   display: grid;
-  grid: auto-flow / 1fr minmax(1fr, 2fr);
+  grid: auto-flow / auto 1fr;
+}
+
+form.my-order-futures-form {
   gap: 16px;
 }
 
 div.my-splayed-entries {
-  display: grid;
-  grid: auto-flow / auto 1fr;
   gap: 8px;
 }
 
@@ -549,6 +551,7 @@ div.my-greeks {
 
 div.my-greeks > div {
   margin: 0 4px;
+  flex: 1 2 content;
 }
 
 div.my-pnl-chart-container {
