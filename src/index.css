@@ -361,14 +361,15 @@ div.my-trading-interface-core {
   display: flex;
   flex-flow: row wrap;
   align-items: flex-start;
+  justify-content: center;
 }
 
 div.my-order-futures {
-  flex: 1 0 400px;
+  flex: 0 0 auto;
 }
 
 div.my-position {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
 }
 
 /* div.my-orders {} */
