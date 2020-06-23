@@ -1413,7 +1413,7 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
         <Cogwheels
           onClick={() => setShowConfig(!showConfig)}
           className="my-opaquer-fader"
-          title={showConfig ? 'Hide config' : 'Show config'}
+          title={showConfig ? 'Hide settings' : 'Show settings'}
         />
         Order Futures
       </PanelTitle>
