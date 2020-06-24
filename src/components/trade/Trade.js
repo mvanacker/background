@@ -38,8 +38,8 @@ import { DeribitContext } from '../../contexts/Deribit';
 import { AuthState, ReadyState } from '../../sources/DeribitWebSocket';
 
 // Skip authentication and log straight into testnet
-// const DEV_MODE = false;
-const DEV_MODE = true;
+const DEV_MODE = false;
+// const DEV_MODE = true;
 
 // Only Deribit is implemented right now
 export default () => <DeribitTrade />;
@@ -313,7 +313,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
       });
   }, [deribit]);
 
-  // Used by the Options basket
+  // Used by the OptionBasket and OrderOptions components
   const [
     selectedOptions,
     setSelectedOptions,
@@ -572,24 +572,24 @@ const PnlChart = ({
 
   useEffect(() => {
     // Select positions, given sets of deselected positions (as props)
-    const selectedPositions = (positions, deselectedPositions) =>
+    const deselect = (positions, deselectedPositions) =>
       Object.values(positions).filter(
         (position) => !deselectedPositions.has(position.instrument_name)
       );
-    const selectedFutures = selectedPositions(futures, deselectedFutures);
-    const selectedOptions = selectedPositions(options, deselectedOptions);
+    const futuresPositions = deselect(futures, deselectedFutures);
+    const optionsPositions = deselect(options, deselectedOptions);
 
     // Normalize futures entries
     const perpetual_price = tickersRef.current['BTC-PERPETUAL'].last_price;
-    selectedFutures.forEach((future) => {
+    futuresPositions.forEach((future) => {
       future.average_price_norm =
         (perpetual_price * future.average_price) /
         tickersRef.current[future.instrument_name].last_price;
     });
 
     // Isolate (normalized) entries and strikes
-    const entries = selectedFutures.map((future) => future.average_price_norm);
-    const strikes = selectedOptions.map((option) => option.strike);
+    const entries = futuresPositions.map((future) => future.average_price_norm);
+    const strikes = optionsPositions.map((option) => option.strike);
     const keyPrices = [...entries, ...strikes, perpetual_price].sort(
       (a, b) => a - b
     );
@@ -645,7 +645,7 @@ const PnlChart = ({
       let pnlPoint = { expiration: 0, current: 0 };
 
       // Options PNL
-      selectedOptions.forEach(
+      optionsPositions.forEach(
         ({
           mark_iv,
           index_price,
@@ -676,7 +676,7 @@ const PnlChart = ({
       );
 
       // Futures PNL
-      selectedFutures.forEach(({ average_price_norm, size }) => {
+      futuresPositions.forEach(({ average_price_norm, size }) => {
         const pnl = size * (1 - average_price_norm / price);
         pnlPoint.expiration += pnl;
         pnlPoint.current += pnl;
