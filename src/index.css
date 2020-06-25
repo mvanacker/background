@@ -369,7 +369,7 @@ div.my-order-futures {
 }
 
 div.my-position {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
 }
 
 /* div.my-orders {} */
@@ -540,29 +540,28 @@ div.my-position-inner {
 }
 
 div.my-position-title {
-  flex: 1 1 content;
+  flex: 1 1 auto;
 }
 
 div.my-greeks {
-  flex: 1 1 content;
+  flex: 1 1 auto;
   display: flex;
   flex-flow: row wrap;
   justify-content: space-around;
 }
 
 div.my-greeks > div {
-  margin: 0 4px;
-  flex: 1 2 content;
+  margin: 4px;
+  flex: 0 1 auto;
 }
 
 div.my-pnl-chart-container {
-  flex: 1 1 content;
+  flex: 1 1 auto;
 }
 
 svg.my-pnl-chart {
   width: 100%;
   height: 100%;
-  min-height: 450px;
   /* border: 1px solid lime; */
 }
 

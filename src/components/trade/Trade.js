@@ -380,7 +380,7 @@ const Position = ({
   // Merge position and instrument objects
   // Include a snapshot of the option tickers
   const positionsRef = useRef({ future: {}, option: {} });
-  const [greeks, setGreeks] = useState(emptyGreeks());
+  // const [greeks, setGreeks] = useState(emptyGreeks());
   const isReady = useCallback(
     () => Object.keys(positions).length && Object.keys(instruments).length,
     [positions, instruments]
@@ -409,7 +409,7 @@ const Position = ({
       });
 
       // Compute initial greeks
-      setGreeks(computeGreeks(Object.values(positionsRef.current.option)));
+      // setGreeks(computeGreeks(Object.values(positionsRef.current.option)));
     });
   }, [deribit, isReady, positions, instruments]);
 
@@ -437,25 +437,25 @@ const Position = ({
   ] = useLocalSet('deribit-deselected-futures', { initialValue: new Set() });
 
   // Recompute greeks based on which positions are selected
-  useEffect(() => {
-    setGreeks(
-      computeGreeks(
-        Object.values(positionsRef.current.option).filter(
-          (option) => !deselectedOptions.has(option.instrument_name)
-        )
-      )
-    );
-  }, [deselectedOptions]);
+  // useEffect(() => {
+  //   setGreeks(
+  //     computeGreeks(
+  //       Object.values(positionsRef.current.option).filter(
+  //         (option) => !deselectedOptions.has(option.instrument_name)
+  //       )
+  //     )
+  //   );
+  // }, [deselectedOptions]);
 
   return (
     <div className="my-position-inner">
       <PanelTitle className="my-position-title">Position</PanelTitle>
-      <div className="w3-padding my-greeks" {...props}>
+      {/* <div className="w3-padding my-greeks" {...props}>
         <Greek>Δ {greeks.delta}</Greek>
         <Greek>Γ {greeks.gamma}</Greek>
         <Greek>ϴ {greeks.theta}</Greek>
         <Greek>𝜈 {greeks.vega}</Greek>
-      </div>
+      </div> */}
       <div className="my-pnl-chart-container">
         {isReadyForPNL() && (
           // Only render if futuresTickers is set,
@@ -488,19 +488,19 @@ const Position = ({
   );
 };
 
-const emptyGreeks = () => ({ delta: 0, gamma: 0, theta: 0, vega: 0 });
-const computeGreeks = (options) => {
-  const greeks = emptyGreeks();
-  options.forEach((option) => {
-    Object.keys(greeks).forEach((greek) => {
-      greeks[greek] += option[greek];
-    });
-  });
-  for (const greek in greeks) {
-    greeks[greek] = greeks[greek].toFixed(4);
-  }
-  return greeks;
-};
+// const emptyGreeks = () => ({ delta: 0, gamma: 0, theta: 0, vega: 0 });
+// const computeGreeks = (options) => {
+//   const greeks = emptyGreeks();
+//   options.forEach((option) => {
+//     Object.keys(greeks).forEach((greek) => {
+//       greeks[greek] += option[greek];
+//     });
+//   });
+//   for (const greek in greeks) {
+//     greeks[greek] = greeks[greek].toFixed(4);
+//   }
+//   return greeks;
+// };
 
 const PositionList = ({
   positions,
