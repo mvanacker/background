@@ -107,6 +107,11 @@ div#root {
   text-transform: uppercase;
 }
 
+.my-two-col-grid {
+  display: grid;
+  grid: auto-flow / auto 1fr;
+}
+
 /* Hover effects */
 
 .my-fader,
@@ -370,6 +375,8 @@ div.my-order-futures {
 
 div.my-position {
   flex: 1 1 auto;
+  width: auto;
+  max-width: 600px;
 }
 
 /* div.my-orders {} */
@@ -403,12 +410,6 @@ div.my-order-tables {
 }
 
 /** Order Futures */
-
-form.my-order-futures-form,
-div.my-splayed-entries {
-  display: grid;
-  grid: auto-flow / auto 1fr;
-}
 
 form.my-order-futures-form {
   gap: 16px;
@@ -824,4 +825,10 @@ table#trade-history td.trade-history-add-comment textarea {
   min-width: 97%;
   max-width: fit-content;
   margin: 15px 0;
+}
+
+/* Breakout (experimental) */
+
+div.my-breakout {
+  gap: 16px;
 }

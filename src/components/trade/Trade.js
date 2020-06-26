@@ -86,8 +86,10 @@ const DeribitAuth = ({
     if (DEV_MODE && deribit) {
       setTest(true);
       deribit.auth({
-        key: '5jgRJ5dz',
-        secret: 'MvocUP-l8nPift3btFFZ9cJIY08NZcbG9NqpxvdP_BY',
+        // key: '5jgRJ5dz',
+        // secret: 'MvocUP-l8nPift3btFFZ9cJIY08NZcbG9NqpxvdP_BY',
+        key: 'a68zTY-U',
+        secret: 'jFgvnkG6K96u7JuAXEOvWaO9x_P9oZA1txkMGCvbll0',
       });
     }
   }, [deribit, setTest]);
@@ -193,6 +195,10 @@ const DeribitInterface = ({ deribit, ...props }) => {
   const [orders, setOrders] = useState({});
   const [positions, setPositions] = useState({});
   const [portfolio, setPortfolio] = useState({});
+  const [
+    analysisPositions,
+    setAnalysisPositions,
+  ] = useLocal('deribit-analysis-positions', { initialValue: {} });
 
   // Setup information retrieval needed to provide a trading interface
   useEffect(() => {
@@ -340,6 +346,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
                 deribit={deribit}
                 tickers={futuresTickers}
                 portfolio={portfolio}
+                setAnalysisPositions={setAnalysisPositions}
               />
             </Panel>
             <Panel className="my-position">
@@ -348,6 +355,8 @@ const DeribitInterface = ({ deribit, ...props }) => {
                 positions={positions}
                 instruments={instruments}
                 futuresTickers={futuresTickers}
+                analysisPositions={analysisPositions}
+                setAnalysisPositions={setAnalysisPositions}
               />
             </Panel>
           </div>
@@ -362,6 +371,7 @@ const DeribitInterface = ({ deribit, ...props }) => {
           selectedOptions={selectedOptions}
           setSelectedOptions={setSelectedOptions}
           instruments={instruments}
+          setAnalysisPositions={setAnalysisPositions}
         />
       )}
     </>
@@ -374,44 +384,22 @@ const Position = ({
   positions,
   instruments,
   futuresTickers,
+  analysisPositions,
+  setAnalysisPositions,
   ...props
 }) => {
-  // Separate futures from options positions
-  // Merge position and instrument objects
-  // Include a snapshot of the option tickers
-  const positionsRef = useRef({ future: {}, option: {} });
-  // const [greeks, setGreeks] = useState(emptyGreeks());
   const isReady = useCallback(
     () => Object.keys(positions).length && Object.keys(instruments).length,
     [positions, instruments]
   );
-  useEffect(() => {
-    if (!isReady()) return;
 
-    // Fetch tickers
-    Promise.all(
-      Object.keys(positions).map((instrument_name) =>
-        deribit.send({ method: 'public/ticker', params: { instrument_name } })
-      )
-    ).then((result) => {
-      positionsRef.current.future = {};
-      positionsRef.current.option = {};
-      result.forEach(({ result: ticker }) => {
-        const { instrument_name } = ticker;
-        const position = positions[instrument_name];
-        if (position.size !== 0) {
-          positionsRef.current[position.kind][instrument_name] = {
-            ...ticker,
-            ...position,
-            ...instruments[instrument_name],
-          };
-        }
-      });
-
-      // Compute initial greeks
-      // setGreeks(computeGreeks(Object.values(positionsRef.current.option)));
-    });
-  }, [deribit, isReady, positions, instruments]);
+  const fooPositions = usePositions(deribit, isReady, instruments, positions);
+  const fooAnalysisPositions = usePositions(
+    deribit,
+    isReady,
+    instruments,
+    analysisPositions
+  );
 
   //
   const isReadyForPNL = useCallback(
@@ -419,7 +407,7 @@ const Position = ({
       isReady() &&
       futuresTickers &&
       'BTC-PERPETUAL' in futuresTickers &&
-      Object.keys(positionsRef.current.future).every(
+      Object.keys(fooPositions.future).every(
         (instrument_name) => instrument_name in futuresTickers
       ),
     [isReady, futuresTickers]
@@ -436,26 +424,9 @@ const Position = ({
     setDeselectedFutures,
   ] = useLocalSet('deribit-deselected-futures', { initialValue: new Set() });
 
-  // Recompute greeks based on which positions are selected
-  // useEffect(() => {
-  //   setGreeks(
-  //     computeGreeks(
-  //       Object.values(positionsRef.current.option).filter(
-  //         (option) => !deselectedOptions.has(option.instrument_name)
-  //       )
-  //     )
-  //   );
-  // }, [deselectedOptions]);
-
   return (
-    <div className="my-position-inner">
+    <div className="my-position-inner" {...props}>
       <PanelTitle className="my-position-title">Position</PanelTitle>
-      {/* <div className="w3-padding my-greeks" {...props}>
-        <Greek>Δ {greeks.delta}</Greek>
-        <Greek>Γ {greeks.gamma}</Greek>
-        <Greek>ϴ {greeks.theta}</Greek>
-        <Greek>𝜈 {greeks.vega}</Greek>
-      </div> */}
       <div className="my-pnl-chart-container">
         {isReadyForPNL() && (
           // Only render if futuresTickers is set,
@@ -464,8 +435,8 @@ const Position = ({
           // by the time futuresTickers is first set
           <PnlChart
             deribit={deribit}
-            futures={positionsRef.current.future}
-            options={positionsRef.current.option}
+            futures={fooPositions.future}
+            options={fooPositions.option}
             deselectedOptions={deselectedOptions}
             deselectedFutures={deselectedFutures}
             futuresTickers={futuresTickers}
@@ -474,12 +445,12 @@ const Position = ({
       </div>
       <div className="my-position-list-container">
         <PositionList
-          positions={positionsRef.current.future}
+          positions={fooPositions.future}
           deselectedPositions={deselectedFutures}
           setDeselectedPositions={setDeselectedFutures}
         />
         <PositionList
-          positions={positionsRef.current.option}
+          positions={fooPositions.option}
           deselectedPositions={deselectedOptions}
           setDeselectedPositions={setDeselectedOptions}
         />
@@ -488,19 +459,37 @@ const Position = ({
   );
 };
 
-// const emptyGreeks = () => ({ delta: 0, gamma: 0, theta: 0, vega: 0 });
-// const computeGreeks = (options) => {
-//   const greeks = emptyGreeks();
-//   options.forEach((option) => {
-//     Object.keys(greeks).forEach((greek) => {
-//       greeks[greek] += option[greek];
-//     });
-//   });
-//   for (const greek in greeks) {
-//     greeks[greek] = greeks[greek].toFixed(4);
-//   }
-//   return greeks;
-// };
+// Separate futures from options positions
+// Merge position and instrument objects
+// Include a snapshot of the option tickers
+const usePositions = (deribit, isReady, instruments, positions) => {
+  const ref = useRef({ future: {}, option: {} });
+
+  useEffect(() => {
+    if (!isReady()) return;
+    Promise.all(
+      Object.keys(positions).map((instrument_name) =>
+        deribit.send({ method: 'public/ticker', params: { instrument_name } })
+      )
+    ).then((result) => {
+      ref.current.future = {};
+      ref.current.option = {};
+      result.forEach(({ result: ticker }) => {
+        const { instrument_name } = ticker;
+        const position = positions[instrument_name];
+        if (position.size !== 0) {
+          ref.current[position.kind][instrument_name] = {
+            ...ticker,
+            ...position,
+            ...instruments[instrument_name],
+          };
+        }
+      });
+    });
+  }, [deribit, isReady, instruments, positions]);
+
+  return ref.current;
+};
 
 const PositionList = ({
   positions,
@@ -807,12 +796,6 @@ const PnlChart = ({
   );
 };
 
-const Greek = ({ children, ...props }) => (
-  <div className="w3-theme-l1 w3-padding my-round my-no-wrap" {...props}>
-    {children}
-  </div>
-);
-
 // Order options
 const OrderOptions = ({
   deribit,
@@ -1095,6 +1078,8 @@ const OptionBasket = ({
   selectedOptions,
   setSelectedOptions,
   instruments,
+  setAnalysisPositions,
+  ...props
 }) => {
   // Delete option from the basket
   const deleteOption = (instrument_name) => () => {
@@ -1172,7 +1157,7 @@ const OptionBasket = ({
       />
     </div>
   ) : (
-    <div className="my-option-basket-outer-container">
+    <div className="my-option-basket-outer-container" {...props}>
       <div className="w3-card w3-theme-l1 my-round my-option-basket-inner-container">
         <table className="w3-table w3-centered w3-striped-l2 my-option-basket">
           <thead className="my-sticky-thead">
@@ -1348,7 +1333,13 @@ const OrderAllOptionsButton = ({ children, className = '', ...props }) => (
 );
 
 // Order futures
-const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
+const OrderFutures = ({
+  deribit,
+  tickers,
+  portfolio,
+  setAnalysisPositions,
+  ...props
+}) => {
   const [showConfig, setShowConfig] = useLocal('deribit-show-futures-config', {
     initialValue: false,
   });
@@ -1417,7 +1408,10 @@ const OrderFutures = ({ deribit, tickers, portfolio, ...props }) => {
         />
         Order Futures
       </PanelTitle>
-      <form className="w3-padding-large my-order-futures-form" {...props}>
+      <form
+        className="w3-padding-large my-two-col-grid my-order-futures-form"
+        {...props}
+      >
         <div>Equity</div>
         <div>
           <BTC />
@@ -1611,7 +1605,7 @@ const SplayedEntries = ({ setEntries, locked, ...props }) => {
   }, [center, spread, orders, setEntries, setAggregates]);
 
   return (
-    <div className="my-splayed-entries">
+    <div className="my-two-col-grid my-splayed-entries">
       <div>Center</div>
       <div>
         <NumericalInput
