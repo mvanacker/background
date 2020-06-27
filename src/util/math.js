@@ -100,20 +100,27 @@ export function round_to(n, to = 1, base = 10) {
   return Math.round(n * foo) / foo;
 }
 
-// https://www.w3resource.com/javascript-exercises/javascript-math-exercise-10.php
-export function lcm(x, y) {
-  if (typeof x !== 'number' || typeof y !== 'number') return false;
-  return !x || !y ? 0 : Math.abs((x * y) / gcd(x, y));
-}
+// Oriol https://stackoverflow.com/questions/34953778/calculate-the-lcm-of-two-or-three-numbers-in-javascript
+// Greatest common divisor of 2 integers
+export const gcd2 = (a, b) => (!b ? (b === 0 ? a : NaN) : gcd2(b, a % b));
 
-// https://www.w3resource.com/javascript-exercises/javascript-math-exercise-10.php
-export function gcd(x, y) {
-  x = Math.abs(x);
-  y = Math.abs(y);
-  while (y) {
-    const t = y;
-    y = x % y;
-    x = t;
+// Greatest common divisor of a list of integers
+export const gcd = (array) => {
+  let n = 0;
+  for (let i = 0; i < array.length; ++i) {
+    n = gcd2(array[i], n);
   }
-  return x;
-}
+  return n;
+};
+
+// Least common multiple of 2 integers
+export const lcm2 = (a, b) => (a * b) / gcd2(a, b);
+
+// Least common multiple of a list of integers
+export const lcm = (array) => {
+  let n = 1;
+  for (let i = 0; i < array.length; ++i) {
+    n = lcm2(array[i], n);
+  }
+  return n;
+};
