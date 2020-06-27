@@ -33,7 +33,7 @@ div#root {
   align-content: stretch;
 }
 
-/* Text colors */
+/* Text colors (also applies to Font Awesome's icons) */
 
 .my-text-royal-blue {
   color: royalblue;
@@ -45,6 +45,10 @@ div#root {
 
 .my-text-lime {
   color: lime;
+}
+
+.my-text-orange {
+  color: orange;
 }
 
 /* General add-ons */
@@ -64,6 +68,11 @@ div#root {
 
 .my-margin-auto {
   margin: auto;
+}
+
+.my-margin-lr {
+  margin-left: 8px;
+  margin-right: 8px;
 }
 
 .my-flex {
@@ -409,6 +418,11 @@ div.my-order-tables {
   grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
 }
 
+i.my-order-table-delete-instrument {
+  position: relative;
+  bottom: 1px;
+}
+
 /** Order Futures */
 
 form.my-order-futures-form {
@@ -417,6 +431,11 @@ form.my-order-futures-form {
 
 div.my-splayed-entries {
   gap: 8px;
+}
+
+i.my-order-futures-settings {
+  position: relative;
+  bottom: 1px;
 }
 
 form.my-order-futures-form div:nth-child(odd),

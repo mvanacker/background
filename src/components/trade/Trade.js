@@ -1419,9 +1419,9 @@ const OrderFutures = ({
   return (
     <>
       <PanelTitle>
-        <Cogwheels
+        <i
           onClick={() => setShowConfig(!showConfig)}
-          className="my-opaquer-fader"
+          className="fas fa-wrench fa-sm my-fader my-margin-lr w3-text-l4 my-pointer my-order-futures-settings"
           title={showConfig ? 'Hide settings' : 'Show settings'}
         />
         Order Futures
@@ -1979,7 +1979,7 @@ const OrderFuturesButtonContainer = ({
   );
 };
 
-// Order table
+// Order table; TODO: row hover
 const Orders = ({ deribit, orders, ...props }) => {
   // Sorting of contracts by amount of orders on them
   const amount = (future) => Object.keys(orders[future]).length;
@@ -2036,7 +2036,10 @@ const Orders = ({ deribit, orders, ...props }) => {
               <h4>
                 {future}
                 {amount(future) > 0 && (
-                  <DeleteButton onClick={cancelByInstrument(future)} />
+                  <DeleteButton
+                    onClick={cancelByInstrument(future)}
+                    className="my-order-table-delete-instrument"
+                  />
                 )}
               </h4>
               <OrderTable>
@@ -2071,9 +2074,15 @@ const Orders = ({ deribit, orders, ...props }) => {
                           <td>
                             {order_type === 'stop_market' &&
                               (direction === 'buy' ? (
-                                <BuyStop />
+                                <StopIcon
+                                  className="my-text-lime"
+                                  title="Buy Stop"
+                                />
                               ) : (
-                                <SellStop />
+                                <StopIcon
+                                  className="my-text-red"
+                                  title="Sell Stop"
+                                />
                               ))}
                             {label}
                             <DeleteButton onClick={cancelByLabel(label)} />
@@ -2109,6 +2118,10 @@ const Orders = ({ deribit, orders, ...props }) => {
   );
 };
 
+const StopIcon = ({ className = '', ...props }) => (
+  <i className={`fas fa-hand-paper my-margin-lr ${className}`} {...props} />
+);
+
 const OrderTable = ({ children, ...props }) => (
   <TableContainer {...props}>
     <Table>{children}</Table>
@@ -2130,6 +2143,7 @@ const Table = ({ children, className = '', ...props }) => (
   </table>
 );
 
+// TODO: move above order table
 const OrderFuturesButton = ({ children, className = '', ...props }) => (
   <button
     className={`w3-card w3-btn w3-large ${className}`}
@@ -2191,7 +2205,12 @@ const TextButton = ({ children, ...props }) => (
 );
 
 // Auxiliary component
-const DeleteButton = (props) => <TextButton {...props}>🗑</TextButton>;
+const DeleteButton = ({ className = '', props }) => (
+  <i
+    className={`fas fa-trash-alt my-margin-lr my-pointer my-opaquer-fader fa-sm ${className}`}
+    {...props}
+  />
+);
 
 // Auxiliary component
 const RadioGroup = ({ options, value: checked, setValue, ...props }) =>
