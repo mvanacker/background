@@ -1365,12 +1365,19 @@ const OrderFutures = ({
   const [stopsEnabled, setStopsEnabled] = useLocal('deribit-stops-enabled', {
     initialValue: true,
   });
+  const [
+    profitsEnabled,
+    setProfitsEnabled,
+  ] = useLocal('deribit-profits-enabled', { initialValue: false });
 
   // Locks
   const [entriesLocked, setEntriesLocked] = useLocal('deribit-entries-locked', {
     intialValue: true,
   });
   const [stopsLocked, setStopsLocked] = useLocal('deribit-stops-locked', {
+    initialValue: true,
+  });
+  const [profitsLocked, setProfitsLocked] = useLocal('deribit-profits-locked', {
     initialValue: true,
   });
 
@@ -1385,6 +1392,9 @@ const OrderFutures = ({
   const [quantity, setQuantity] = useLocal('deribit-quantity');
   const [risk, setRisk] = useLocal('deribit-risk', { initialValue: 1 });
   const [label, setLabel] = useLocal('deribit-label');
+  const [profits, setProfits] = useLocal('deribit-profits', {
+    initialValue: [''],
+  });
 
   // Add premium feature
   const addPremium = (array) => {
@@ -1398,6 +1408,7 @@ const OrderFutures = ({
   const opacity = (enabled) => (enabled ? 'my-full-opacity' : 'my-low-opacity');
   const entryOpacity = opacity(entriesEnabled);
   const riskOpacity = opacity(stopsEnabled);
+  const profitOpacity = opacity(profitsEnabled);
   return (
     <>
       <PanelTitle>
@@ -1473,7 +1484,7 @@ const OrderFutures = ({
                 checked={entriesEnabled}
                 onChange={(e) => setEntriesEnabled(e.target.checked)}
               />{' '}
-              <span className={entryOpacity}>Limit</span>{' '}
+              <span className={entryOpacity}>Entries</span>{' '}
             </label>
             {entryMethod === EntryMethod.MANUAL && (
               <Lock locked={entriesLocked} setLocked={setEntriesLocked} />
@@ -1550,6 +1561,28 @@ const OrderFutures = ({
             className={riskOpacity}
           />
         </div>
+        <div>
+          <div>
+            <label>
+              <input
+                type="checkbox"
+                className="my-check"
+                checked={profitsEnabled}
+                onChange={(e) => setProfitsEnabled(e.target.checked)}
+              />{' '}
+              <span className={profitOpacity}>Take profit</span>{' '}
+            </label>
+            <Lock locked={profitsLocked} setLocked={setProfitsLocked} />
+          </div>
+        </div>
+        <div>
+          <NumericalDynamicInputs
+            locked={profitsLocked}
+            values={profits}
+            setValues={setProfits}
+            className={riskOpacity}
+          />
+        </div>
         <div>Label</div>
         <div>
           <input
@@ -1567,8 +1600,10 @@ const OrderFutures = ({
             quantity={quantity}
             entriesEnabled={entriesEnabled}
             entries={addPremium(entries)}
-            stops={addPremium(stops)}
             stopsEnabled={stopsEnabled}
+            stops={addPremium(stops)}
+            profitsEnabled={profitsEnabled}
+            profits={addPremium(profits)}
           />
         </div>
       </form>
@@ -1759,64 +1794,92 @@ const OrderFuturesButtonContainer = ({
   entriesEnabled,
   stops,
   stopsEnabled,
+  profits,
+  profitsEnabled,
 }) => {
-  //
+  // Error handling
   const [errors, setErrors] = useState([]);
   const addError = (error) => setErrors((errors) => [...errors, error]);
 
-  //
-  let base = 10;
-  if (entriesEnabled && stopsEnabled) {
-    base *= lcm(entries.length, stops.length);
-  } else if (entriesEnabled) {
-    base *= entries.length;
-  } else if (stopsEnabled) {
-    base *= stops.length;
-  }
-  quantity = round_to(quantity, -1, base);
-  const entryQuantity = Math.round(quantity / entries.length);
-  const stopQuantity = Math.round(quantity / stops.length);
-
-  const commonParams = {
-    label,
-    instrument_name,
-  };
+  // Simple (placeholder) strategy for assigning quantities to given prices
+  // i.e. evenly spread the total quantity
+  const lengths = [];
+  if (entriesEnabled) lengths.push(entries.length);
+  if (stopsEnabled) lengths.push(stops.length);
+  if (profitsEnabled) lengths.push(profits.length);
+  quantity = round_to(quantity, -1, 10 * lcm(lengths));
+  const entryAmount = Math.round(quantity / entries.length);
+  const stopAmount = Math.round(quantity / stops.length);
+  const profitAmount = Math.round(quantity / profits.length);
 
   const order = (side) => {
+    // Reset errors
     setErrors([]);
-    if (entriesEnabled) {
-      floats(entries).forEach((entry) =>
-        deribit
-          .send({
-            method: `private/${side}`,
-            params: {
-              ...commonParams,
-              amount: entryQuantity,
-              price: entry,
-              post_only: true,
-              post_only_reject: true,
-            },
-          })
-          .catch(addError)
-      );
-    }
-    if (stopsEnabled) {
-      floats(stops).forEach((stop) =>
-        deribit
-          .send({
-            method: `private/${side === 'buy' ? 'sell' : 'buy'}`,
-            params: {
-              ...commonParams,
-              type: 'stop_market',
-              amount: stopQuantity,
-              stop_price: stop,
-              reduce_only: true,
-              trigger: 'last_price',
-            },
-          })
-          .catch(addError)
-      );
-    }
+
+    const oppositeSide = side === 'buy' ? 'sell' : 'buy';
+    const subOrder = ({
+      enabled,
+      prices,
+      amount,
+      side,
+      params,
+      priceKey = 'price',
+    }) => {
+      if (enabled) {
+        floats(prices).forEach((price) =>
+          deribit
+            .send({
+              method: `private/${side}`,
+              params: {
+                label,
+                instrument_name,
+                [priceKey]: price,
+                amount,
+                ...params,
+              },
+            })
+            .catch(addError)
+        );
+      }
+    };
+
+    // Place entry orders
+    subOrder({
+      enabled: entriesEnabled,
+      prices: entries,
+      amount: entryAmount,
+      side,
+      params: {
+        post_only: true,
+        post_only_reject: true,
+      },
+    });
+
+    // Place stop loss orders
+    subOrder({
+      enabled: stopsEnabled,
+      prices: stops,
+      amount: stopAmount,
+      side: oppositeSide,
+      params: {
+        type: 'stop_market',
+        reduce_only: true,
+        trigger: 'last_price',
+      },
+      priceKey: 'stop_price',
+    });
+
+    // Place take profit orders
+    subOrder({
+      enabled: profitsEnabled,
+      prices: profits,
+      amount: profitAmount,
+      side: oppositeSide,
+      params: {
+        post_only: true,
+        post_only_reject: true,
+      },
+    });
   };
   const buy = () => order('buy');
   const sell = () => order('sell');
@@ -1855,59 +1918,57 @@ const OrderFuturesButtonContainer = ({
           </ul>
         </div>
       )}
-      {
-        /* neither enabled */ !(entriesEnabled || stopsEnabled) ? (
-          <OrderFuturesButton className="w3-block my-round w3-grey">
-            No entries nor stops enabled
-          </OrderFuturesButton>
-        ) : /* both enabled */ entriesEnabled && stopsEnabled ? (
-          meanStop === meanEntry ? (
-            <div className="w3-cell-row">
-              <OrderFuturesButton
-                className="w3-cell my-round-left w3-green w3-half"
-                onClick={buy}
-              >
+      {!(
+        entriesEnabled ||
+        stopsEnabled ||
+        profitsEnabled
+      ) ? null : entriesEnabled && stopsEnabled ? (
+        meanEntry > meanStop ? (
+          <BuyFullOrderFuturesButton buy={buy} />
+        ) : meanEntry < meanStop ? (
+          <SellFullOrderFuturesButton sell={sell} />
+        ) : null
+      ) : (
+        <HalfOrderFuturesButtonContainer>
+          {stopsEnabled && profitsEnabled ? (
+            <>
+              <BuyHalfOrderFuturesButton buy={buy}>
+                Sell stop &amp; profit sell
+              </BuyHalfOrderFuturesButton>
+              <SellHalfOrderFuturesButton sell={sell}>
+                Buy stop &amp; profit buy
+              </SellHalfOrderFuturesButton>
+            </>
+          ) : entriesEnabled ? (
+            <>
+              <BuyHalfOrderFuturesButton buy={buy}>
                 Buy
-              </OrderFuturesButton>
-              <OrderFuturesButton
-                className="w3-cell my-round-right w3-red w3-half"
-                onClick={sell}
-              >
+              </BuyHalfOrderFuturesButton>
+              <SellHalfOrderFuturesButton sell={sell}>
                 Sell
-              </OrderFuturesButton>
-            </div>
-          ) : meanEntry > meanStop ? (
-            <OrderFuturesButton
-              className="w3-block my-round w3-green"
-              onClick={buy}
-            >
-              Buy
-            </OrderFuturesButton>
-          ) : (
-            <OrderFuturesButton
-              className="w3-block my-round w3-red"
-              onClick={sell}
-            >
-              Sell
-            </OrderFuturesButton>
-          )
-        ) : (
-          <div className="w3-cell-row">
-            <OrderFuturesButton
-              className="w3-cell my-round-left w3-green w3-half"
-              onClick={buy}
-            >
-              {entriesEnabled ? 'Buy' : 'Sell stop'}
-            </OrderFuturesButton>
-            <OrderFuturesButton
-              className="w3-cell my-round-right w3-red w3-half"
-              onClick={sell}
-            >
-              {entriesEnabled ? 'Sell' : 'Buy stop'}
-            </OrderFuturesButton>
-          </div>
-        )
-      }
+              </SellHalfOrderFuturesButton>
+            </>
+          ) : stopsEnabled ? (
+            <>
+              <BuyHalfOrderFuturesButton buy={buy}>
+                Sell stop
+              </BuyHalfOrderFuturesButton>
+              <SellHalfOrderFuturesButton sell={sell}>
+                Buy stop
+              </SellHalfOrderFuturesButton>
+            </>
+          ) : profitsEnabled ? (
+            <>
+              <BuyHalfOrderFuturesButton buy={buy}>
+                Profit sell
+              </BuyHalfOrderFuturesButton>
+              <SellHalfOrderFuturesButton sell={sell}>
+                Profit buy
+              </SellHalfOrderFuturesButton>
+            </>
+          ) : null}
+        </HalfOrderFuturesButtonContainer>
+      )}
     </>
   );
 };
@@ -2063,7 +2124,7 @@ const Table = ({ children, className = '', ...props }) => (
   </table>
 );
 
-const OrderFuturesButton = ({ children, className, ...props }) => (
+const OrderFuturesButton = ({ children, className = '', ...props }) => (
   <button
     className={`w3-card w3-btn w3-large ${className}`}
     type="button"
@@ -2071,6 +2132,46 @@ const OrderFuturesButton = ({ children, className, ...props }) => (
   >
     {children}
   </button>
+);
+
+const FullOrderFuturesButton = ({ children, className = '', ...props }) => (
+  <OrderFuturesButton className={`w3-block my-round ${className}`} {...props}>
+    {children}
+  </OrderFuturesButton>
+);
+
+const BuyFullOrderFuturesButton = ({ buy }) => (
+  <FullOrderFuturesButton className="w3-green" onClick={buy}>
+    Buy
+  </FullOrderFuturesButton>
+);
+
+const SellFullOrderFuturesButton = ({ sell }) => (
+  <FullOrderFuturesButton className="w3-red" onClick={sell}>
+    Sell
+  </FullOrderFuturesButton>
+);
+
+const HalfOrderFuturesButtonContainer = ({ children }) => (
+  <div className="w3-cell-row">{children}</div>
+);
+
+const HalfOrderFuturesButton = ({ children, className = '', ...props }) => (
+  <OrderFuturesButton className={`w3-cell w3-half ${className}`} {...props}>
+    {children}
+  </OrderFuturesButton>
+);
+
+const BuyHalfOrderFuturesButton = ({ children, buy }) => (
+  <HalfOrderFuturesButton className="my-round-left w3-green" onClick={buy}>
+    {children}
+  </HalfOrderFuturesButton>
+);
+
+const SellHalfOrderFuturesButton = ({ children, sell }) => (
+  <HalfOrderFuturesButton className="my-round-right w3-red" onClick={sell}>
+    {children}
+  </HalfOrderFuturesButton>
 );
 
 // Auxiliary conversions
