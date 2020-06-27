@@ -19,13 +19,7 @@ import { removeOverlap, removeOverlapWithDatum } from '../../util/d3-axis-util';
 import Panel, { PanelTitle } from '../common/Panel';
 import Lock from '../common/Lock';
 import BTC from '../common/Bitcoin';
-import {
-  DoubleDown,
-  DoubleUp,
-  Cogwheels,
-  BuyStop,
-  SellStop,
-} from '../common/Icons';
+import { DoubleDown, DoubleUp } from '../common/Icons';
 
 import { mean, floats } from '../../util/array';
 import { lcm, round_to } from '../../util/math';
@@ -410,7 +404,7 @@ const Position = ({
       Object.keys(fooPositions.future).every(
         (instrument_name) => instrument_name in futuresTickers
       ),
-    [isReady, futuresTickers]
+    [isReady, futuresTickers, fooPositions.future]
   );
 
   // Keep track of which positions were deselected
@@ -1929,7 +1923,7 @@ const OrderFuturesButtonContainer = ({
         stopsEnabled ||
         profitsEnabled
       ) ? null : entriesEnabled && stopsEnabled ? (
-        meanEntry == meanStop ? null : meanEntry > meanStop ? (
+        meanEntry === meanStop ? null : meanEntry > meanStop ? (
           <BuyFullOrderFuturesButton buy={buy} />
         ) : (
           <SellFullOrderFuturesButton sell={sell} />
@@ -1979,7 +1973,57 @@ const OrderFuturesButtonContainer = ({
   );
 };
 
-// Order table; TODO: row hover
+const OrderFuturesButton = ({ children, className = '', ...props }) => (
+  <button
+    className={`w3-card w3-btn w3-large ${className}`}
+    type="button"
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+const FullOrderFuturesButton = ({ children, className = '', ...props }) => (
+  <OrderFuturesButton className={`w3-block my-round ${className}`} {...props}>
+    {children}
+  </OrderFuturesButton>
+);
+
+const BuyFullOrderFuturesButton = ({ buy }) => (
+  <FullOrderFuturesButton className="w3-green" onClick={buy}>
+    Buy
+  </FullOrderFuturesButton>
+);
+
+const SellFullOrderFuturesButton = ({ sell }) => (
+  <FullOrderFuturesButton className="w3-red" onClick={sell}>
+    Sell
+  </FullOrderFuturesButton>
+);
+
+const HalfOrderFuturesButtonContainer = ({ children }) => (
+  <div className="w3-cell-row">{children}</div>
+);
+
+const HalfOrderFuturesButton = ({ children, className = '', ...props }) => (
+  <OrderFuturesButton className={`w3-cell w3-half ${className}`} {...props}>
+    {children}
+  </OrderFuturesButton>
+);
+
+const BuyHalfOrderFuturesButton = ({ children, buy }) => (
+  <HalfOrderFuturesButton className="my-round-left w3-green" onClick={buy}>
+    {children}
+  </HalfOrderFuturesButton>
+);
+
+const SellHalfOrderFuturesButton = ({ children, sell }) => (
+  <HalfOrderFuturesButton className="my-round-right w3-red" onClick={sell}>
+    {children}
+  </HalfOrderFuturesButton>
+);
+
+// Order table
 const Orders = ({ deribit, orders, ...props }) => {
   // Sorting of contracts by amount of orders on them
   const amount = (future) => Object.keys(orders[future]).length;
@@ -2042,7 +2086,7 @@ const Orders = ({ deribit, orders, ...props }) => {
                   />
                 )}
               </h4>
-              <OrderTable>
+              <OrderTable className="w3-theme-d2">
                 <thead>
                   <tr>
                     <th>label</th>
@@ -2067,9 +2111,9 @@ const Orders = ({ deribit, orders, ...props }) => {
                       }) => (
                         <tr
                           key={order_id}
-                          className={
+                          className={`w3-hover-l1 ${
                             direction === 'buy' ? 'my-text-lime' : 'my-text-red'
-                          }
+                          }`}
                         >
                           <td>
                             {order_type === 'stop_market' &&
@@ -2130,7 +2174,7 @@ const OrderTable = ({ children, ...props }) => (
 
 const TableContainer = ({ children, className = '', ...props }) => (
   <div
-    className={`w3-margin w3-padding w3-theme-d1 my-round w3-card ${className}`}
+    className={`w3-margin w3-padding w3-theme-d1 my-round w3-card my-order-table ${className}`}
     {...props}
   >
     {children}
@@ -2141,57 +2185,6 @@ const Table = ({ children, className = '', ...props }) => (
   <table className={`w3-table w3-centered ${className}`} {...props}>
     {children}
   </table>
-);
-
-// TODO: move above order table
-const OrderFuturesButton = ({ children, className = '', ...props }) => (
-  <button
-    className={`w3-card w3-btn w3-large ${className}`}
-    type="button"
-    {...props}
-  >
-    {children}
-  </button>
-);
-
-const FullOrderFuturesButton = ({ children, className = '', ...props }) => (
-  <OrderFuturesButton className={`w3-block my-round ${className}`} {...props}>
-    {children}
-  </OrderFuturesButton>
-);
-
-const BuyFullOrderFuturesButton = ({ buy }) => (
-  <FullOrderFuturesButton className="w3-green" onClick={buy}>
-    Buy
-  </FullOrderFuturesButton>
-);
-
-const SellFullOrderFuturesButton = ({ sell }) => (
-  <FullOrderFuturesButton className="w3-red" onClick={sell}>
-    Sell
-  </FullOrderFuturesButton>
-);
-
-const HalfOrderFuturesButtonContainer = ({ children }) => (
-  <div className="w3-cell-row">{children}</div>
-);
-
-const HalfOrderFuturesButton = ({ children, className = '', ...props }) => (
-  <OrderFuturesButton className={`w3-cell w3-half ${className}`} {...props}>
-    {children}
-  </OrderFuturesButton>
-);
-
-const BuyHalfOrderFuturesButton = ({ children, buy }) => (
-  <HalfOrderFuturesButton className="my-round-left w3-green" onClick={buy}>
-    {children}
-  </HalfOrderFuturesButton>
-);
-
-const SellHalfOrderFuturesButton = ({ children, sell }) => (
-  <HalfOrderFuturesButton className="my-round-right w3-red" onClick={sell}>
-    {children}
-  </HalfOrderFuturesButton>
 );
 
 // Auxiliary conversions
@@ -2205,7 +2198,7 @@ const TextButton = ({ children, ...props }) => (
 );
 
 // Auxiliary component
-const DeleteButton = ({ className = '', props }) => (
+const DeleteButton = ({ className = '', ...props }) => (
   <i
     className={`fas fa-trash-alt my-margin-lr my-pointer my-opaquer-fader fa-sm ${className}`}
     {...props}
