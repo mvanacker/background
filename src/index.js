@@ -5,6 +5,7 @@ import './w3.css';
 import './w3-theme-indigo.css';
 import './w3-theme-indigo-extension.css';
 import './index.css';
+import './fontawesome/css/all.css';
 
 import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router } from 'react-router-dom';
