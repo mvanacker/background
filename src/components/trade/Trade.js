@@ -1398,18 +1398,38 @@ const OrderFutures = ({
   //       are subscribed to. The add-premium feature will fail in this case.
   // Proposal: render loading icon on the entire form or on the button itself
   //           until the perpetual contract's ticker has been subscribed to.
+  // Quick and dirty work-around:
+  if (!(tickers['BTC-PERPETUAL'] && tickers[selectedFuture])) return null;
+  const { last_price } = tickers['BTC-PERPETUAL'];
   const addPremium = (array) => {
-    if (autoPremium && tickers['BTC-PERPETUAL'] && tickers[selectedFuture]) {
-      const source = tickers['BTC-PERPETUAL'].last_price;
+    if (autoPremium) {
+      const source = last_price;
       const future = tickers[selectedFuture].last_price;
       return floats(array).map((target) => (future * target) / source);
     } else return array;
   };
 
+  // Opacities
   const opacity = (enabled) => (enabled ? 'my-full-opacity' : 'my-low-opacity');
   const entryOpacity = opacity(entriesEnabled);
   const riskOpacity = opacity(stopsEnabled);
   const profitOpacity = opacity(profitsEnabled);
+
+  // Mean entry and stop prices
+  const stopPrice = mean(floats(stops));
+  let entryPrice;
+  switch (entryType) {
+    case OrderType.LIMIT:
+      entryPrice = mean(floats(entries));
+      break;
+    case OrderType.MARKET:
+      entryPrice = last_price;
+      break;
+    case OrderType.NONE:
+    default:
+      entryPrice = NaN;
+  }
+
   return (
     <>
       <PanelTitle>
@@ -1460,47 +1480,59 @@ const OrderFutures = ({
           )}
           {autoPremium && !selectedFuture.startsWith('BTC-PERPETUAL') && (
             <div className="my-perpetual-container">
-              BTC-PERPETUAL ${tickers['BTC-PERPETUAL']?.last_price}
+              BTC-PERPETUAL ${last_price}
             </div>
           )}
         </div>
-        {showConfig && (
+        <div>Entry type</div>
+        <div>
+          <RadioGroup
+            options={OrderType}
+            value={entryType}
+            setValue={setEntryType}
+          />
+        </div>
+        {entryType === OrderType.LIMIT && (
           <>
-            <div>Entry method</div>
+            {showConfig && (
+              <>
+                <div>Entry method</div>
+                <div>
+                  <RadioGroup
+                    options={EntryMethod}
+                    value={entryMethod}
+                    setValue={setEntryMethod}
+                  />
+                </div>
+              </>
+            )}
             <div>
-              <RadioGroup
-                options={EntryMethod}
-                value={entryMethod}
-                setValue={setEntryMethod}
+              <div>
+                <label>
+                  <input
+                    type="checkbox"
+                    className="my-check"
+                    checked={entriesEnabled}
+                    onChange={(e) => setEntriesEnabled(e.target.checked)}
+                  />{' '}
+                  <span className={entryOpacity}>Entry</span>{' '}
+                </label>
+                {entryMethod === EntryMethod.MANUAL && (
+                  <Lock locked={entriesLocked} setLocked={setEntriesLocked} />
+                )}
+              </div>
+            </div>
+            <div>
+              <Entries
+                locked={entriesLocked}
+                entryMethod={entryMethod}
+                entries={entries}
+                setEntries={setEntries}
+                className={entryOpacity}
               />
             </div>
           </>
         )}
-        <div>
-          <div>
-            <label>
-              <input
-                type="checkbox"
-                className="my-check"
-                checked={entriesEnabled}
-                onChange={(e) => setEntriesEnabled(e.target.checked)}
-              />{' '}
-              <span className={entryOpacity}>Entries</span>{' '}
-            </label>
-            {entryMethod === EntryMethod.MANUAL && (
-              <Lock locked={entriesLocked} setLocked={setEntriesLocked} />
-            )}
-          </div>
-        </div>
-        <div>
-          <Entries
-            locked={entriesLocked}
-            entryMethod={entryMethod}
-            entries={entries}
-            setEntries={setEntries}
-            className={entryOpacity}
-          />
-        </div>
         {showConfig && (
           <>
             <div>Risk method</div>
@@ -1541,8 +1573,8 @@ const OrderFutures = ({
             riskMethod={riskMethod}
             quantity={quantity}
             setQuantity={setQuantity}
-            entries={entries}
-            stops={stops}
+            entryPrice={entryPrice}
+            stopPrice={stopPrice}
             equity={portfolio.equity}
             risk={risk}
           />
@@ -1555,8 +1587,8 @@ const OrderFutures = ({
             riskMethod={riskMethod}
             risk={risk}
             setRisk={setRisk}
-            entries={entries}
-            stops={stops}
+            entryPrice={entryPrice}
+            stopPrice={stopPrice}
             equity={portfolio.equity}
             quantity={quantity}
             className={riskOpacity}
@@ -1581,7 +1613,7 @@ const OrderFutures = ({
             locked={profitsLocked}
             values={profits}
             setValues={setProfits}
-            className={riskOpacity}
+            className={profitOpacity}
           />
         </div>
         <div>Label</div>
@@ -1599,6 +1631,8 @@ const OrderFutures = ({
             label={label}
             instrument_name={selectedFuture}
             quantity={quantity}
+            entryType={entryType}
+            last_price={tickers[selectedFuture].last_price}
             entriesEnabled={entriesEnabled}
             entries={addPremium(entries)}
             stopsEnabled={stopsEnabled}
@@ -1704,8 +1738,8 @@ const Quantity = ({
   riskMethod,
   quantity,
   setQuantity,
-  entries,
-  stops,
+  entryPrice,
+  stopPrice,
   equity,
   risk,
   ...props
@@ -1714,14 +1748,14 @@ const Quantity = ({
   useEffect(() => {
     switch (riskMethod) {
       case RiskMethod.RISK:
-        const ds = computeStopDistance(entries, stops);
+        const ds = computeStopDistance(entryPrice, stopPrice);
         const quantity = round_to((equity * risk) / ds, -1);
         setQuantity(quantity);
         break;
       default:
         break;
     }
-  }, [riskMethod, entries, stops, equity, risk, setQuantity]);
+  }, [riskMethod, entryPrice, stopPrice, equity, risk, setQuantity]);
 
   // Render
   switch (riskMethod) {
@@ -1741,15 +1775,15 @@ const Quantity = ({
   }
 };
 
-const computeStopDistance = (entries, stops) =>
-  Math.abs(1 / mean(floats(entries)) - 1 / mean(floats(stops)));
+const computeStopDistance = (entryPrice, stopPrice) =>
+  Math.abs(1 / entryPrice - 1 / stopPrice);
 
 const Risk = ({
   riskMethod,
   risk,
   setRisk,
-  entries,
-  stops,
+  entryPrice,
+  stopPrice,
   equity,
   quantity,
   ...props
@@ -1758,14 +1792,14 @@ const Risk = ({
   useEffect(() => {
     switch (riskMethod) {
       case RiskMethod.CLASSIC:
-        const ds = computeStopDistance(entries, stops);
+        const ds = computeStopDistance(entryPrice, stopPrice);
         const risk = (quantity * ds) / equity;
         setRisk(risk);
         break;
       default:
         break;
     }
-  }, [riskMethod, entries, stops, equity, quantity, setRisk]);
+  }, [riskMethod, entryPrice, stopPrice, equity, quantity, setRisk]);
 
   // Render
   switch (riskMethod) {
@@ -1790,12 +1824,14 @@ const OrderFuturesButtonContainer = ({
   label,
   instrument_name,
   quantity,
-  entries,
+  entryType,
+  last_price,
   entriesEnabled,
-  stops,
+  entries,
   stopsEnabled,
-  profits,
+  stops,
   profitsEnabled,
+  profits,
 }) => {
   // Error handling
   const [errors, setErrors] = useState([]);
@@ -1804,7 +1840,9 @@ const OrderFuturesButtonContainer = ({
   // Simple (placeholder) strategy for assigning quantities to given prices
   // i.e. evenly spread the total quantity
   const lengths = [];
-  if (entriesEnabled) lengths.push(entries.length);
+  if (entriesEnabled && entryType === OrderType.LIMIT) {
+    lengths.push(entries.length);
+  }
   if (stopsEnabled) lengths.push(stops.length);
   if (profitsEnabled) lengths.push(profits.length);
   quantity = round_to(quantity, -1, 10 * lcm(lengths));
@@ -1817,6 +1855,7 @@ const OrderFuturesButtonContainer = ({
     setErrors([]);
 
     const oppositeSide = side === 'buy' ? 'sell' : 'buy';
+    const send = (message) => deribit.send(message).catch(addError);
     const subOrder = ({
       enabled,
       prices,
@@ -1827,33 +1866,44 @@ const OrderFuturesButtonContainer = ({
     }) => {
       if (enabled) {
         floats(prices).forEach((price) =>
-          deribit
-            .send({
-              method: `private/${side}`,
-              params: {
-                label,
-                instrument_name,
-                [priceKey]: price,
-                amount,
-                ...params,
-              },
-            })
-            .catch(addError)
+          send({
+            method: `private/${side}`,
+            params: {
+              label,
+              instrument_name,
+              [priceKey]: price,
+              amount,
+              ...params,
+            },
+          })
         );
       }
     };
 
     // Place entry orders
-    subOrder({
-      enabled: entriesEnabled,
-      prices: entries,
-      amount: entryAmount,
-      side,
-      params: {
-        post_only: true,
-        post_only_reject: true,
-      },
-    });
+    switch (entryType) {
+      case OrderType.LIMIT:
+        subOrder({
+          enabled: entriesEnabled,
+          prices: entries,
+          amount: entryAmount,
+          side,
+          params: {
+            post_only: true,
+            post_only_reject: true,
+          },
+        });
+        break;
+      case OrderType.MARKET:
+        send({
+          method: `private/${side}`,
+          params: { instrument_name, amount: quantity, type: 'market' },
+        });
+        break;
+      case OrderType.NONE:
+      default:
+        break;
+    }
 
     // Place stop loss orders
     subOrder({
@@ -1918,11 +1968,17 @@ const OrderFuturesButtonContainer = ({
           </ul>
         </div>
       )}
-      {!(
-        entriesEnabled ||
-        stopsEnabled ||
-        profitsEnabled
-      ) ? null : entriesEnabled && stopsEnabled ? (
+      {entryType === OrderType.MARKET ? (
+        last_price === meanStop ? null : last_price > meanStop ? (
+          <BuyFullOrderFuturesButton buy={buy} />
+        ) : (
+          <SellFullOrderFuturesButton sell={sell} />
+        )
+      ) : !(
+          entriesEnabled ||
+          stopsEnabled ||
+          profitsEnabled
+        ) ? null : entriesEnabled && stopsEnabled ? (
         meanEntry === meanStop ? null : meanEntry > meanStop ? (
           <BuyFullOrderFuturesButton buy={buy} />
         ) : (
@@ -2226,11 +2282,11 @@ const RadioGroup = ({ options, value: checked, setValue, ...props }) =>
 const NumericalSlider = ({ value, setValue, className = '', ...props }) => {
   const valueProps = { value, onChange: (e) => setValue(e.target.value) };
   return (
-    <div className="w3-mobile w3-row">
-      <div className="w3-col w3-mobile">
+    <div>
+      <div>
         <NumericalInput className={className} {...valueProps} {...props} />
       </div>
-      <div className="w3-col w3-mobile">
+      <div>
         <input
           type="range"
           className={`my-small-range ${className}`}
@@ -2347,10 +2403,7 @@ const RiskMethod = {
 };
 
 const OrderType = {
-  LIMIT: 0,
-  MARKET: 1,
-
-  // currently stop types are unused
-  STOP_LIMIT: 2,
-  STOP_MARKET: 3,
+  NONE: 0,
+  LIMIT: 1,
+  MARKET: 2,
 };
