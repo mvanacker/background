@@ -1385,6 +1385,9 @@ const OrderFutures = ({
   const [selectedFuture, setSelectedFuture] = useLocal(
     'deribit-selected-future'
   );
+  const [entryType, setEntryType] = useLocal('deribit-entry-type', {
+    initialValue: OrderType.LIMIT,
+  });
   const [entries, setEntries] = useLocal('deribit-entries', {
     initialValue: [''],
   });
@@ -1396,7 +1399,11 @@ const OrderFutures = ({
     initialValue: [''],
   });
 
-  // Add premium feature
+  // Add-premium feature
+  // Note: it is theoretically possible for an agent to order before the tickers
+  //       are subscribed to. The add-premium feature will fail in this case.
+  // Proposal: render loading icon on the entire form or on the button itself
+  //           until the perpetual contract's ticker has been subscribed to.
   const addPremium = (array) => {
     if (autoPremium && tickers['BTC-PERPETUAL'] && tickers[selectedFuture]) {
       const source = tickers['BTC-PERPETUAL'].last_price;
@@ -1713,9 +1720,7 @@ const Quantity = ({
   useEffect(() => {
     switch (riskMethod) {
       case RiskMethod.RISK:
-        const ds = Math.abs(
-          1 / mean(floats(entries)) - 1 / mean(floats(stops))
-        );
+        const ds = computeStopDistance(entries, stops);
         const quantity = round_to((equity * risk) / ds, -1);
         setQuantity(quantity);
         break;
@@ -1742,6 +1747,9 @@ const Quantity = ({
   }
 };
 
+const computeStopDistance = (entries, stops) =>
+  Math.abs(1 / mean(floats(entries)) - 1 / mean(floats(stops)));
+
 const Risk = ({
   riskMethod,
   risk,
@@ -1756,9 +1764,7 @@ const Risk = ({
   useEffect(() => {
     switch (riskMethod) {
       case RiskMethod.CLASSIC:
-        const ds = Math.abs(
-          1 / mean(floats(entries)) - 1 / mean(floats(stops))
-        );
+        const ds = computeStopDistance(entries, stops);
         const risk = (quantity * ds) / equity;
         setRisk(risk);
         break;
@@ -1884,8 +1890,8 @@ const OrderFuturesButtonContainer = ({
   const buy = () => order('buy');
   const sell = () => order('sell');
 
-  const meanStop = mean(floats(stops));
-  const meanEntry = mean(floats(entries));
+  const meanStop = Math.round(mean(floats(stops)));
+  const meanEntry = Math.round(mean(floats(entries)));
   return (
     <>
       {errors && (
@@ -1923,11 +1929,11 @@ const OrderFuturesButtonContainer = ({
         stopsEnabled ||
         profitsEnabled
       ) ? null : entriesEnabled && stopsEnabled ? (
-        meanEntry > meanStop ? (
+        meanEntry == meanStop ? null : meanEntry > meanStop ? (
           <BuyFullOrderFuturesButton buy={buy} />
-        ) : meanEntry < meanStop ? (
+        ) : (
           <SellFullOrderFuturesButton sell={sell} />
-        ) : null
+        )
       ) : (
         <HalfOrderFuturesButtonContainer>
           {stopsEnabled && profitsEnabled ? (
@@ -2326,4 +2332,13 @@ const EntryMethod = {
 const RiskMethod = {
   CLASSIC: 0,
   RISK: 1,
+};
+
+const OrderType = {
+  LIMIT: 0,
+  MARKET: 1,
+
+  // currently stop types are unused
+  STOP_LIMIT: 2,
+  STOP_MARKET: 3,
 };
