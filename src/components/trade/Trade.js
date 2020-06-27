@@ -1559,7 +1559,7 @@ const OrderFutures = ({
             <Lock locked={stopsLocked} setLocked={setStopsLocked} />
           </div>
         </div>
-        <div>
+        <div className="my-dynamic-inputs-container">
           <NumericalDynamicInputs
             locked={stopsLocked}
             values={stops}
@@ -1608,7 +1608,7 @@ const OrderFutures = ({
             <Lock locked={profitsLocked} setLocked={setProfitsLocked} />
           </div>
         </div>
-        <div>
+        <div className="my-dynamic-inputs-container">
           <NumericalDynamicInputs
             locked={profitsLocked}
             values={profits}
@@ -1726,11 +1726,13 @@ const ManualEntries = ({ setEntries, ...props }) => {
     setEntries(manualEntries);
   }, [manualEntries, setEntries]);
   return (
-    <NumericalDynamicInputs
-      values={manualEntries}
-      setValues={setManualEntries}
-      {...props}
-    />
+    <div className="my-dynamic-inputs-container">
+      <NumericalDynamicInputs
+        values={manualEntries}
+        setValues={setManualEntries}
+        {...props}
+      />
+    </div>
   );
 };
 
@@ -2312,7 +2314,11 @@ const NumericalInput = forwardRef(({ className = '', ...props }, ref) => (
 ));
 
 // Generalized dynamic inputs
-const dynamize = (Input) => ({ locked, values, setValues, ...props }) => {
+const NumericalDynamicInputs = ({ locked, values, setValues, ...props }) => {
+  // A "vanilla" input would also work,
+  // a "Component" input needs to be wrapped with forwardRef
+  const Input = NumericalInput;
+
   // Focusing the last (real) input must be done *after* the render
   const last = useRef(null);
   const [focusLast, setFocusLast] = useState(false);
@@ -2388,9 +2394,6 @@ const dynamize = (Input) => ({ locked, values, setValues, ...props }) => {
     </>
   );
 };
-
-// Convenience wrapper
-const NumericalDynamicInputs = dynamize(NumericalInput);
 
 const EntryMethod = {
   MANUAL: 0,

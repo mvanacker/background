@@ -175,7 +175,6 @@ input.my-radio {
 
 input.my-small-input {
   padding: 0 10px;
-  margin: 0 8px 0 0;
   width: 100px;
 }
 
@@ -455,6 +454,14 @@ div.my-perpetual-container {
 
 div.my-order-futures-button-container {
   grid-column: span 2;
+}
+
+/*** Dynamic inputs */
+
+div.my-dynamic-inputs-container {
+  display: grid;
+  grid: auto-flow / repeat(2, 1fr);
+  row-gap: 10px;
 }
 
 /** Order Options */
