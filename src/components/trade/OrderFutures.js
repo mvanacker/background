@@ -652,17 +652,11 @@ const OrderFuturesButtonContainer = ({
           </ul>
         </div>
       )}
-      {entryType === OrderType.MARKET ? (
-        last_price === meanStop ? null : last_price > meanStop ? (
-          <BuyFullOrderFuturesButton buy={buy} />
-        ) : (
-          <SellFullOrderFuturesButton sell={sell} />
-        )
-      ) : !(
-          entriesEnabled ||
-          stopsEnabled ||
-          profitsEnabled
-        ) ? null : entriesEnabled && stopsEnabled ? (
+      {!(
+        entriesEnabled ||
+        stopsEnabled ||
+        profitsEnabled
+      ) ? null : entriesEnabled && stopsEnabled ? (
         meanEntry === meanStop ? null : meanEntry > meanStop ? (
           <BuyFullOrderFuturesButton buy={buy} />
         ) : (
@@ -874,7 +868,6 @@ const RiskMethod = {
 };
 
 const OrderType = {
-  NONE: 0,
-  LIMIT: 1,
-  MARKET: 2,
+  LIMIT: 0,
+  MARKET: 1,
 };
