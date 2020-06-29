@@ -434,7 +434,8 @@ div.my-splayed-entries {
 
 i.my-order-futures-settings {
   position: relative;
-  bottom: 1px;
+  top: 6px;
+  float: left;
 }
 
 form.my-order-futures-form div:nth-child(odd),
@@ -460,8 +461,9 @@ div.my-order-futures-button-container {
 
 div.my-dynamic-inputs-container {
   display: grid;
-  grid: auto-flow / repeat(2, 1fr);
-  row-gap: 10px;
+  grid: auto-flow / repeat(2, auto);
+  gap: 8px;
+  width: fit-content;
 }
 
 /** Order Options */
