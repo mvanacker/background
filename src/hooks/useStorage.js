@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 
 const setOptions = {
+  initialValue: new Set(),
   stringify: (set) => JSON.stringify(Array.from(set)),
   parse: (string) => new Set(JSON.parse(string)),
 };

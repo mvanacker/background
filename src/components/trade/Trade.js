@@ -13,8 +13,8 @@ import { AuthState, ReadyState } from '../../sources/DeribitWebSocket';
 import { toTickerChannel } from './Common';
 
 // Skip authentication and log straight into testnet
-const DEV_MODE = false;
-// const DEV_MODE = true;
+// const DEV_MODE = false;
+const DEV_MODE = true;
 
 // Only Deribit is implemented right now
 export default () => <DeribitTrade />;
@@ -294,10 +294,9 @@ const DeribitInterface = ({ deribit, ...props }) => {
   }, [deribit]);
 
   // Used by the OptionBasket and OrderOptions components
-  const [
-    selectedOptions,
-    setSelectedOptions,
-  ] = useLocalSet('deribit-selected-options', { initialValue: new Set() });
+  const [selectedOptions, setSelectedOptions] = useLocalSet(
+    'deribit-selected-options'
+  );
 
   // Render panels
   const optionsMapped = Object.keys(instruments).length > 0;
