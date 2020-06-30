@@ -10,6 +10,9 @@ import { removeOverlap, removeOverlapWithDatum } from '../../util/d3-axis-util';
 import { premium } from '../../util/math.bs';
 import { useLocalSet } from '../../hooks/useStorage';
 import { PanelTitle } from '../common/Panel';
+import BTC from '../common/Bitcoin';
+
+import { DeleteButton } from './Common';
 
 export default ({
   deribit,
@@ -21,12 +24,21 @@ export default ({
   ...props
 }) => {
   const isReady = useCallback(
-    () => Object.keys(positions).length && Object.keys(instruments).length,
+    () =>
+      positions &&
+      instruments &&
+      Object.keys(positions).length &&
+      Object.keys(instruments).length,
     [positions, instruments]
   );
 
-  const fooPositions = usePositions(deribit, isReady, instruments, positions);
-  const fooAnalysisPositions = usePositions(
+  const { future: futures, option: options } = usePositions(
+    deribit,
+    isReady,
+    instruments,
+    positions
+  );
+  const { future: analysisFutures, option: analysisOptions } = usePositions(
     deribit,
     isReady,
     instruments,
@@ -39,52 +51,61 @@ export default ({
       isReady() &&
       futuresTickers &&
       'BTC-PERPETUAL' in futuresTickers &&
-      Object.keys(fooPositions.future).every(
+      Object.keys(futures).every(
         (instrument_name) => instrument_name in futuresTickers
       ),
-    [isReady, futuresTickers, fooPositions.future]
+    [isReady, futuresTickers, futures]
   );
 
   // Keep track of which positions were deselected
   // This allows easily defaulting to all positions being selected
+  const [deselectedPositions, setDeselectedPositions] = useLocalSet(
+    'deribit-deselected-positions'
+  );
   const [
-    deselectedOptions,
-    setDeselectedOptions,
-  ] = useLocalSet('deribit-deselected-options', { initialValue: new Set() });
-  const [
-    deselectedFutures,
-    setDeselectedFutures,
-  ] = useLocalSet('deribit-deselected-futures', { initialValue: new Set() });
+    deselectedAnalysisPositions,
+    setDeselectedAnalysisPositions,
+  ] = useLocalSet('deribit-deselected-analysis-positions');
 
-  return (
+  return !isReadyForPNL() ? null : (
     <div className="my-position-inner" {...props}>
       <PanelTitle className="my-position-title">Position</PanelTitle>
       <div className="my-pnl-chart-container">
-        {isReadyForPNL() && (
-          // Only render if futuresTickers is set,
-          // as a workaround to conditionally call the first useEffect/drawing
-          // otherwise its dependencies won't have updated
-          // by the time futuresTickers is first set
-          <PnlChart
-            deribit={deribit}
-            futures={fooPositions.future}
-            options={fooPositions.option}
-            deselectedOptions={deselectedOptions}
-            deselectedFutures={deselectedFutures}
-            futuresTickers={futuresTickers}
-          />
-        )}
+        <PnlChart
+          deribit={deribit}
+          futures={futures}
+          options={options}
+          deselectedPositions={deselectedPositions}
+          analysisFutures={analysisFutures}
+          analysisOptions={analysisOptions}
+          deselectedAnalysisPositions={deselectedAnalysisPositions}
+          futuresTickers={futuresTickers}
+        />
       </div>
       <div className="my-position-list-container">
         <PositionList
-          positions={fooPositions.future}
-          deselectedPositions={deselectedFutures}
-          setDeselectedPositions={setDeselectedFutures}
+          positions={analysisFutures}
+          stringify={stringifyAnalysisPosition(setAnalysisPositions)}
+          deselectedPositions={deselectedAnalysisPositions}
+          setDeselectedPositions={setDeselectedAnalysisPositions}
         />
         <PositionList
-          positions={fooPositions.option}
-          deselectedPositions={deselectedOptions}
-          setDeselectedPositions={setDeselectedOptions}
+          positions={analysisOptions}
+          stringify={stringifyAnalysisPosition(setAnalysisPositions)}
+          deselectedPositions={deselectedAnalysisPositions}
+          setDeselectedPositions={setDeselectedAnalysisPositions}
+        />
+        <PositionList
+          positions={futures}
+          stringify={stringifyPosition}
+          deselectedPositions={deselectedPositions}
+          setDeselectedPositions={setDeselectedPositions}
+        />
+        <PositionList
+          positions={options}
+          stringify={stringifyPosition}
+          deselectedPositions={deselectedPositions}
+          setDeselectedPositions={setDeselectedPositions}
         />
       </div>
     </div>
@@ -95,7 +116,7 @@ export default ({
 // Merge position and instrument objects
 // Include a snapshot of the option tickers
 const usePositions = (deribit, isReady, instruments, positions) => {
-  const ref = useRef({ future: {}, option: {} });
+  const ref = useRef(emptyPositions());
 
   useEffect(() => {
     if (!isReady()) return;
@@ -104,13 +125,13 @@ const usePositions = (deribit, isReady, instruments, positions) => {
         deribit.send({ method: 'public/ticker', params: { instrument_name } })
       )
     ).then((result) => {
-      ref.current.future = {};
-      ref.current.option = {};
+      ref.current = emptyPositions();
       result.forEach(({ result: ticker }) => {
         const { instrument_name } = ticker;
         const position = positions[instrument_name];
-        if (position.size !== 0) {
-          ref.current[position.kind][instrument_name] = {
+        const { size, kind } = position;
+        if (size !== 0) {
+          ref.current[kind][instrument_name] = {
             ...ticker,
             ...position,
             ...instruments[instrument_name],
@@ -122,47 +143,97 @@ const usePositions = (deribit, isReady, instruments, positions) => {
 
   return ref.current;
 };
+const emptyPositions = () => ({ future: {}, option: {} });
 
 const PositionList = ({
   positions,
+  stringify,
   deselectedPositions,
   setDeselectedPositions,
 }) => (
   <ul className="my-position-list">
     {Object.values(positions)
       .filter(({ size }) => size !== 0)
-      .map(({ size, instrument_name }) => (
-        <li key={instrument_name}>
-          <label>
-            <input
-              type="checkbox"
-              className="my-check"
-              checked={!deselectedPositions.has(instrument_name)}
-              onChange={() =>
-                setDeselectedPositions((positions) => {
-                  const newPositions = new Set(positions);
-                  if (newPositions.has(instrument_name)) {
-                    newPositions.delete(instrument_name);
-                  } else {
-                    newPositions.add(instrument_name);
-                  }
-                  return newPositions;
-                })
-              }
-            />{' '}
-            {size}x {instrument_name}
-          </label>
-        </li>
-      ))}
+      .map((position) => {
+        const { instrument_name } = position;
+        return (
+          <li key={instrument_name}>
+            <label>
+              <input
+                type="checkbox"
+                className="my-check"
+                checked={!deselectedPositions.has(instrument_name)}
+                onChange={() => {
+                  setDeselectedPositions((positions) => {
+                    const newPositions = new Set(positions);
+                    if (newPositions.has(instrument_name)) {
+                      newPositions.delete(instrument_name);
+                    } else {
+                      newPositions.add(instrument_name);
+                    }
+                    return newPositions;
+                  });
+                }}
+              />{' '}
+              {stringify(position)}
+            </label>
+          </li>
+        );
+      })}
   </ul>
 );
+
+const stringifyPosition = ({
+  size,
+  instrument_name,
+  average_price,
+  average_price_usd,
+}) => {
+  return (
+    <>
+      {size}x {instrument_name} from{' '}
+      {average_price_usd ? (
+        <>
+          <BTC />
+          {average_price} (${average_price_usd.toFixed(2)})
+        </>
+      ) : (
+        `$${average_price}`
+      )}
+    </>
+  );
+};
+
+const stringifyAnalysisPosition = (setAnalysisPositions) => (position) => {
+  return (
+    <>
+      <DeleteButton
+        title="Delete Analysis Position"
+        onClick={() =>
+          setAnalysisPositions((positions) => {
+            const newPositions = { ...positions };
+            delete newPositions[position.instrument_name];
+            return newPositions;
+          })
+        }
+      />{' '}
+      {/* <i
+        className="fas fa-search-dollar my-margin-lr"
+        title="Analysis Position"
+      /> */}
+      {stringifyPosition(position)}
+    </>
+  );
+};
 
 const PnlChart = ({
   deribit,
   futures,
   options,
-  deselectedFutures,
-  deselectedOptions,
+  deselectedPositions,
+  analysisFutures,
+  analysisOptions,
+  deselectedAnalysisPositions,
   futuresTickers,
   width = 400,
   height = 400,
@@ -193,12 +264,19 @@ const PnlChart = ({
 
   useEffect(() => {
     // Select positions, given sets of deselected positions (as props)
-    const deselect = (positions, deselectedPositions) =>
-      Object.values(positions).filter(
-        (position) => !deselectedPositions.has(position.instrument_name)
-      );
-    const futuresPositions = deselect(futures, deselectedFutures);
-    const optionsPositions = deselect(options, deselectedOptions);
+    const deselect = (positions, analysisPositions) =>
+      Object.values(positions)
+        .filter(
+          (position) => !deselectedPositions.has(position.instrument_name)
+        )
+        .concat(
+          Object.values(analysisPositions).filter(
+            (analysisPosition) =>
+              !deselectedAnalysisPositions.has(analysisPosition.instrument_name)
+          )
+        );
+    const futuresPositions = deselect(futures, analysisFutures);
+    const optionsPositions = deselect(options, analysisOptions);
 
     // Normalize futures entries
     const perpetual_price = tickersRef.current['BTC-PERPETUAL'].last_price;
@@ -269,8 +347,7 @@ const PnlChart = ({
       optionsPositions.forEach(
         ({
           mark_iv,
-          index_price,
-          average_price,
+          average_price_usd,
           expiration_timestamp,
           option_type,
           size,
@@ -280,7 +357,7 @@ const PnlChart = ({
           //       while x and strike are in quote currency ($)
           // Normalize to quote currency with index_price
           const computePnl = (yearsRemaining) => {
-            const entryPrice = average_price * index_price; // in $
+            const entryPrice = average_price_usd;
             const optionPrice = premium[option_type](
               price,
               strike,
@@ -371,8 +448,10 @@ const PnlChart = ({
   }, [
     futures,
     options,
-    deselectedFutures,
-    deselectedOptions,
+    deselectedPositions,
+    analysisFutures,
+    analysisOptions,
+    deselectedAnalysisPositions,
     width,
     height,
     margin.top,
@@ -403,7 +482,7 @@ const PnlChart = ({
     select(priceDot.current)
       .attr('cx', _x)
       .attr('cy', _y.bottom + 1);
-  }, [futuresTickers, deselectedFutures, deselectedOptions]);
+  }, [futuresTickers, deselectedPositions]);
 
   const clipId = 'my-pnl-chart-clip';
   const clipUrl = `url(#${clipId})`;

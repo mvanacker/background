@@ -30,6 +30,28 @@ export default ({
     });
   };
 
+  // Add option position to analysis
+  const analyzeOption = (instrument_name) => (ticker) => () => {
+    const sign = sides[instrument_name] === 'buy' ? 1 : -1;
+    let quantity = quantities[instrument_name];
+    quantity = quantity ? quantity : 0;
+    const average_price = parseFloat(prices[instrument_name]);
+    const position = {
+      instrument_name,
+      size: sign * quantity,
+      average_price,
+      average_price_usd: average_price * ticker.underlying_price,
+      kind: 'option',
+    };
+    console.log(quantities[instrument_name]);
+    console.log(position);
+    setAnalysisPositions((positions) => {
+      const newPositions = { ...positions };
+      newPositions[position.instrument_name] = position;
+      return newPositions;
+    });
+  };
+
   // Basket items state
   const withPrefix = (id) => `deribit-option-basket-${id}`;
   const [quantities, setQuantities] = useLocal(withPrefix('quantities'), {
@@ -137,7 +159,8 @@ export default ({
                 deribit={deribit}
                 key={instrument_name}
                 instrument={instruments[instrument_name]}
-                deleteOption={deleteOption}
+                deleteOption={deleteOption(instrument_name)}
+                analyzeOption={analyzeOption(instrument_name)}
                 quantity={quantities[instrument_name]}
                 setQuantity={setQuantity(instrument_name)}
                 price={prices[instrument_name]}
@@ -167,6 +190,7 @@ const OptionBasketRow = ({
     tick_size,
   },
   deleteOption,
+  analyzeOption,
   quantity,
   setQuantity,
   price,
@@ -194,7 +218,7 @@ const OptionBasketRow = ({
   return (
     <tr className="w3-hover-theme" {...props}>
       <td>
-        <DeleteButton onClick={deleteOption(instrument_name)} />
+        <DeleteButton onClick={deleteOption} />
       </td>
       <td>{moment(expiration_timestamp).format('MMMM Do, YYYY')}</td>
       <td>{strike}</td>
@@ -243,7 +267,7 @@ const OptionBasketRow = ({
         />
       </td>
       <td>
-        <OrderSingleOptionButton onClick={() => {}}>
+        <OrderSingleOptionButton onClick={analyzeOption(ticker)}>
           Analyze
         </OrderSingleOptionButton>
       </td>
