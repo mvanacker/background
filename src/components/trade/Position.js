@@ -121,9 +121,19 @@ const usePositions = (deribit, isReady, instruments, positions) => {
   useEffect(() => {
     if (!isReady()) return;
     Promise.all(
-      Object.keys(positions).map((instrument_name) =>
-        deribit.send({ method: 'public/ticker', params: { instrument_name } })
-      )
+      Object.keys(positions)
+        // Filtering expired options (i.e. options for which no instrument info
+        // was fetched "at construct time" of the trade component)
+        // Note that I am also plugging the associated leak here, though it may
+        // not be the most appropriate place
+        .filter((instrument_name) => {
+          const cond = instrument_name in instruments;
+          if (!cond) delete positions[instrument_name];
+          return cond;
+        })
+        .map((instrument_name) =>
+          deribit.send({ method: 'public/ticker', params: { instrument_name } })
+        )
     ).then((result) => {
       ref.current = emptyPositions();
       result.forEach(({ result: ticker }) => {
