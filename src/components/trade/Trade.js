@@ -223,9 +223,11 @@ const DeribitInterface = ({ deribit, ...props }) => {
     const updatePositions = (positions) => {
       setPositions((oldPositions) => {
         const newPositions = { ...oldPositions };
-        positions.forEach((position) => {
-          newPositions[position.instrument_name] = position;
-        });
+        positions
+          .filter(({ size }) => size !== 0)
+          .forEach((position) => {
+            newPositions[position.instrument_name] = position;
+          });
         return newPositions;
       });
     };
