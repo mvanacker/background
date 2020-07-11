@@ -82,15 +82,9 @@ export default ({
   // Proposal: render loading icon on the entire form or on the button itself
   //           until the perpetual contract's ticker has been subscribed to.
   // Quick and dirty work-around:
-  if (!(tickers['BTC-PERPETUAL'] && tickers[selectedFuture])) return null;
+  if (selectedFuture && !tickers[selectedFuture]) return null;
+  if (!tickers['BTC-PERPETUAL']) return null;
   const { last_price } = tickers['BTC-PERPETUAL'];
-  const addPremium = (array) => {
-    if (autoPremium) {
-      const source = last_price;
-      const future = tickers[selectedFuture].last_price;
-      return floats(array).map((target) => (future * target) / source);
-    } else return array;
-  };
 
   // Opacities
   const opacity = (enabled) => (enabled ? 'my-full-opacity' : 'my-low-opacity');
@@ -309,20 +303,23 @@ export default ({
           />
         </div>
         <div className="my-order-futures-button-container">
-          <OrderFuturesButtonContainer
-            deribit={deribit}
-            label={label}
-            instrument_name={selectedFuture}
-            quantity={quantity}
-            entryType={entryType}
-            last_price={tickers[selectedFuture].last_price}
-            entriesEnabled={entriesEnabled}
-            entries={addPremium(entries)}
-            stopsEnabled={stopsEnabled}
-            stops={addPremium(stops)}
-            profitsEnabled={profitsEnabled}
-            profits={addPremium(profits)}
-          />
+          {selectedFuture && (
+            <OrderFuturesButtonContainer
+              deribit={deribit}
+              label={label}
+              instrument_name={selectedFuture}
+              quantity={quantity}
+              entryType={entryType}
+              autoPremium={autoPremium}
+              tickers={tickers}
+              entriesEnabled={entriesEnabled}
+              entries={entries}
+              stopsEnabled={stopsEnabled}
+              stops={stops}
+              profitsEnabled={profitsEnabled}
+              profits={profits}
+            />
+          )}
         </div>
       </form>
     </>
@@ -511,7 +508,8 @@ const OrderFuturesButtonContainer = ({
   instrument_name,
   quantity,
   entryType,
-  last_price,
+  autoPremium,
+  tickers,
   entriesEnabled,
   entries,
   stopsEnabled,
@@ -522,6 +520,18 @@ const OrderFuturesButtonContainer = ({
   // Error handling
   const [errors, setErrors] = useState([]);
   const addError = (error) => setErrors((errors) => [...errors, error]);
+
+  // Add premium
+  const addPremium = (array) => {
+    if (autoPremium) {
+      const source = tickers['BTC-PERPETUAL'].last_price;
+      const future = tickers[instrument_name].last_price;
+      return floats(array).map((target) => (future * target) / source);
+    } else return array;
+  };
+  entries = addPremium(entries);
+  stops = addPremium(stops);
+  profits = addPremium(profits);
 
   // Simple (placeholder) strategy for assigning quantities to given prices
   // i.e. evenly spread the total quantity
