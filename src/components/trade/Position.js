@@ -27,8 +27,9 @@ export default ({
     () =>
       positions &&
       instruments &&
-      Object.keys(positions).length &&
-      Object.keys(instruments).length,
+      (Object.keys(positions).length || Object.keys(positions).length === 0) &&
+      (Object.keys(instruments).length ||
+        Object.keys(instruments).length === 0),
     [positions, instruments]
   );
 
@@ -46,16 +47,16 @@ export default ({
   );
 
   //
-  const isReadyForPNL = useCallback(
-    () =>
+  const isReadyForPNL = useCallback(() => {
+    return (
       isReady() &&
       futuresTickers &&
       'BTC-PERPETUAL' in futuresTickers &&
       Object.keys(futures).every(
         (instrument_name) => instrument_name in futuresTickers
-      ),
-    [isReady, futuresTickers, futures]
-  );
+      )
+    );
+  }, [isReady, futuresTickers, futures]);
 
   // Keep track of which positions were deselected
   // This allows easily defaulting to all positions being selected
@@ -67,47 +68,62 @@ export default ({
     setDeselectedAnalysisPositions,
   ] = useLocalSet('deribit-deselected-analysis-positions');
 
-  return !isReadyForPNL() ? null : (
+  return (
     <div className="my-position-inner" {...props}>
       <PanelTitle className="my-position-title">Position</PanelTitle>
-      <div className="my-pnl-chart-container">
-        <PnlChart
-          deribit={deribit}
-          futures={futures}
-          options={options}
-          deselectedPositions={deselectedPositions}
-          analysisFutures={analysisFutures}
-          analysisOptions={analysisOptions}
-          deselectedAnalysisPositions={deselectedAnalysisPositions}
-          futuresTickers={futuresTickers}
-        />
-      </div>
-      <div className="my-position-list-container">
-        <PositionList
-          positions={analysisFutures}
-          stringify={stringifyAnalysisPosition(setAnalysisPositions)}
-          deselectedPositions={deselectedAnalysisPositions}
-          setDeselectedPositions={setDeselectedAnalysisPositions}
-        />
-        <PositionList
-          positions={analysisOptions}
-          stringify={stringifyAnalysisPosition(setAnalysisPositions)}
-          deselectedPositions={deselectedAnalysisPositions}
-          setDeselectedPositions={setDeselectedAnalysisPositions}
-        />
-        <PositionList
-          positions={futures}
-          stringify={stringifyPosition}
-          deselectedPositions={deselectedPositions}
-          setDeselectedPositions={setDeselectedPositions}
-        />
-        <PositionList
-          positions={options}
-          stringify={stringifyPosition}
-          deselectedPositions={deselectedPositions}
-          setDeselectedPositions={setDeselectedPositions}
-        />
-      </div>
+      {!isReadyForPNL() ? null : (
+        <>
+          <div className="my-pnl-chart-container">
+            <PnlChart
+              deribit={deribit}
+              futures={futures}
+              options={options}
+              deselectedPositions={deselectedPositions}
+              analysisFutures={analysisFutures}
+              analysisOptions={analysisOptions}
+              deselectedAnalysisPositions={deselectedAnalysisPositions}
+              futuresTickers={futuresTickers}
+            />
+          </div>
+          <div className="my-position-list-container">
+            {Object.keys(analysisFutures).length === 0 &&
+            Object.keys(analysisOptions).length === 0 &&
+            Object.keys(futures).length === 0 &&
+            Object.keys(options).length === 0 ? (
+              <div className="my-position-list-empty">
+                <i>No open positions.</i>
+              </div>
+            ) : (
+              <>
+                <PositionList
+                  positions={analysisFutures}
+                  stringify={stringifyAnalysisPosition(setAnalysisPositions)}
+                  deselectedPositions={deselectedAnalysisPositions}
+                  setDeselectedPositions={setDeselectedAnalysisPositions}
+                />
+                <PositionList
+                  positions={analysisOptions}
+                  stringify={stringifyAnalysisPosition(setAnalysisPositions)}
+                  deselectedPositions={deselectedAnalysisPositions}
+                  setDeselectedPositions={setDeselectedAnalysisPositions}
+                />
+                <PositionList
+                  positions={futures}
+                  stringify={stringifyPosition}
+                  deselectedPositions={deselectedPositions}
+                  setDeselectedPositions={setDeselectedPositions}
+                />
+                <PositionList
+                  positions={options}
+                  stringify={stringifyPosition}
+                  deselectedPositions={deselectedPositions}
+                  setDeselectedPositions={setDeselectedPositions}
+                />
+              </>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };

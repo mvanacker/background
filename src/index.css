@@ -638,6 +638,11 @@ div.my-position-list-container {
   flex: 1 1 auto;
 }
 
+div.my-position-list-empty {
+  text-align: center;
+  padding: 16px;
+}
+
 ul.my-position-list {
   padding-left: 16px;
   list-style-type: none;
