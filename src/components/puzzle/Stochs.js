@@ -88,7 +88,9 @@ const chart = ({ width, height }) => ({
           .attr('opacity', 0.15);
 
         // Show K at first standard deviation
-        appendPathArea(svg)(K_sigma_1, x, y).attr('fill', 'white');
+        appendPathArea(svg)(K_sigma_1, x, y)
+          .attr('fill', 'white')
+          .attr('opacity', 0.1);
 
         // Mark forecast
         appendForecastRect(svg)(x(middle), x(last), y(100), y(0));
@@ -97,11 +99,12 @@ const chart = ({ width, height }) => ({
         const valid = (d) => d.y && d.y !== null;
         appendPathLine(svg)(D.filter(valid), x, y).attr('stroke', 'white');
         appendPathLine(svg)(K.filter(valid), x, y).attr('stroke', 'yellow');
-        appendPathLine(svg)(D_expected.filter(valid), x, y).attr(
-          'stroke',
-          'white'
-        );
-        appendPathLine(svg)(K_expected, x, y).attr('stroke', 'yellow');
+        appendPathLine(svg)(D_expected.filter(valid), x, y)
+          .attr('stroke', 'white')
+          .attr('class', 'expectation');
+        appendPathLine(svg)(K_expected, x, y)
+          .attr('stroke', 'yellow')
+          .attr('class', 'expectation');
       }}
     />
   );

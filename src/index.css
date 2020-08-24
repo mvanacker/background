@@ -818,6 +818,14 @@ div.my-indicator-overview {
   margin: 16px 16px 16px 32px !important;
 }
 
+path.expectation {
+  opacity: 0.75;
+}
+
+rect.expectation {
+  fill-opacity: 0.75;
+}
+
 /* About */
 div.my-bubble {
   font-family: Roboto Slab, Georgia, Kreon, serif;

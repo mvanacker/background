@@ -158,12 +158,24 @@ const chart = ({ width, height }) => ({
         appendMA(ema_200).attr('stroke', 'navy');
         appendMA(sma_200).attr('stroke', 'white');
 
-        appendMA(sma_10_expected).attr('stroke', 'red');
-        appendMA(ema_21_expected).attr('stroke', 'yellow');
-        appendMA(ema_55_expected).attr('stroke', 'green');
-        appendMA(ema_89_expected).attr('stroke', 'cyan');
-        appendMA(ema_200_expected).attr('stroke', 'navy');
-        appendMA(sma_200_expected).attr('stroke', 'white');
+        appendMA(sma_10_expected)
+          .attr('stroke', 'red')
+          .attr('class', 'expectation');
+        appendMA(ema_21_expected)
+          .attr('stroke', 'yellow')
+          .attr('class', 'expectation');
+        appendMA(ema_55_expected)
+          .attr('stroke', 'green')
+          .attr('class', 'expectation');
+        appendMA(ema_89_expected)
+          .attr('stroke', 'cyan')
+          .attr('class', 'expectation');
+        appendMA(ema_200_expected)
+          .attr('stroke', 'navy')
+          .attr('class', 'expectation');
+        appendMA(sma_200_expected)
+          .attr('stroke', 'white')
+          .attr('class', 'expectation');
 
         // Candles
         const candles = open.map((open, i) => ({
@@ -203,7 +215,7 @@ const chart = ({ width, height }) => ({
           .attr('transform', `translate(-${candleWidth / 2},0)`)
           .attr('y', (d) => y(Math.max(d.open, d.close)))
           .attr('width', candleWidth)
-          .attr('height', (d) => Math.abs(y(d.open) - y(d.close)))
+          .attr('height', (d) => Math.max(1, Math.abs(y(d.open) - y(d.close))))
           .attr('fill', candleColor);
       }}
     />

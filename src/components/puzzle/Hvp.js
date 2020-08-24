@@ -98,17 +98,16 @@ const chart = ({ width, height }) => ({
 
       const valid = (d) => d.y && d.y !== null;
       drawBars('rect.expected', hvp_expected.filter(valid)).attr(
-        'fill',
-        'lightgreen'
+        'class',
+        'expectation'
       );
       drawBars('rect.historical', hvp.slice(0, -1).filter(valid));
 
       // Lines
       appendPathLine(svg)(hvp_ma.filter(valid), x, y).attr('stroke', 'white');
-      appendPathLine(svg)(hvp_ma_expected.filter(valid), x, y).attr(
-        'stroke',
-        'white'
-      );
+      appendPathLine(svg)(hvp_ma_expected.filter(valid), x, y)
+        .attr('stroke', 'white')
+        .attr('class', 'expectation');
     }}
   />
 );
