@@ -7,7 +7,7 @@ export function mean(array) {
 }
 
 export function floats(array) {
-  return array.map(parseFloat).filter(n => !isNaN(n));
+  return array.map(parseFloat).filter((n) => !isNaN(n));
 }
 
 export function zip(array1, array2) {
@@ -28,4 +28,12 @@ export function head(array, n) {
 
 export function tail(array, n) {
   return array.slice(array.length - n, array.length);
+}
+
+export function argmax(array) {
+  return [].reduce.call(array, (m, c, i, arr) => (c > arr[m] ? i : m), 0);
+}
+
+export function argmin(array) {
+  return [].reduce.call(array, (m, c, i, arr) => (c < arr[m] ? i : m), 0);
 }
