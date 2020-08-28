@@ -12,6 +12,8 @@ import { Loading32 } from './common/Icons';
 import beepDown from '../assets/beep_down.mp3';
 import beepUp from '../assets/beep_up.mp3';
 import { DATA_URI, REFRESH_RATE } from '../config';
+
+import { argmin, argmax } from '../util/array';
 import { retry } from '../util/promise';
 
 // Note on REFRESH_RATE: it is assumed in the code below that this value is
@@ -34,6 +36,7 @@ export default memo(() => {
   const beepUpId = 'beep-up';
   const beepDownId = 'beep-down';
   const openInterestId = 'open-interest';
+  const openInterestInterpretationId = 'open-interest-interpretation';
   const priceId = 'price';
   const buyFlowId = 'buy-flow';
   const sellFlowId = 'sell-flow';
@@ -321,7 +324,35 @@ export default memo(() => {
                 // Set page title
                 document.title = lastPrice;
 
+                // Interpret open interest
+                const hasRisen = (array) => {
+                  const amin = argmin(array);
+                  const amax = argmax(array);
+                  return amin < amax ? true : amin > amax ? false : null;
+                };
+                const openInterestRose = hasRisen(
+                  openInterest.map((oi) => oi.y)
+                );
+                const priceRose = hasRisen(price.map((p) => p.y));
+                const openInterestText = openInterestRose
+                  ? 'opening'
+                  : 'closing';
+                const priceText =
+                  priceRose === null
+                    ? 'positions'
+                    : priceRose
+                    ? 'longs'
+                    : 'shorts';
+                const openInterestInterpretation =
+                  openInterestRose === null
+                    ? 'no change'
+                    : `${priceText} ${openInterestText}`;
+                console.log(openInterestInterpretation);
+
                 // Update the divs
+                document.getElementById(
+                  openInterestInterpretationId
+                ).innerText = openInterestInterpretation;
                 document.getElementById(
                   openInterestId
                 ).innerText = lastOpenInterest.toLocaleString();
@@ -411,6 +442,14 @@ export default memo(() => {
         <div className="w3-cell w3-text-white" id={openInterestId}>
           <Loading32 />
         </div>
+      </div>
+
+      {/* Open interest interpretation */}
+      <div className="w3-cell-row w3-small my-uppercase">
+        <div
+          className="w3-cell w3-text-white"
+          id={openInterestInterpretationId}
+        ></div>
       </div>
 
       {/* Price, buy flow and sell flow numbers */}
