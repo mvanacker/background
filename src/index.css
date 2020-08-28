@@ -754,6 +754,12 @@ div.my-overview {
 
 /*** Volume flow chart */
 
+span.my-interpretation-area {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: rgba(212, 154, 154, 0.035);
+}
+
 div.my-flow-numbers-container {
   display: flex;
   flex-flow: row nowrap;

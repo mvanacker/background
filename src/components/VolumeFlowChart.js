@@ -23,6 +23,7 @@ const MIN_FLOW = 10000;
 const MAX_FLOW = 10000000;
 const ALARM_SCALAR = 75;
 const OI_CHANGE_ALLOWANCE = 5;
+const INTERPRETATION_AREA_ALLOWANCE = 5;
 
 export default memo(() => {
   // Decide dimensions
@@ -114,6 +115,8 @@ export default memo(() => {
           const last = buyFlow.length - 1;
 
           // Write initial values into divs
+          document.getElementById(openInterestInterpretationId).innerText =
+            'interpreting';
           document.getElementById(openInterestId).innerText = openInterest[
             last
           ].y.toLocaleString();
@@ -283,6 +286,14 @@ export default memo(() => {
             .attr('id', 'sell-flow')
             .attr('stroke', '#b33');
 
+          svg
+            .append('rect')
+            .attr('id', 'interpretation-area')
+            .attr('fill', 'white')
+            .attr('opacity', 0.035)
+            .attr('y', margin.top)
+            .attr('height', height - (margin.top + margin.bottom));
+
           // Update chart
           const update = () =>
             Promise.all(
@@ -325,6 +336,9 @@ export default memo(() => {
                 // Set page title
                 document.title = lastPrice;
 
+                // Select svg
+                const svg = select(d3svg.current);
+
                 // Interpret open interest
                 const argextrema = (array) => {
                   const ys = array.map((e) => e.y);
@@ -361,6 +375,39 @@ export default memo(() => {
                     : openInterestRose
                     ? 'shorts opening'
                     : 'longs closing';
+                const openInterestFirstArg = Math.min(
+                  openInterestAmin,
+                  openInterestAmax
+                );
+                const openInterestSecondArg = Math.max(
+                  openInterestAmin,
+                  openInterestAmax
+                );
+                const interpretationAreaStart = x(
+                  price[
+                    Math.max(
+                      openInterestFirstArg - INTERPRETATION_AREA_ALLOWANCE,
+                      0
+                    )
+                  ].x
+                );
+                const interpretationAreaEnd = x(
+                  price[
+                    Math.min(
+                      openInterestSecondArg + INTERPRETATION_AREA_ALLOWANCE,
+                      last
+                    )
+                  ].x
+                );
+
+                // Softly mark interpretation area
+                svg
+                  .select('rect#interpretation-area')
+                  .attr('x', interpretationAreaStart)
+                  .attr(
+                    'width',
+                    Math.abs(interpretationAreaEnd - interpretationAreaStart)
+                  );
 
                 // Update the divs
                 document.getElementById(
@@ -391,8 +438,6 @@ export default memo(() => {
                 price.shift();
                 openInterest.push({ x: next_x, y: lastOpenInterest });
                 openInterest.shift();
-
-                const svg = select(d3svg.current);
 
                 // Update bottom axis
                 x.domain([buyFlow[0].x, next_x]);
@@ -459,10 +504,10 @@ export default memo(() => {
 
       {/* Open interest interpretation */}
       <div className="w3-cell-row w3-small my-uppercase">
-        <div
-          className="w3-cell w3-text-white"
+        <span
+          className="w3-cell w3-text-white my-interpretation-area"
           id={openInterestInterpretationId}
-        ></div>
+        />
       </div>
 
       {/* Price, buy flow and sell flow numbers */}
