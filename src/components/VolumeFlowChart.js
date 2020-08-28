@@ -22,6 +22,7 @@ import { retry } from '../util/promise';
 const MIN_FLOW = 10000;
 const MAX_FLOW = 10000000;
 const ALARM_SCALAR = 75;
+const PRICE_RISE_THRESHOLD = 0.5;
 const OI_CHANGE_ALLOWANCE = 5;
 const INTERPRETATION_AREA_ALLOWANCE = 5;
 
@@ -348,15 +349,24 @@ export default memo(() => {
                   return amin < amax ? true : amin > amax ? false : null;
                 };
                 const [priceAmin, priceAmax] = argextrema(price);
-                const priceRose = hasRisen(priceAmin, priceAmax);
-                const priceFirstArg = Math.min(priceAmin, priceAmax);
-                const priceSecondArg = Math.max(priceAmin, priceAmax);
-                const [openInterestAmin, openInterestAmax] = argextrema(
-                  openInterest.slice(
-                    Math.max(priceFirstArg - OI_CHANGE_ALLOWANCE, 0),
-                    priceSecondArg + OI_CHANGE_ALLOWANCE
-                  )
+                const priceRose =
+                  Math.abs(price[priceAmin] - price[priceAmax]) <=
+                  PRICE_RISE_THRESHOLD
+                    ? null
+                    : hasRisen(priceAmin, priceAmax);
+                const priceFirstArg = Math.max(
+                  Math.min(priceAmin, priceAmax) - OI_CHANGE_ALLOWANCE,
+                  0
                 );
+                const priceSecondArg = Math.min(
+                  Math.max(priceAmin, priceAmax) + OI_CHANGE_ALLOWANCE,
+                  last
+                );
+                let [openInterestAmin, openInterestAmax] = argextrema(
+                  openInterest.slice(priceFirstArg, priceSecondArg)
+                );
+                openInterestAmin += priceFirstArg;
+                openInterestAmax += priceFirstArg;
                 const openInterestRose = hasRisen(
                   openInterestAmin,
                   openInterestAmax
