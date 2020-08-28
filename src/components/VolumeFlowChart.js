@@ -334,20 +334,20 @@ export default memo(() => {
                   openInterest.map((oi) => oi.y)
                 );
                 const priceRose = hasRisen(price.map((p) => p.y));
-                const openInterestText = openInterestRose
-                  ? 'opening'
-                  : 'closing';
-                const priceText =
-                  priceRose === null
-                    ? 'positions'
-                    : priceRose
-                    ? 'longs'
-                    : 'shorts';
                 const openInterestInterpretation =
                   openInterestRose === null
                     ? 'no change'
-                    : `${priceText} ${openInterestText}`;
-                console.log(openInterestInterpretation);
+                    : priceRose === null
+                    ? openInterestRose
+                      ? 'positions opening'
+                      : 'positions closing'
+                    : priceRose
+                    ? openInterestRose
+                      ? 'longs opening'
+                      : 'shorts closing'
+                    : openInterestRose
+                    ? 'shorts opening'
+                    : 'longs closing';
 
                 // Update the divs
                 document.getElementById(
