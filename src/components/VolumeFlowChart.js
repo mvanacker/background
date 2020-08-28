@@ -22,6 +22,7 @@ import { retry } from '../util/promise';
 const MIN_FLOW = 10000;
 const MAX_FLOW = 10000000;
 const ALARM_SCALAR = 75;
+const OI_CHANGE_ALLOWANCE = 5;
 
 export default memo(() => {
   // Decide dimensions
@@ -325,15 +326,27 @@ export default memo(() => {
                 document.title = lastPrice;
 
                 // Interpret open interest
-                const hasRisen = (array) => {
-                  const amin = argmin(array);
-                  const amax = argmax(array);
+                const argextrema = (array) => {
+                  const ys = array.map((e) => e.y);
+                  return [argmin(ys), argmax(ys)];
+                };
+                const hasRisen = (amin, amax) => {
                   return amin < amax ? true : amin > amax ? false : null;
                 };
-                const openInterestRose = hasRisen(
-                  openInterest.map((oi) => oi.y)
+                const [priceAmin, priceAmax] = argextrema(price);
+                const priceRose = hasRisen(priceAmin, priceAmax);
+                const priceFirstArg = Math.min(priceAmin, priceAmax);
+                const priceSecondArg = Math.max(priceAmin, priceAmax);
+                const [openInterestAmin, openInterestAmax] = argextrema(
+                  openInterest.slice(
+                    Math.max(priceFirstArg - OI_CHANGE_ALLOWANCE, 0),
+                    priceSecondArg + OI_CHANGE_ALLOWANCE
+                  )
                 );
-                const priceRose = hasRisen(price.map((p) => p.y));
+                const openInterestRose = hasRisen(
+                  openInterestAmin,
+                  openInterestAmax
+                );
                 const openInterestInterpretation =
                   openInterestRose === null
                     ? 'no change'
