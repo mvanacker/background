@@ -757,7 +757,7 @@ div.my-overview {
 span.my-interpretation-area {
   display: inline-block;
   padding: 2px 8px;
-  background-color: rgba(212, 154, 154, 0.035);
+  background-color: rgba(255, 255, 255, 0.06);
 }
 
 div.my-flow-numbers-container {
