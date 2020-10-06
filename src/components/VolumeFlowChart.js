@@ -354,14 +354,20 @@ export default memo(() => {
                   PRICE_RISE_THRESHOLD
                     ? null
                     : hasRisen(priceAmin, priceAmax);
-                const priceFirstArg = Math.max(
-                  Math.min(priceAmin, priceAmax) - OI_CHANGE_ALLOWANCE,
-                  0
-                );
-                const priceSecondArg = Math.min(
-                  Math.max(priceAmin, priceAmax) + OI_CHANGE_ALLOWANCE,
-                  last
-                );
+                const priceFirstArg =
+                  priceRose === null
+                    ? 0
+                    : Math.max(
+                        Math.min(priceAmin, priceAmax) - OI_CHANGE_ALLOWANCE,
+                        0
+                      );
+                const priceSecondArg =
+                  priceRose === null
+                    ? last
+                    : Math.min(
+                        Math.max(priceAmin, priceAmax) + OI_CHANGE_ALLOWANCE,
+                        last
+                      );
                 let [openInterestAmin, openInterestAmax] = argextrema(
                   openInterest.slice(priceFirstArg, priceSecondArg)
                 );
